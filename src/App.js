@@ -1,16 +1,25 @@
 import './App.css';
 import React, { useEffect, useState } from 'react';
+import { Synth } from 'tone';
 
 function App() {
-  const [st, setSt] = useState(0);
+  const [plonker, setPlonker] = useState(null);
+  useEffect( ()=>{
+    if(!plonker){
+      const pp = new Synth().toDestination();
+      pp.oscillator.type = "fmtriangle";
+      setPlonker(pp);
+    }
+  },[plonker]);
+  const plonk = (pp)=>{
+    pp.triggerAttackRelease("C4","8n");
+  }
 
   return (
     <div className="App">
-      <header className="App-header">
-        <button onClick={ ()=>setSt(st + 1) }>
-          Hello {st}
-        </button>
-      </header>
+      <button onClick={()=>plonk(plonker)}>
+        Plonk!
+      </button>
     </div>
   );
 }
