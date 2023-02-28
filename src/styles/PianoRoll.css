@@ -1,0 +1,17 @@
+.PianoKey{
+    height: 4rem; 
+    border: solid gray 1px;
+    border-radius: 0.25rem;
+}
+.PianoKey.White{
+    background-color: white;
+    color: black;
+}
+.PianoKey.Black{
+    background-color: black;
+    color: white;
+}
+.PianoKey.Press{
+    background-color: gold;
+    color: gray;
+}

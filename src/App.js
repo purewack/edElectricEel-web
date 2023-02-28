@@ -1,27 +1,27 @@
 import './App.css';
 import React, { useEffect, useState } from 'react';
 import { Synth } from 'tone';
+import NoteInput from './NoteInput';
 
 function App() {
   const [plonker, setPlonker] = useState(null);
-  useEffect( ()=>{
-    if(!plonker){
-      const pp = new Synth().toDestination();
-      pp.oscillator.type = "fmtriangle";
-      setPlonker(pp);
-    }
-  },[plonker]);
-  const plonk = (pp)=>{
-    pp.triggerAttackRelease("C4","8n");
-  }
 
-  return (
+  return (<>
     <div className="App">
-      <button onClick={()=>plonk(plonker)}>
-        Plonk!
-      </button>
+      { !plonker ? 
+        <button onClick={()=>{
+          if(plonker) return
+
+          const pp = new Synth().toDestination();
+          pp.oscillator.type = "fmtriangle";
+          
+          setPlonker(pp);
+        }}>Start Tone.js</button>
+      :
+        <NoteInput synth={plonker}></NoteInput>
+      }
     </div>
-  );
+  </>);
 }
 
 export default App;
