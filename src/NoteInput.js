@@ -1,6 +1,6 @@
 import './styles/PianoRoll.css'
 import './styles/NoteInput.css'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Frequency } from 'tone';
 
 function PianoKey({index, whiteKey, noteSignal, children}){
@@ -8,7 +8,8 @@ function PianoKey({index, whiteKey, noteSignal, children}){
     const [active, setActive] = useState(false);
 
     return (
-        <button className={`${whiteKey ? 'PianoKey White' : 'PianoKey Black'} ${active ? 'Press' : ''}`} 
+        <button 
+        className={`${whiteKey ? 'PianoKey White' : 'PianoKey Black'} ${active ? 'Press' : ''}`} 
         onMouseEnter={(ev)=>{
             if(ev.buttons === 1 && !active){
                 noteSignal(index,true)
@@ -29,28 +30,60 @@ function PianoKey({index, whiteKey, noteSignal, children}){
                 noteSignal(index,false)
             }
         }}>
-            {children}
+            <p>{children}</p>
         </button>
     )
 }
 
-export default function NoteInput({synth}){
+export default function NoteInput({synth, requestNotesCount}){
     const [octave, setOctave] = useState(4);
 
     const handleNoteSignal = (index,state)=>{
-        const n = Frequency(index + octave*12, "midi").toFrequency();
-        console.log({n,state})
-        if(state)
+        // console.log({n,state})
+        if(state){
+            const n = Frequency(index + octave*12, "midi").toFrequency();
             synth.triggerAttack(n)
+        }
         else
             synth.triggerRelease()
     }
 
-    const keys = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C']
+    const keys = ['a','w','s','e','d','f','t','g','y','h','u','j','k','o','l','p',';']
+    const notes = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C']
+    const naturals = ['C','D','E','F','G','A','B','C']
+    
+    useEffect(() => {
+        const handleDown = (ev)=>{
+            keys.forEach((k,i) => {
+                if(ev.key === k && !ev.repeat)
+                    handleNoteSignal(i,true);
+            })
+        };
+        const handleUp = (ev)=>{
+            handleNoteSignal(0,false);
+        };
+        window.addEventListener('keydown', handleDown);
+        window.addEventListener('keyup', handleUp);
+    
+        return () => {
+            window.removeEventListener('keydown', handleDown);
+            window.removeEventListener('keyup', handleUp);
+        };
+    }, []);
+
+
+    const [notesLeft, setNotesLeft] = useState(0)
+    useEffect(()=>{
+        if(notesLeft != requestNotesCount)
+            setNotesLeft(requestNotesCount);
+        else{
+            
+        }
+    }, [requestNotesCount])
 
     return(
         <div className='NoteInput'>
-            {keys.map((key,index)=>{
+            {notes.map((key,index)=>{
                 return <PianoKey 
                 index={index} 
                 whiteKey={!key.endsWith('#')}
