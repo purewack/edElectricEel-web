@@ -2,8 +2,11 @@
 
 * {
   font-family: 'VT323', monospace;
-  font-size: large;
 }
+svg text {
+  dominant-baseline: hanging;
+}
+
 
 .App {
   display: flex;
