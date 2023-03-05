@@ -1,19 +1,20 @@
 import './App.css';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Synth } from 'tone';
 import NoteInput from './NoteInput';
 import NoteView from './NoteView';
 
 function App() {
-  const testData = [
+const [plonker, setPlonker] = useState(null);
+
+const defTestData = [
   {
     clef: "treble",
     key: 7,
     meter: [4, 4],
     notes: [
-      "8n-e4",
-      "8n-f3",
-      "8n-g3",
+      "8n-b4",
+      "?-?",
       "8n-a3",
       "8n-b3",
       "8n-c4",
@@ -60,17 +61,19 @@ function App() {
     notes: ["2n-g4"]
   }
 ];
+const [testData, setTestData] = useState(defTestData);
 
-const [plonker, setPlonker] = useState(null);
 const [debug, setDebug] = useState(false);
 const [slide, setSlide] = useState(0);
+const slider = useRef(null);
 const noteViewStyle = {
-  width: "80vw",
+  width: "100vh",
   height: "min(33vh,8rem)",
-  height: "40vh",
+  height: "70vh",
   backgroundColor: "ivory",
   border: "black dashed 4px"
 };
+
 return (
   <div className="App">
     { !plonker ? 
@@ -82,31 +85,64 @@ return (
           
           setPlonker(pp);
         }}>Start Tone.js</button>
-      : <>
-    <NoteView
-      showDebug={debug}
-      data={testData}
-      slide={slide}
-      style={noteViewStyle}
-    />
-    <button
-      onClick={() => {
-        setDebug(!debug);
-      }}
-    >
-      Show Debug
-    </button>
-    <input
-      onChange={(ev) => {
-        setSlide(ev.target.value);
-      }}
-      id="typeinp"
-      type="range"
-      min="-10"
-      max="100"
-      defaultValue="0"
-      step="1"
-    />
+      : 
+      <>
+        <NoteView
+        showDebug={debug}
+        data={testData}
+        slide={slide}
+        stavesExtra={4}
+        style={noteViewStyle}
+      />
+      {/* <NoteView
+        data={[{ clef: "treble", key: 2, notes: ["8n g#3"] }]}
+        style={noteViewStyle}
+      /> */}
+      <button
+        onClick={() => {
+          setDebug(!debug);
+        }}
+      >
+        Show Debug
+      </button>
+      <input
+        onChange={(ev) => {
+          setSlide(ev.target.value);
+        }}
+        ref={slider}
+        id="typeinp"
+        type="range"
+        min="0"
+        max="200"
+        defaultValue="0"
+        step="1"
+      />
+
+      <button
+        onClick={() => {
+          slider.current.value = 0;
+          setSlide(0);
+          setTestData(defTestData);
+        }}
+      >
+        Init Test Data
+      </button>
+      <button
+        onClick={() => {
+          slider.current.value = 0;
+          setSlide(0);
+          setTestData([]);
+        }}
+      >
+        Clear
+      </button>
+      <button
+        onClick={() => {
+          setTestData([...testData, { notes: ["4n-b4", "2n-c4", "?-?"] }]);
+        }}
+      >
+        Add bar
+      </button>
 
       <NoteInput synth={plonker}></NoteInput>
     </>}
