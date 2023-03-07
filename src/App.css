@@ -3,10 +3,6 @@
 * {
   font-family: 'VT323', monospace;
 }
-svg text {
-  dominant-baseline: hanging;
-}
-
 
 .App {
   display: flex;
@@ -19,4 +15,20 @@ svg text {
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+svg text {
+  dominant-baseline: hanging;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+.debugLabel {
+  stroke: none;
+  fill: white;
+  filter: drop-shadow(1px 1px 1px);
+}
+
 

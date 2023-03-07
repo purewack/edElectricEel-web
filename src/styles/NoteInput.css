@@ -1,7 +1,0 @@
-.NoteInput {
-    border: solid red 2px;
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: row;
-    align-items: start;
-}

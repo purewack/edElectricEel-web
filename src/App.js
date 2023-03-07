@@ -1,154 +1,99 @@
-import './App.css';
-import React, { useState, useRef } from 'react';
-import { Synth } from 'tone';
-import NoteInput from './NoteInput';
-import NoteView from './NoteView';
+import "./App.css";
+import NoteInput from "./NoteInput/index.js";
+import NoteView from "./NoteView/index.js";
+import { useEffect, useState } from "react";
+import { Frequency, Midi, Sampler, Synth } from "tone";
 
-function App() {
-const [plonker, setPlonker] = useState(null);
+export default function App() {
+  const style = {
+    width: "80vw",
+    height: "30vh",
+    border: "black dashed 3px",
+    margin: "0.5rem",
+    borderRadius: "1rem"
+  };
 
-const defTestData = [
-  {
-    clef: "treble",
-    key: 7,
-    meter: [4, 4],
-    notes: [
-      "8n-b4",
-      "?-?",
-      "8n-a3",
-      "8n-b3",
-      "8n-c4",
-      "8n-d4",
-      "8n-e4",
-      "8n-f4",
-      "8n-g4",
-      "8n-a4",
-      "8n-b4",
-      "8n-c5",
-      "8n-d5",
-      "8n-e5",
-      "8n-f5",
-      "8n-g5",
-      "8n-a5",
-      "8n-b5",
-      "8n-c6",
-      "8n-d6",
-      "8n-e6",
-      "8n-e6"
-    ]
-  },
-  {
-    notes: ["8n-d4", "8n-g#4", "8n-e4", "8n-gb4"]
-  },
-  {
-    notes: [
-      "16n-r",
-      "8n-r",
-      "4n-r",
-      "2n-r",
-      "1n-r",
-      "16n-b4",
-      "8n-b4",
-      "4n-b4",
-      "2n-b4",
-      "1n-b4"
-    ]
-  },
-  {
-    clef: "alto",
-    meter: [6, 8],
-    key: -7,
-    notes: ["2n-g4"]
-  }
-];
-const [testData, setTestData] = useState(defTestData);
+  const [debug, setDebug] = useState(false);
+  const toggleDebug = () => setDebug(!debug);
 
-const [debug, setDebug] = useState(false);
-const [slide, setSlide] = useState(0);
-const slider = useRef(null);
-const noteViewStyle = {
-  width: "100vh",
-  height: "min(33vh,8rem)",
-  height: "70vh",
-  backgroundColor: "ivory",
-  border: "black dashed 4px"
-};
+  const [noise, setNoise] = useState(null);
+  useEffect(() => {
+    const n = new Synth().toDestination();
+    n.oscillator.type = "sine";
+    setNoise(n);
+  }, []);
 
-return (
-  <div className="App">
-    { !plonker ? 
-        <button onClick={()=>{
-          if(plonker) return
+  const [notesRemain, setNotesRemain] = useState(0);
+  const newGuess = () => {
+    if (noteData) return;
+    const n = 2 + Math.floor(Math.random() * 6);
+    setNotesRemain(n);
+    const arr = [];
+    for (let i = 0; i < n; i++) {
+      const nt = Math.floor(Math.random() * 7);
+      const acc = Math.floor(Math.random() * 2 - 1);
+      const str = String.fromCharCode("A".charCodeAt(0) + nt) + "4-8n";
+      arr.push(str);
+    }
+    setNoteData([{ clef: "treble", notes: arr }]);
+  };
+  const noteOff = (n) => {
+    noise.triggerRelease();
+    if (!notesRemain) return;
 
-          const pp = new Synth().toDestination();
-          pp.oscillator.type = "fmtriangle";
-          
-          setPlonker(pp);
-        }}>Start Tone.js</button>
-      : 
-      <>
-        <NoteView
+    const arrLen = noteData[0].notes.length;
+    const nr = notesRemain - 1;
+    const ng = arrLen - (nr + 1);
+    const noteToGuess = noteData[0].notes[ng].split("-")[0];
+    const isOk = n === noteToGuess;
+
+    setNotesRemain(nr);
+    let guessData = JSON.parse(JSON.stringify(noteData));
+    guessData[0].notes[ng] += isOk ? "-ok" : "-x";
+    setNoteData(guessData);
+    if (!nr) {
+      setTimeout(() => {
+        setNoteData(null);
+      }, 1000);
+    }
+  };
+
+  const [noteData, setNoteData] = useState();
+  //     [
+  //     { clef: "treble", meter: [4, 4], notes: ["G4-4n"] },
+  //     { clef: "alto", key: 4, notes: ["G4-4n"] },
+  //     { clef: "bass", key: 4, notes: ["G4-4n"] }
+  //   ]
+  // );
+
+  return (
+    <div className="App">
+      <button onClick={toggleDebug}>Debug {debug}</button>
+      <NoteView
+        data={noteData}
+        style={style}
+        stavesExtra={1}
         showDebug={debug}
-        data={testData}
-        slide={slide}
-        stavesExtra={4}
-        style={noteViewStyle}
       />
-      {/* <NoteView
-        data={[{ clef: "treble", key: 2, notes: ["8n g#3"] }]}
-        style={noteViewStyle}
-      /> */}
-      <button
-        onClick={() => {
-          setDebug(!debug);
+      <NoteInput
+        style={style}
+        keys={24}
+        octave={4}
+        range={notesRemain ? [0, 12] : [0, 0]}
+        middle={13 - 5}
+        onNoteOn={(n) => {
+          noise.triggerAttack(n);
         }}
-      >
-        Show Debug
-      </button>
-      <input
-        onChange={(ev) => {
-          setSlide(ev.target.value);
-        }}
-        ref={slider}
-        id="typeinp"
-        type="range"
-        min="0"
-        max="200"
-        defaultValue="0"
-        step="1"
+        onNoteOff={noteOff}
+        showDebug={debug}
       />
-
       <button
-        onClick={() => {
-          slider.current.value = 0;
-          setSlide(0);
-          setTestData(defTestData);
-        }}
+        onClick={newGuess}
+        disabled={noteData}
+        style={{ fontSize: "2rem" }}
       >
-        Init Test Data
+        {notesRemain ? `Remain: ${notesRemain}` : "New Guess"}
       </button>
-      <button
-        onClick={() => {
-          slider.current.value = 0;
-          setSlide(0);
-          setTestData([]);
-        }}
-      >
-        Clear
-      </button>
-      <button
-        onClick={() => {
-          setTestData([...testData, { notes: ["4n-b4", "2n-c4", "?-?"] }]);
-        }}
-      >
-        Add bar
-      </button>
-
-      <NoteInput synth={plonker}></NoteInput>
-    </>}
-  </div>
-);
-  
+    </div>
+  );
 }
-
-export default App;
