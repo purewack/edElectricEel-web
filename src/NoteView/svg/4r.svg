@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 16 16" shape-rendering="crispEdges">
+<metadata>Made with Pixels to Svg https://codepen.io/shshaw/pen/XbxvNj</metadata>
+<path stroke="rgba(39,39,39,0.9686274509803922)" d="M1 1h1" />
+<path stroke="#020202" d="M1 2h2M3 3h1" />
+<path stroke="#000000" d="M2 3h1M3 4h2M3 5h3M4 6h3M3 7h3M1 8h4M2 9h3M3 10h3M4 11h3M3 12h2M6 12h1M2 13h1M2 14h1M3 15h2" />
+<path stroke="rgba(0,0,0,0.0784313725490196)" d="M5 8h1" />
+<path stroke="rgba(0,0,0,0.00392156862745098)" d="M5 12h1" />
+<path stroke="#272727" d="M3 13h1M3 14h1" />
+</svg>
