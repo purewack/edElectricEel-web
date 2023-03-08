@@ -77,10 +77,10 @@ export default function App() {
       />
       <NoteInput
         style={style}
-        keys={24}
-        octave={4}
-        range={notesRemain ? [0, 12] : [0, 0]}
-        middle={13 - 5}
+        keys={20}
+        octave={3}
+        range={[8, 15]}
+        middleKey={5}
         onNoteOn={(n) => {
           noise.triggerAttack(n);
         }}

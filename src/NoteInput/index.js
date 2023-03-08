@@ -11,12 +11,22 @@ export default function NoteInput({
   keys = 8,
   range,
   octave = 4,
-  middle,
+  middleKey = 0,
   onNoteOn,
   onNoteOff,
   showDebug
 }) {
   const [sizeRef, size] = useOnResizeComponent();
+  const hh = Math.floor(size.height / 2) * 2;
+  const ww = hh / 4;
+
+  const avRange = range ? range[1] - range[0] : keys;
+  const middleWhere =
+    avRange === 0 || !range ? keys / 2 : (avRange - 2) / 2 + range[0];
+
+  const middleNow = ww * middleWhere;
+  const middleOffset = size.width / 2 - middleNow;
+  const middleTransform = `translate(${middleOffset} 0)`;
 
   const naturals = ["C", "D", "E", "F", "G", "A", "B", "C"];
   const sharpsIndex = [-1, 1, 2, -1, 4, 5, 6, -1];
@@ -38,8 +48,27 @@ export default function NoteInput({
       : null;
 
   return (
-    <svg ref={sizeRef} className="NoteInput" style={style}>
-      <g transform={middle ? `translate(0 0)` : `translate(0 0)`}>
+    <svg
+      ref={sizeRef}
+      className="NoteInput"
+      style={style}
+    >
+      <g style={{ transition: "transform 1s" }} transform={middleTransform}>
+        <image height={hh} x={-ww} href={piano_body} />
+        <rect
+          x={-size.width - ww / 2}
+          width={size.width}
+          height={hh}
+          fill="#241100"
+        />
+
+        <image height={hh} x={ww * keys} href={piano_body} />
+        <rect
+          x={ww * keys + ww / 2}
+          width={size.width}
+          height={hh}
+          fill="#241100"
+        />
         {[...Array(keys)].map((e, i) => {
           return (
             <PianoKey
