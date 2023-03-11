@@ -31,4 +31,6 @@ svg text {
   filter: drop-shadow(1px 1px 1px);
 }
 
-
+.FelixStatus {
+  transition: background-color 2s;
+}

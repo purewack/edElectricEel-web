@@ -19,7 +19,7 @@ export default function NoteView({
   let lastKey = 0;
 
   return (
-    <svg ref={sizeRef} style={{ background: "ivory", ...style }}>
+    <svg className='NoteView' ref={sizeRef} style={{ background: "ivory", ...style }}>
       {showDebug && <text className="debugLabel">{JSON.stringify(size)}</text>}
       <g
         transform={`

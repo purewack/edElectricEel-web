@@ -1,17 +1,27 @@
 import "./App.css";
 import NoteInput from "./NoteInput/index.js";
 import NoteView from "./NoteView/index.js";
+import FelixStatus from "./FelixStatus/index.js";
 import { useEffect, useState } from "react";
-import { Frequency, Midi, Sampler, Synth } from "tone";
+import { Synth } from "tone";
 
 export default function App() {
   const style = {
     width: "80vw",
     height: "30vh",
-    border: "black dashed 3px",
+    border: "white dashed 3px",
     margin: "0.5rem",
-    borderRadius: "1rem"
+    borderRadius: "1rem",
+    overflow: 'hidden'
   };
+  const scoreStyle = {
+    borderRadius: "5px",
+    background: 'ivory',
+    color:'black',
+    border: 'black solid 3px',
+    fontSize: "2rem", 
+    padding:'0.1rem',
+  }
 
   const [debug, setDebug] = useState(false);
   const toggleDebug = () => setDebug(!debug);
@@ -23,41 +33,12 @@ export default function App() {
     setNoise(n);
   }, []);
 
-  const [notesRemain, setNotesRemain] = useState(0);
-  const newGuess = () => {
-    if (noteData) return;
-    const n = 2 + Math.floor(Math.random() * 6);
-    setNotesRemain(n);
-    const arr = [];
-    for (let i = 0; i < n; i++) {
-      const nt = Math.floor(Math.random() * 7);
-      const acc = Math.floor(Math.random() * 2 - 1);
-      const str = String.fromCharCode("A".charCodeAt(0) + nt) + "4-8n";
-      arr.push(str);
-    }
-    setNoteData([{ clef: "treble", notes: arr }]);
-  };
-  const noteOff = (n) => {
-    noise.triggerRelease();
-    if (!notesRemain) return;
-
-    const arrLen = noteData[0].notes.length;
-    const nr = notesRemain - 1;
-    const ng = arrLen - (nr + 1);
-    const noteToGuess = noteData[0].notes[ng].split("-")[0];
-    const isOk = n === noteToGuess;
-
-    setNotesRemain(nr);
-    let guessData = JSON.parse(JSON.stringify(noteData));
-    guessData[0].notes[ng] += isOk ? "-ok" : "-x";
-    setNoteData(guessData);
-    if (!nr) {
-      setTimeout(() => {
-        setNoteData(null);
-      }, 1000);
-    }
-  };
-
+  const [felixState, setFelixState] = useState('idle');
+  const [gameStats, setGameStats] = useState({
+    target:0,
+    correct:0,
+    remain:0,
+  });
   const [noteData, setNoteData] = useState();
   //     [
   //     { clef: "treble", meter: [4, 4], notes: ["G4-4n"] },
@@ -66,15 +47,91 @@ export default function App() {
   //   ]
   // );
 
+  const newGuess = () => {
+    const generate = ()=>{    
+      setFelixState('idle')
+      const n = 2 + Math.floor(Math.random() * 6);
+      setGameStats({remain: n, target:n, correct:0})
+      const arr = [];
+      for (let i = 0; i < n; i++) {
+        const nt = Math.floor(Math.random() * 7);
+        const acc = Math.floor(Math.random() * 2 - 1);
+        const str = String.fromCharCode("A".charCodeAt(0) + nt) + "4-8n";
+        arr.push(str);
+      }
+      setNoteData([{ clef: "treble", notes: arr }]);
+    }
+
+    if(noteData){
+      setNoteData(null)
+      setTimeout(generate,500)
+    }
+    else{
+      generate()
+    }
+  };
+  const noteOff = (n) => {
+    noise.triggerRelease();
+    if (!gameStats.remain) return;
+
+    const arrLen = noteData[0].notes.length;
+    const nr = gameStats.remain - 1;
+    const ng = arrLen - (nr + 1);
+    const noteToGuess = noteData[0].notes[ng].split("-")[0];
+    const isOk = n === noteToGuess;
+    const cr = isOk ? gameStats.correct+1 : gameStats.correct
+    setGameStats({...gameStats, remain: nr, correct: cr})
+    let guessData = JSON.parse(JSON.stringify(noteData));
+    guessData[0].notes[ng] += isOk ? "-ok" : "-x";
+    setNoteData(guessData);
+    if (!nr) {
+      if(cr === gameStats.target){
+        setFelixState('happy')
+      }
+      else{
+        setFelixState('tired')
+      }
+      setTimeout(() => {
+        setFelixState('idle')
+        setNoteData(null);
+      }, 1500);
+    }
+  };
+
+  const felixBG = felixState === 'idle' ? (noteData ? 'Wheat' : 'ivory') : ( felixState === 'happy' ? 'YellowGreen' : 'Tomato')
+
+
   return (
     <div className="App">
       <button onClick={toggleDebug}>Debug {debug}</button>
-      <NoteView
-        data={noteData}
-        style={style}
-        stavesExtra={1}
-        showDebug={debug}
-      />
+      
+      <div>
+        <button
+          onClick={newGuess}
+          style={{...scoreStyle, background:'yellow'}}
+        >
+          New Guess
+        </button>
+
+        {noteData && <>
+          <span style={scoreStyle}>Note: {gameStats.target-gameStats.remain}/{gameStats.target} </span>
+          <span style={scoreStyle}>Correct: {gameStats.correct} </span>
+        </>}
+
+      </div>
+
+      <div style={{display:'flex'}}>
+        <NoteView
+          data={noteData}
+          style={{...style,width:'60vw'}}
+          stavesExtra={1}
+          showDebug={debug}
+        />
+        <FelixStatus 
+          animType={felixState} 
+          style={{...style,width:'20vw', backgroundColor: felixBG} }
+          showDebug={debug}/>
+      </div>
       <NoteInput
         style={style}
         keys={20}
@@ -87,13 +144,6 @@ export default function App() {
         onNoteOff={noteOff}
         showDebug={debug}
       />
-      <button
-        onClick={newGuess}
-        disabled={noteData}
-        style={{ fontSize: "2rem" }}
-      >
-        {notesRemain ? `Remain: ${notesRemain}` : "New Guess"}
-      </button>
     </div>
   );
 }
