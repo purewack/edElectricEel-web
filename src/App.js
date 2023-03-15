@@ -2,6 +2,7 @@ import "./App.css";
 import NoteInput from "./NoteInput/index.js";
 import NoteView from "./NoteView/index.js";
 import FelixStatus from "./FelixStatus/index.js";
+import SnakeView from "./SnakeView/index.js";
 import { useEffect, useState } from "react";
 import { Synth } from "tone";
 
@@ -100,6 +101,8 @@ export default function App() {
 
   const felixBG = felixState === 'idle' ? (noteData ? 'Wheat' : 'ivory') : ( felixState === 'happy' ? 'YellowGreen' : 'Tomato')
 
+  const [gameStatus, setGameStatus] = useState(false)
+  const toggleGame = ()=>{setGameStatus(!gameStatus)}
 
   return (
     <div className="App">
@@ -144,6 +147,8 @@ export default function App() {
         onNoteOff={noteOff}
         showDebug={debug}
       />
+      <button onClick={toggleGame}>{gameStatus ? 'Pause' : 'Play'}</button>
+      <SnakeView isPlaying={gameStatus}/>
     </div>
   );
 }

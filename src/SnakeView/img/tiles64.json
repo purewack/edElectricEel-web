@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "image": "tiles64.png"
+  },
+  "frames": {
+    "sHead": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+			"sourceSize": { "w": 8, "h": 8 },
+			"spriteSourceSize": { "x": 0, "y": 0, "w": 8, "h": 8 }
+    },
+    "sBody1": {
+      "frame": {
+        "x": 0,
+        "y": 8,
+        "w": 8,
+        "h": 8
+      }
+    },
+    "sBody2": {
+      "frame": {
+        "x": 0,
+        "y": 16,
+        "w": 8,
+        "h": 8
+      }
+    },
+    "sTurnBotRight": {
+      "frame": {
+        "x": 0,
+        "y": 32,
+        "w": 8,
+        "h": 8
+      }
+    },
+    "sTail": {
+      "frame": {
+        "x": 0,
+        "y": 24,
+        "w": 8,
+        "h": 8
+      }
+    }
+  }
+}
