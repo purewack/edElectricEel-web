@@ -9,9 +9,7 @@
         "y": 0,
         "w": 8,
         "h": 8
-      },
-			"sourceSize": { "w": 8, "h": 8 },
-			"spriteSourceSize": { "x": 0, "y": 0, "w": 8, "h": 8 }
+      }
     },
     "sBody1": {
       "frame": {

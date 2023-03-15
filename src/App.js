@@ -10,10 +10,6 @@ export default function App() {
   const style = {
     width: "80vw",
     height: "30vh",
-    border: "white dashed 3px",
-    margin: "0.5rem",
-    borderRadius: "1rem",
-    overflow: 'hidden'
   };
   const scoreStyle = {
     borderRadius: "5px",
@@ -55,11 +51,12 @@ export default function App() {
       setGameStats({remain: n, target:n, correct:0})
       const arr = [];
       for (let i = 0; i < n; i++) {
-        const nt = Math.floor(Math.random() * 7);
+        const nt = Math.floor(Math.random() * 9);
         const acc = Math.floor(Math.random() * 2 - 1);
-        const str = String.fromCharCode("A".charCodeAt(0) + nt) + "4-8n";
+        const str = String.fromCharCode("A".charCodeAt(0) + nt%7) + Number(4 + Math.floor(nt/8)).toString() + "-8n";
         arr.push(str);
       }
+      console.log(arr)
       setNoteData([{ clef: "treble", notes: arr }]);
     }
 
@@ -123,7 +120,7 @@ export default function App() {
 
       </div>
 
-      <div style={{display:'flex'}}>
+      <div className="Frame" style={{display:'flex'}}>
         <NoteView
           data={noteData}
           style={{...style,width:'60vw'}}
@@ -135,20 +132,25 @@ export default function App() {
           style={{...style,width:'20vw', backgroundColor: felixBG} }
           showDebug={debug}/>
       </div>
-      <NoteInput
-        style={style}
-        keys={20}
-        octave={3}
-        range={[8, 15]}
-        middleKey={5}
-        onNoteOn={(n) => {
-          noise.triggerAttack(n);
-        }}
-        onNoteOff={noteOff}
-        showDebug={debug}
-      />
+      <div className="Frame">
+        <NoteInput
+          style={style}
+          keys={25}
+          octave={3}
+          range={[8, 22]}
+          middleKey={5}
+          onNoteOn={(n) => {
+            noise.triggerAttack(n);
+          }}
+          onNoteOff={noteOff}
+          showDebug={debug}
+        />
+      </div>
       <button onClick={toggleGame}>{gameStatus ? 'Pause' : 'Play'}</button>
-      <SnakeView isPlaying={gameStatus}/>
+      
+      <div className="Frame">
+        <SnakeView isPlaying={gameStatus}/>
+      </div>
     </div>
   );
 }

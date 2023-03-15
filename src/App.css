@@ -2,6 +2,12 @@
 
 * {
   font-family: 'VT323', monospace;
+  box-sizing: border-box;
+}
+
+svg {
+  padding: 0;
+  margin: 0;
 }
 
 .App {
@@ -33,4 +39,18 @@ svg text {
 
 .FelixStatus {
   transition: background-color 2s;
+}
+
+.View {
+  border: solid black 1px;
+}
+
+.Frame {
+  margin: 1rem;
+  padding: 0;
+  border: solid 16px;
+  border-image: url('./img/borderFill.png');
+  border-image-slice: 3;
+  overflow: hidden;
+  image-rendering: pixelated;
 }

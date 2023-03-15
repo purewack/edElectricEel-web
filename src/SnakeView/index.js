@@ -7,6 +7,7 @@ import {
 } from "@pixi/react";
 import tiles_atlas from "./img/tiles64.json";
 import tiles_img from "./img/tiles64.png";
+import './style.css'
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
@@ -43,7 +44,12 @@ export default function SnakeView({ isPlaying }) {
   }, [isPlaying]);
 
   return (
-    <div ref={parentDiv} style={{ width: "90vw", height: "70vh" }}>
+    <div ref={parentDiv} 
+    style={{ 
+      width: "90vw", 
+      height: "70vh",
+    }}
+    className='View SnakeView'>
       {sprites && parentDiv.current && (
         <Stage
           options={{ backgroundColor: 0x10bb99, resizeTo: parentDiv.current }}

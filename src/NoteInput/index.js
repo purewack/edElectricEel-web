@@ -11,7 +11,6 @@ export default function NoteInput({
   keys = 8,
   range,
   octave = 4,
-  middleKey = 0,
   onNoteOn,
   onNoteOff,
   showDebug
@@ -50,8 +49,8 @@ export default function NoteInput({
   return (
     <svg
       ref={sizeRef}
-      className="NoteInput"
       style={style}
+      className="View NoteInput"
     >
       <g style={{ transition: "transform 1s" }} transform={middleTransform}>
         <image height={hh} x={-ww} href={piano_body} />

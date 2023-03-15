@@ -26,10 +26,9 @@ export default function FelixStatus({ style, animType = "idle", showDebug }) {
   };
 
   const onFrameStart = (dt, cv, ctx) => {
-    const cvr = container.current.getBoundingClientRect();
-    cv.width = cvr.width;
-    cv.height = cvr.height;
-    // ctx.fillStyle = "#eee";
+    const cvr = getComputedStyle(container.current);
+    cv.width = parseFloat(cvr.width);
+    cv.height = parseFloat(cvr.height);
     ctx.clearRect(0, 0, cv.width, cv.height);
 
     const s =
@@ -313,7 +312,7 @@ export default function FelixStatus({ style, animType = "idle", showDebug }) {
   }, [animType,showDebug]);
 
   return (
-    <div className='FelixStatus' ref={container} style={style} >
+    <div className='View FelixStatus' ref={container} style={style} >
       <canvas ref={ref} />
     </div>
   );
