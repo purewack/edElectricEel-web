@@ -20,7 +20,7 @@ export default function App() {
     padding:'0.1rem',
   }
 
-  const [debug, setDebug] = useState(false);
+  const [debug, setDebug] = useState(true);
   const toggleDebug = () => setDebug(!debug);
 
   const [noise, setNoise] = useState(null);
@@ -51,9 +51,9 @@ export default function App() {
       setGameStats({remain: n, target:n, correct:0})
       const arr = [];
       for (let i = 0; i < n; i++) {
-        const nt = Math.floor(Math.random() * 9);
+        const nt = Math.floor(Math.random() * 7);
         const acc = Math.floor(Math.random() * 2 - 1);
-        const str = String.fromCharCode("A".charCodeAt(0) + nt%7) + Number(4 + Math.floor(nt/8)).toString() + "-8n";
+        const str = String.fromCharCode("A".charCodeAt(0) + nt%7) + "4-8n";
         arr.push(str);
       }
       console.log(arr)
@@ -103,53 +103,9 @@ export default function App() {
 
   return (
     <div className="App">
-      <button onClick={toggleDebug}>Debug {debug}</button>
-      
-      <div>
-        <button
-          onClick={newGuess}
-          style={{...scoreStyle, background:'yellow'}}
-        >
-          New Guess
-        </button>
-
-        {noteData && <>
-          <span style={scoreStyle}>Note: {gameStats.target-gameStats.remain}/{gameStats.target} </span>
-          <span style={scoreStyle}>Correct: {gameStats.correct} </span>
-        </>}
-
-      </div>
-
-      <div className="Frame" style={{display:'flex'}}>
-        <NoteView
-          data={noteData}
-          style={{...style,width:'60vw'}}
-          stavesExtra={1}
-          showDebug={debug}
-        />
-        <FelixStatus 
-          animType={felixState} 
-          style={{...style,width:'20vw', backgroundColor: felixBG} }
-          showDebug={debug}/>
-      </div>
-      <div className="Frame">
-        <NoteInput
-          style={style}
-          keys={25}
-          octave={3}
-          range={[8, 22]}
-          middleKey={5}
-          onNoteOn={(n) => {
-            noise.triggerAttack(n);
-          }}
-          onNoteOff={noteOff}
-          showDebug={debug}
-        />
-      </div>
-      <button onClick={toggleGame}>{gameStatus ? 'Pause' : 'Play'}</button>
-      
-      <div className="Frame">
-        <SnakeView isPlaying={gameStatus}/>
+      <button onClick={()=>setDebug(!debug)}>Debug</button>
+      <div className="Frame" style={{position:'relative'}}>
+        <SnakeView isPlaying={gameStatus} showDebug={debug} options={{scrolling:false}}/>
       </div>
     </div>
   );

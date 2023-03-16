@@ -35,6 +35,14 @@
         "h": 8
       }
     },
+    "sTurnBotRightAlt": {
+      "frame": {
+        "x": 0,
+        "y": 40,
+        "w": 8,
+        "h": 8
+      }
+    },
     "sTail": {
       "frame": {
         "x": 0,

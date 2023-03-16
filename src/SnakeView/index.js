@@ -1,95 +1,328 @@
 import * as PIXI from "pixi.js";
-import { useEffect, useRef, useState,BitmapText } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 import {
   Stage,
   Sprite,
-  Text
+  TilingSprite,
+  Text,
+  Graphics,
+  Container,
 } from "@pixi/react";
-import tiles_atlas from "./img/tiles64.json";
+import useOnResizeComponent from "../Hooks.js";
+import Item from "./Item.js";
+import Boat from './Boat.js'
+
+import snake_atlas from "./img/snake.json";
+import scene_atlas from "./img/scene.json";
+import items_atlas from "./img/items.json";
+import entity_atlas from "./img/entity.json";
 import tiles_img from "./img/tiles64.png";
-import './style.css'
+import "./style.css";
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-export default function SnakeView({ isPlaying }) {
-  const parentDiv = useRef(null);
-  const textureBusy = useRef(false);
-  const [sprites, setSprites] = useState(null);
-  const [gameTick, setGameTick] = useState(1);
-  const gameTickId = useRef(0);
+export default function SnakeView({ options, showDebug }) {
+  const [parentDiv, parentSize] = useOnResizeComponent();
 
+  const textureLoaded = useRef(false);
+  const [sprites, setSprites] = useState(null);
+
+  const [gameTick, setGameTick] = useState(1);
+  const [direction, setDirection] = useState("right");
+  const [length, setLength] = useState(3);
+
+  const [scenery, setScenery] = useState([]);
+
+  const [visuals, setVisuals] = useState({ u: 1, uu: 1, preferredHeightU: 1 });
+  const [visualsBusy, setVisualsBusy] = useState(false)
   useEffect(() => {
-    if (sprites) return;
-    if (textureBusy.current) return;
-    const atlas = tiles_atlas;
-    const spritesheet = new PIXI.Spritesheet(
-      PIXI.BaseTexture.from(tiles_img),
-      atlas
-    );
-    textureBusy.current = true;
-    spritesheet.parse().then((s) => {
-      setSprites(s);
-      textureBusy.current = false;
-      console.log(s);
-      console.log(s.sHead)
-    });
+    // console.log(parentSize);
+    const shipAreaU = 2;
+    const minPlayableHeightU = 14; //playable area height
+    const ww = parentSize.width/128
+    const hh = parentSize.height/(minPlayableHeightU+shipAreaU)/8
+    const u = Math.min(ww,hh);
+    const uu = u * 8;
+    const gw = parentSize.width / uu;
+    const gh = parentSize.height / uu;
+    const vv = {u,uu,preferredHeightU:minPlayableHeightU, grid:[gw,gh]}
+    console.log(vv)
+    setVisuals(vv)
+  }, [parentSize]);
+  const u = visuals.u
+  const uu = visuals.uu
+  const preferredHeightU = visuals.preferredHeightU
+
+  const advanceScenery = (spawn) => {
+    if (spawn) {
+      let arr = [];
+      for (let i = 0; i < 24; i++) {
+        const r = Math.random();
+        if (r < 0.6 || i % 3) continue;
+        arr.push({
+          type: "seaweed",
+          x: i,
+          n: Math.floor(r * 8),
+          speed: 0.25,
+        });
+      }
+      console.log("new scenery");
+      console.log(arr);
+      setScenery(arr);
+    } else if(options?.scrolling) {
+      setScenery((ss) =>
+        ss.map((e, i, a) => {
+          if (e.x < 0) return { ...e, x: Math.floor(visuals.grid[0]), n: Math.floor(Math.random() * 6) };
+          return { ...e, x: e.x - e.speed };
+        })
+      );
+    }
+  };
+  useEffect(() => {
+    const keyHandle = (ev) => {
+      // console.log(ev)
+      if (ev.key === "w") setDirection("up");
+      if (ev.key === "s") setDirection("down");
+      if (ev.key === "a") setDirection("left");
+      if (ev.key === "d") setDirection("right");
+      if (ev.key === "g") setLength((l) => l + 1);
+      if (ev.key === "t")
+        setGameTick((t) => {
+          advanceScenery(false);
+          return t + 1;
+        });
+    };
+    window.addEventListener("keydown", keyHandle);
+
+    if (!textureLoaded.current) {
+      textureLoaded.current = true;
+      const tex = PIXI.BaseTexture.from(tiles_img);
+      const snake_SS = new PIXI.Spritesheet(tex, snake_atlas);
+      const scene_SS = new PIXI.Spritesheet(tex, scene_atlas);
+      const items_SS = new PIXI.Spritesheet(tex, items_atlas);
+      const entity_SS = new PIXI.Spritesheet(tex, entity_atlas);
+
+      Promise.all([snake_SS.parse(), scene_SS.parse(), items_SS.parse(), entity_SS.parse()]).then(
+        (s) => {
+          setSprites({ snake: s[0], scene: s[1], items: s[2], entity: s[3]});
+          advanceScenery(true);
+          console.log("sprites loaded");
+          console.log(s);
+        }
+      );
+    }
+
+    return () => {
+      window.removeEventListener("keydown", keyHandle);
+    };
   }, []);
 
-  useEffect(() => {
-    clearInterval(gameTickId.current);
-    if (!isPlaying) return;
-    gameTickId.current = setInterval(() => {
-      setGameTick((s) => s + 1);
-    }, 750);
-  }, [isPlaying]);
+
 
   return (
-    <div ref={parentDiv} 
-    style={{ 
-      width: "90vw", 
-      height: "70vh",
-    }}
-    className='View SnakeView'>
-      {sprites && parentDiv.current && (
+    <div
+      ref={parentDiv}
+      style={{
+        width: "90vw",
+        height: "70vh",
+        background: scene_atlas.meta.backgroundColor
+      }}
+      className="View SnakeView"
+    >
+      {sprites && (
         <Stage
-          options={{ backgroundColor: 0x10bb99, resizeTo: parentDiv.current }}
+          options={{
+            backgroundAlpha: 0,
+            resizeTo: parentDiv.current
+          }}
         >
-          <Snake sprites={sprites} tick={gameTick} />
-          <Text
-            text={`gameTick:${gameTick}`}
-            style={
-              new PIXI.TextStyle({
-                fontFamily: "courier",
-                fill: isPlaying ? "green" : "red",
-                fontSize: 16
-              })
-            }
+
+          <TilingSprite
+            texture={sprites.scene.water}
+            scale={{ x: u, y: u }}
+            height={8}
+            width={parentSize.width + uu}
+            y={uu * 2}
+            x={gameTick % 2 ? -uu : 0}
           />
+          <TilingSprite
+            texture={sprites.scene.sand}
+            scale={{ x: u * 2, y: u * 2 }}
+            height={parentSize.height}
+            width={parentSize.width + uu}
+            y={preferredHeightU * uu}
+            x={options?.scrolling && gameTick % 2 ? -uu/2 : 0}
+          />
+          {scenery.map((e, i, a) => {
+            if (e.type === "seaweed") {
+              return (
+                <Container
+                  key={`snr_${i}`}
+                  y={preferredHeightU * uu}
+                  x={e.x * uu}
+                >
+                  {[...Array(e.n)].map((ee, ii, aa) => {
+                    const ss = {y:u, x: Math.random() > 0.7 ? -u : u}
+                    return (
+                      <Sprite
+                        key={`snr_${i}_${ii}`}
+                        texture={sprites.scene.seaweed}
+                        scale={ss}
+                        anchor={{ x: 0.5, y: 1 }}
+                        y={-ii * uu}
+                        x={uu/2}
+                      />
+                    );
+                  })}
+                </Container>
+              );
+            }
+            return null;
+          })}
+
+          <Item
+            visuals={{
+              u: uu,
+              x: Math.floor(visuals.grid[0]-1),
+              y: 4,
+              sprite: sprites.items.noteblock,
+            }}
+          />
+
+          <Boat sprites={sprites} visuals={{...visuals, chainLength:2, chainType:'chain'}}/>
+
+          <Snake
+            visuals={{
+              u: uu,
+              sprites: sprites.snake,
+              length,
+              direction,
+              spawn: [4, 4],
+              respawn: true,
+              scrolling: options?.scrolling,
+            }}
+            range={{left:0, right:0, top:2, bottom:2}}
+            tick={{value:gameTick, tickPerMove:2}}
+          />
+
+          {showDebug && (
+            <>
+              <DebugGrid u={uu / 2} uw={parentSize.height}  uh={parentSize.width} />
+              <Text
+                text={`gameTick:${gameTick} length:${length} direction: ${direction}`}
+                style={
+                  new PIXI.TextStyle({
+                    fontFamily: "courier",
+                    fill: "green",
+                    fontSize: 16,
+                  })
+                }
+              />
+            </>
+          )}
         </Stage>
       )}
     </div>
   );
 }
 
-function Snake({ sprites, tick, onAdvance }) {
-  const u = 5;
-  const [len, setLen] = useState(4);
+function Snake({ visuals, tick, onAdvance }) {
+  const [len, setLen] = useState(0);
   const [dir, setDir] = useState("right");
   const [path, setPath] = useState(null);
-  const [altTick, setAltTick] = useState(false);
+
+  //spawn
+  useEffect(() => {
+    if (!visuals) return;
+    if (path) return;
+    if (!visuals?.respawn) return;
+    const spawn = visuals.spawn;
+    const dd = visuals.direction;
+    const px = dd === "right" ? -1 : dd === "left" ? 1 : 0;
+    const py = dd === "up" ? 1 : dd === "down" ? -1 : 0;
+    let poss = [];
+    for (let i = 0; i < visuals.length; i++)
+      poss.push({
+        x: spawn[0] + px * i,
+        y: spawn[1] + py * i,
+        d: dirToIdx[dd],
+      });
+    console.log("new spawn");
+    console.log(poss);
+    setPath(poss);
+    if (onAdvance) onAdvance(poss);
+  }, [visuals.respawn]);
+
+  //turn
+  useEffect(() => {
+    if (!visuals) return;
+    if(dir === 'left' && visuals.direction === 'right') return;
+    if(dir === 'right' && visuals.direction === 'left') return;
+    if(dir === 'down' && visuals.direction === 'up') return;
+    if(dir === 'up' && visuals.direction === 'down') return;
+    setDir(visuals.direction);
+  }, [visuals.direction]);
+
+  //grow
+  useEffect(() => {
+    if (!visuals) return;
+    setLen(visuals.length);
+    const ll = visuals.length;
+    if (len >= 3) {
+      const tailGrow = { ...path[ll - 2], d: path[ll - 3].d };
+      const nextPath = [...path, tailGrow];
+      setPath(nextPath);
+    }
+  }, [visuals.length]);
+
+  //advance @ tick
+  useEffect(() => {
+    if (!path) return;
+    if(tick.value % tick.tickPerMove) return
+    //offsets for next move based on direction
+    const pxx = visuals.scrolling ? -(1/tick.tickPerMove) : 0;
+    const px = dir === "right" ? 1 : dir === "left" ? -1 : 0;
+    const py = dir === "down" ? 1 : dir === "up" ? -1 : 0;
+
+    //snake segments from head to just before tail
+    const tailMove = { ...path[len - 2], d: path[len - 3].d };
+    const interMove = path.slice(0, len - 2);
+    const nextPos = {
+      x: path[0].x + px,
+      y: path[0].y + py,
+      d: dirToIdx[dir],
+    };
+    const nn = [nextPos, ...interMove, tailMove];
+    const nextMove = nn.map((p) => {
+      return { ...p, x: p.x + pxx };
+    });
+    setPath(nextMove);
+
+    // console.log(nextMove);
+    if (onAdvance) onAdvance(nextMove);
+  }, [tick.value]);
+
+  const uu = visuals?.u;
+  const sprites = visuals?.sprites;
 
   //helpers
   const idxToDir = {
     0: "right",
     1: "down",
     2: "left",
-    3: "up"
+    3: "up",
   };
   const dirToIdx = {
     right: 0,
     down: 1,
     left: 2,
-    up: 3
+    up: 3,
   };
   const idxToSprite = (i, l) => {
     if (i === 0) return sprites.sHead;
@@ -110,60 +343,6 @@ function Snake({ sprites, tick, onAdvance }) {
     else return null;
   };
 
-  const respawn = () => {
-    const spawn = [6, 6];
-    const dd = Math.floor(Math.random() * 3);
-    const px = dd === dirToIdx["right"] ? -1 : dd === dirToIdx["left"] ? 1 : 0;
-    const py = dd === dirToIdx["up"] ? 1 : dd === dirToIdx["down"] ? -1 : 0;
-    let poss = [];
-    for (let i = 0; i < len; i++)
-      poss.push({
-        x: spawn[0] + px * i,
-        y: spawn[1] + py * i,
-        d: dd,
-        id: path ? path[i].id * -1 : i + 1
-      });
-    console.log("path");
-    setPath(poss);
-    setDir(idxToDir[dd]);
-  };
-
-  //spawn
-  useEffect(() => {
-    if (path) return;
-    respawn();
-  }, []);
-
-  //advance
-  useEffect(() => {
-    if (!path) return;
-    setAltTick((s) => !s);
-
-    //offsets for next move based on direction
-    const px = dir === "right" ? 1 : dir === "left" ? -1 : 0;
-    const py = dir === "down" ? 1 : dir === "up" ? -1 : 0;
-    //snake segments from head to just before tail
-    const tailMove = { ...path[len - 2], d: path[len - 3].d };
-    const interMove = path.slice(0, len - 2);
-    const nextPos = {
-      x: path[0].x + px,
-      y: path[0].y + py,
-      d: dirToIdx[dir],
-      id: -tailMove.id
-    };
-    if (nextPos.x < 0 || nextPos.y < 0 || nextPos.x > 16 || nextPos.y > 8) {
-      respawn();
-    } else {
-      const nextMove = [nextPos, ...interMove, tailMove];
-      setPath(nextMove);
-      console.log(nextMove);
-      if (onAdvance) onAdvance(nextMove);
-    }
-
-    if (tick === 2) setDir("down");
-    if (tick === 4) setDir("left");
-  }, [tick]);
-
   return (
     <>
       {path &&
@@ -172,27 +351,30 @@ function Snake({ sprites, tick, onAdvance }) {
           const isCorner =
             i_p === null ? false : i === len - 1 ? false : p.d !== a[i_p].d;
           const cornerDir = isCorner ? cornerRot(a[i_p].d, p.d) : null;
-
+          const altTick = tick.value % 2;
           //clockwise, starting at 3oclock === 0
           let elemDir = p.d + 1;
           if (cornerDir !== null) elemDir = cornerDir + 4;
-          let elemScale = [u, u];
+          let elemScale = [uu / 8, uu / 8];
           if (altTick && !isCorner) elemScale[0] *= -1;
 
           const tex =
-            cornerDir !== null ? sprites.sTurnBotRight : idxToSprite(i, len);
+            cornerDir !== null
+              ? i % 2
+                ? sprites.sTurnBotRightAlt
+                : sprites.sTurnBotRight
+              : idxToSprite(i, len);
 
           return (
             <SnakeSeg
-              key={p.id}
-              id={p.id}
+              key={`sk_${i}`}
               piece={i}
               texture={tex}
-              scale={{x:elemScale[0],y:elemScale[1]}}
-              anchor={{x:0.5,y:0.5}}
+              scale={{ x: elemScale[0], y: elemScale[1] }}
+              anchor={{ x: 0.5, y: 0.5 }}
               rotation={(Math.PI / 2) * elemDir}
-              x={u * 4 + u * p.x * 8}
-              y={u * 4 + u * p.y * 8}
+              x={uu / 2 + uu * p.x}
+              y={uu / 2 + uu * p.y}
             />
           );
         })}
@@ -213,8 +395,33 @@ function SnakeSeg(props) {
   //   }, 250);
   // }, []);
 
-  return <Sprite
-    {...props}
-    // tint={tint}
-  />
+  return (
+    <Sprite
+      {...props}
+      // tint={tint}
+    />
+  );
+}
+
+function DebugGrid({ u, ux = 0, uy = 0, uw = 32, uh = 32 }) {
+  const draw = useCallback(
+    (g) => {
+      g.clear();
+      //horiz
+      for (let yy = 0; yy < uw; yy++) {
+        g.lineStyle(1, yy % 2 ? 0xffff00 : 0xaa0000, 0.3);
+        g.moveTo(ux, yy * u);
+        g.lineTo(uw * u, yy * u);
+      }
+      //vert
+      for (let xx = 0; xx < uw; xx++) {
+        g.lineStyle(1, xx % 2 ? 0xffff00 : 0xaa0000, 0.3);
+        g.moveTo(xx * u, uy);
+        g.lineTo(xx * u, uh * u);
+      }
+    },
+    [u, ux, uy, uw, uh]
+  );
+
+  return <Graphics draw={draw} />;
 }

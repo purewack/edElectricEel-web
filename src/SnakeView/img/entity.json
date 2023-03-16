@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "image": "tiles64.png"
+  },
+  "frames": {
+    "soundboat": {
+      "frame": {
+        "x": 24,
+        "y": 32,
+        "w": 16,
+        "h": 16
+      }
+    },
+    "soundboat_hookchain": {
+      "frame": {
+        "x": 40,
+        "y": 24,
+        "w": 8,
+        "h": 8
+      }
+    },
+    "soundboat_hookwire": {
+      "frame": {
+        "x": 40,
+        "y": 32,
+        "w": 8,
+        "h": 8
+      }
+    },
+    "chain": {
+      "frame": {
+        "x": 40,
+        "y": 8,
+        "w": 8,
+        "h": 8
+      }
+    },
+    "wire": {
+      "frame": {
+        "x": 40,
+        "y": 40,
+        "w": 8,
+        "h": 8
+      }
+    }
+  }
+}
