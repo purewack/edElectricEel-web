@@ -46,7 +46,6 @@ svg text {
 }
 
 .Frame {
-  margin: 1rem;
   padding: 0;
   border: solid 16px;
   border-image: url('./img/borderFill.png');

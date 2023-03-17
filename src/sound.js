@@ -72,7 +72,7 @@ export function newBassLine (root, instrument, bassData, currentBassLine, setCur
             Tone.Time(bassData.interval).toSeconds()/2,
             t
         )
-    }, bassData.data).start('@4n')
+    }, bassData.data).start('@1m')
     p.interval = bassData.interval
     setCurrentBassLine(p)
   }

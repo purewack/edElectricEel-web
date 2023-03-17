@@ -7,6 +7,8 @@ import { prepareSound, newBassLine } from "./sound";
 import { useCallback, useEffect, useState } from "react";
 import * as Tone from "tone";
 import levelData from './level1.json'
+import arrowSVG from './img/icons/arrow.svg'
+import heartSVG from './img/icons/heart.svg'
 
 export default function App() {
   const [debug, setDebug] = useState(false);
@@ -15,25 +17,36 @@ export default function App() {
     width: "90vw",
     height: "60vh",
   };
-  const inputStyle ={
-    width: '90vw',
-    height: '30vh'
-  }
   const noteStyle = {
     position: 'absolute',
     width: '10vh',
     height: '10vh',
-    border: 'solid orange 0.25rem'
+    border: 'solid orange 0.25rem',
+    background: 'ivory'
+  }
+  const inputStyle ={
+    width: '60vw',
+    height: '30vh'
+  }
+  const statusStyle ={
+    width: 'min-content',
+    height: '30vh',
+    padding: 0,
+    background: 'black',
+    display:'flex',
+    alignItems:'center',
+    justifyContent:'space-around'
   }
   
   const [isStarted, setIsStarted] = useState(false)
+  const [isReady, setIsReady] = useState(false)
   const [instruments, setInstruments] = useState(null);
   const [currentBassLine, setCurrentBassLine] = useState(null)
   
-
+  const [health, setHelath] = useState(levelData.startHealth);
+  const [direction, setDirection] = useState(levelData.startDirection);
+  const [length, setLength] = useState(levelData.startLength);
   const [gameTick, setGameTick] = useState(-1);
-  const [direction, setDirection] = useState("right");
-  const [length, setLength] = useState(3);
 
   useEffect(() => {
     const keyHandle = (ev) => {
@@ -91,7 +104,7 @@ export default function App() {
     let nr
     do{
       nr = Math.floor(Math.random()*7)
-    }while(nr == r)
+    }while(nr === r)
     const data = [];
     const nt1 = String.fromCharCode("A".charCodeAt(0) + r) + "4";
     const nt2 = String.fromCharCode("A".charCodeAt(0) + nr) + "4";
@@ -103,28 +116,26 @@ export default function App() {
     newGuess()
   },[])
 
+  const dirToIdx = {
+    right: 0,
+    down: 1,
+    left: 2,
+    up: 3,
+  };
+
   return (
     <div className="App">
-      {!isStarted ? 
-      <button onClick={()=>{
-        prepareSound(levelData,setInstruments,()=>{ 
-          setGameTick(tt=>tt+1)
-        })
-        setIsStarted(true)
-      }}>Start</button>
-      :
-      <>
-      <div className="Frame" style={{ marginBottom:0, position: "relative" }}>
+      <section className="Frame" style={{ marginBottom:0, position: "relative" }}>
         <SnakeView
           style={gameStyle}
           showDebug={debug}
-          options={{ scrolling: false, ticksPerMove:levelData.ticksPerMove }}
+          options={{ scrolling: false, ticksPerMove:levelData.ticksPerMove, start:levelData.startPoint }}
           direction={direction}
           length={length}
           gameTick={gameTick}
         >
         </SnakeView>
-        {noteData && <>
+        {noteData && isStarted && <>
           <NoteView 
             data={[noteData[0]]}
             stavesExtra={0}
@@ -135,7 +146,7 @@ export default function App() {
               transform: isHorizontal
               ? 'translate(-50%, 0)'
               : 'translate(0, -50%)',
-              ...noteStyle
+              ...noteStyle,
             }}
           />
           <NoteView 
@@ -152,27 +163,72 @@ export default function App() {
             }}
           />
           </>}
-      </div>
-      <div className="Frame" style={inputStyle}>
-        <NoteInput
-          style={{width:'100%', height:'100%'}}
-          keys={7}
-          onNoteOff={(n)=>{
-            onSelectNote(n)
-          }}
-          onNoteOn={(n)=>{
-            Tone.Transport.scheduleOnce((t)=>{
-              instruments.piano.triggerAttackRelease(n,'8n',t)
-            },'@8n')
-          }}
-          allowDragging={false}
-          showDebug={debug}
-        />
-      </div>
-      <div>
+
+          {!isStarted && <>
+            <div style={{
+                position:'absolute',
+                left: 0,
+                top: 0,
+                width:'100%',
+                height: '100%',
+                background: 'rgba(0,0,0,0.6)'
+              }}/>
+            <button 
+              style={{
+                position:'absolute',
+                left: '50%',
+                top:  '50%',
+                transform: 'translate(-50%, -50%)'
+              }}
+              onClick={()=>{
+                prepareSound(levelData,setInstruments,()=>{ 
+                  setGameTick(tt=>tt+1)
+                })
+                setIsStarted(true)
+            }}>
+              Ready
+            </button>
+          </>}
+      </section>
+
+      <section style={{display:'flex'}}>
+        <div className="Frame" style={inputStyle}>
+          <NoteInput
+            style={{width:'100%', height:'100%'}}
+            keys={7}
+            onNoteOff={(n)=>{
+            }}
+            onNoteOn={(n)=>{
+              onSelectNote(n)
+              Tone.Transport.scheduleOnce((t)=>{
+                instruments.piano.triggerAttackRelease(n,'8n',t)
+              },'@8n')
+            }}
+            allowDragging={false}
+            showDebug={debug}
+          />
+        </div>
+        <div className="Frame" style={statusStyle}>
+          <img src={arrowSVG} className={'statusArrow'} style={{
+            transition:'transform 250ms',
+            transform:`rotateZ(${90 * (1+dirToIdx[direction])}deg)`,
+            height:'50%', 
+            margin: '0.5rem',
+          }} />
+          <div style={{
+            width:'4vh',
+            margin: '0.5rem',
+          }}>
+            {[...Array(health)].map((e,i)=>{
+              return <img key={`heart_${i}`} src={heartSVG} className={'statusHeart'} /> 
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section>
         <button onClick={() => setDebug(!debug)}>Debug</button>
-      </div>
-      </>}
+      </section>
     </div>
   );
 }

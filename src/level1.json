@@ -1,4 +1,8 @@
 {
+    "startHealth":5,
+    "startLength":3,
+    "startDirection":"right",
+    "startPoint":[0.5,0.5],
     "guessSelection":[
         "C4","D4","E4","F4","G4","A4","B4","C5"
     ],
@@ -12,7 +16,7 @@
                 ["C1","A1"],
                 ["C1"],
                 ["C1"],
-                ["C1"],
+                ["C1","A1"],
                 ["C1","B1"],
                 ["C1"],
                 ["C1"],

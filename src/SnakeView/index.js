@@ -174,19 +174,26 @@ export default function SnakeView({ style, options, showDebug, direction, length
 
           <Boat sprites={sprites} visuals={{...visuals, chainLength:2, chainType:'chain'}}/> */}
 
-          <Snake
+          {visuals && <Snake
             visuals={{
               u: uu,
               sprites: sprites.snake,
               length,
               direction,
-              spawn: [4, 4],
+              spawn: options.start ? [
+                Math.floor(visuals.grid[0] * options.start[0]), 
+                Math.floor(visuals.grid[1] * options.start[1])
+              ]
+              : [
+                Math.floor(visuals.grid[0]/2), 
+                Math.floor(visuals.grid[1]/2)
+              ],
               respawn: true,
               scrolling: options?.scrolling,
             }}
             range={{left:0, right:0, top:2, bottom:2}}
             tick={{value:gameTick, tickPerMove:options.ticksPerMove}}
-          />
+          />}
 
           {showDebug && (
             <>
