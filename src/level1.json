@@ -6,34 +6,34 @@
     "guessSelectionClef":"treble",
     "music":{
         "bpm":110,
-        "interval":"8n",
-        "beat":[
-            ["C1","A1"],
-            ["C1"],
-            ["C1"],
-            ["C1"],
-            ["C1","B1"],
-            ["C1"],
-            ["C1"],
-            ["C1"]
-        ],
-        "bass":[
-            "C3",
-            "C3",
-            "C3",
-            "G3",
-            "C3",
-            "C3",
-            "C3",
-            "B2"
-        ],
+        "beat":{
+            "interval":"8n",
+            "data":[
+                ["C1","A1"],
+                ["C1"],
+                ["C1"],
+                ["C1"],
+                ["C1","B1"],
+                ["C1"],
+                ["C1"],
+                ["C1"]
+            ]
+        },
+        "bass":{
+            "interval":"4n",
+            "root":36,
+            "data":[1,5,8,5]
+        },
         "samples":{
             "A1":"./sound/kick8bit.wav",
             "B1":"./sound/snare8bit.wav",
             "C1":"./sound/hat8bit2.wav"
+        },
+        "sounds":{
+
         }
     },
-    "gameTickInterval":"4n",
-    "ticksPerMove":"2",
+    "gameTickInterval":"8n",
+    "ticksPerMove":"4",
     "enemies":{}
 }

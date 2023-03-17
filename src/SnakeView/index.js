@@ -27,7 +27,7 @@ import "./style.css";
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-export default function SnakeView({ style, options, showDebug, direction, length, gameTick }) {
+export default function SnakeView({ style, options, showDebug, direction, length, gameTick}) {
   const [parentDiv, parentSize] = useOnResizeComponent();
   const textureLoaded = useRef(false);
   const [sprites, setSprites] = useState(null);
@@ -185,7 +185,7 @@ export default function SnakeView({ style, options, showDebug, direction, length
               scrolling: options?.scrolling,
             }}
             range={{left:0, right:0, top:2, bottom:2}}
-            tick={{value:gameTick, tickPerMove:4}}
+            tick={{value:gameTick, tickPerMove:options.ticksPerMove}}
           />
 
           {showDebug && (

@@ -3,8 +3,10 @@ import NoteInput from "./NoteInput/index.js";
 import NoteView from "./NoteView/index.js";
 import FelixStatus from "./FelixStatus/index.js";
 import SnakeView from "./SnakeView/index.js";
+import { prepareSound, newBassLine } from "./sound";
 import { useCallback, useEffect, useState } from "react";
-import { Synth } from "tone";
+import * as Tone from "tone";
+import levelData from './level1.json'
 
 export default function App() {
   const [debug, setDebug] = useState(false);
@@ -23,22 +25,19 @@ export default function App() {
     height: '10vh',
     border: 'solid orange 0.25rem'
   }
+  
+  const [isStarted, setIsStarted] = useState(false)
+  const [instruments, setInstruments] = useState(null);
+  const [currentBassLine, setCurrentBassLine] = useState(null)
+  
 
-  const [sounder, setSounder] = useState(null);
-  useEffect(() => {
-    const n = new Synth().toDestination();
-    n.oscillator.type = "triangle";
-    n.volume.value = -18
-    setSounder(n);
-  }, []);
-
-  const [gameTick, setGameTick] = useState(0);
+  const [gameTick, setGameTick] = useState(-1);
   const [direction, setDirection] = useState("right");
   const [length, setLength] = useState(3);
 
   useEffect(() => {
     const keyHandle = (ev) => {
-      console.log(ev)
+      // console.log(ev)
       if (ev.key === "w") setDirection("up");
       if (ev.key === "s") setDirection("down");
       if (ev.key === "a") setDirection("left");
@@ -68,10 +67,12 @@ export default function App() {
       else if(nt2 === n && !isHorizontal) setDirection('right')
       setIsHorizontal(h=>!h)
       newGuess()
+      newBassLine(n,instruments.bass,levelData.music.bass,currentBassLine,setCurrentBassLine)
     }
     //? apply chosen direction
     //generate new note set
-  },[noteData])
+  },[noteData, instruments, levelData])
+
   const newGuess = ()=>{
     const [nt1, nt2] = generateNoteData()
     setNoteData([
@@ -100,16 +101,24 @@ export default function App() {
 
   useEffect(()=>{
     newGuess()
-    console.log("new dirs")
   },[])
 
   return (
     <div className="App">
+      {!isStarted ? 
+      <button onClick={()=>{
+        prepareSound(levelData,setInstruments,()=>{ 
+          setGameTick(tt=>tt+1)
+        })
+        setIsStarted(true)
+      }}>Start</button>
+      :
+      <>
       <div className="Frame" style={{ marginBottom:0, position: "relative" }}>
         <SnakeView
           style={gameStyle}
           showDebug={debug}
-          options={{ scrolling: false }}
+          options={{ scrolling: false, ticksPerMove:levelData.ticksPerMove }}
           direction={direction}
           length={length}
           gameTick={gameTick}
@@ -149,16 +158,21 @@ export default function App() {
           style={{width:'100%', height:'100%'}}
           keys={7}
           onNoteOff={(n)=>{
-            sounder.triggerRelease()
             onSelectNote(n)
           }}
           onNoteOn={(n)=>{
-            sounder.triggerAttack(n)
+            Tone.Transport.scheduleOnce((t)=>{
+              instruments.piano.triggerAttackRelease(n,'8n',t)
+            },'@8n')
           }}
+          allowDragging={false}
           showDebug={debug}
         />
       </div>
-      <button onClick={() => setDebug(!debug)}>Debug</button>
+      <div>
+        <button onClick={() => setDebug(!debug)}>Debug</button>
+      </div>
+      </>}
     </div>
   );
 }
