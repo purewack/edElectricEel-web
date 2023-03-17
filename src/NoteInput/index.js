@@ -13,6 +13,7 @@ export default function NoteInput({
   octave = 4,
   onNoteOn = null,
   onNoteOff = null,
+  allowDragging = true,
   showDebug
 }) {
   const [sizeRef, size] = useOnResizeComponent();
@@ -78,6 +79,7 @@ export default function NoteInput({
               size={size}
               whiteKey={true}
               noteSignal={handleNoteSignal}
+              allowDragging={allowDragging}
             />
           );
         })}
@@ -92,6 +94,7 @@ export default function NoteInput({
               size={size}
               whiteKey={false}
               noteSignal={handleNoteSignal}
+              allowDragging={allowDragging}
             />
           ) : null;
         })}
@@ -101,7 +104,7 @@ export default function NoteInput({
   );
 }
 
-function PianoKey({ index, name, whiteKey, disabled, size, noteSignal }) {
+function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragging }) {
   const [active, setActive] = useState(false);
   const [hover, setHover] = useState(false);
 
@@ -166,6 +169,7 @@ function PianoKey({ index, name, whiteKey, disabled, size, noteSignal }) {
         onMouseUp={onNoteOff}
         onMouseEnter={(ev) => {
           setHover(true);
+          if(!allowDragging) return
           if (ev.buttons === 1 && !active) {
             onNoteOn(ev);
           }
