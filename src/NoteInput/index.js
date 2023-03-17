@@ -9,10 +9,10 @@ import anime from "animejs";
 export default function NoteInput({
   style,
   keys = 8,
-  range,
+  range = null,
   octave = 4,
-  onNoteOn,
-  onNoteOff,
+  onNoteOn = null,
+  onNoteOff = null,
   showDebug
 }) {
   const [sizeRef, size] = useOnResizeComponent();

@@ -3,110 +3,162 @@ import NoteInput from "./NoteInput/index.js";
 import NoteView from "./NoteView/index.js";
 import FelixStatus from "./FelixStatus/index.js";
 import SnakeView from "./SnakeView/index.js";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Synth } from "tone";
 
 export default function App() {
-  const style = {
-    width: "80vw",
-    height: "30vh",
+  const [debug, setDebug] = useState(false);
+
+  const gameStyle = {
+    width: "90vw",
+    height: "60vh",
   };
-  const scoreStyle = {
-    borderRadius: "5px",
-    background: 'ivory',
-    color:'black',
-    border: 'black solid 3px',
-    fontSize: "2rem", 
-    padding:'0.1rem',
+  const inputStyle ={
+    width: '90vw',
+    height: '30vh'
+  }
+  const noteStyle = {
+    position: 'absolute',
+    width: '10vh',
+    height: '10vh',
+    border: 'solid orange 0.25rem'
   }
 
-  const [debug, setDebug] = useState(true);
-  const toggleDebug = () => setDebug(!debug);
-
-  const [noise, setNoise] = useState(null);
+  const [sounder, setSounder] = useState(null);
   useEffect(() => {
     const n = new Synth().toDestination();
-    n.oscillator.type = "sine";
-    setNoise(n);
+    n.oscillator.type = "triangle";
+    n.volume.value = -18
+    setSounder(n);
   }, []);
 
-  const [felixState, setFelixState] = useState('idle');
-  const [gameStats, setGameStats] = useState({
-    target:0,
-    correct:0,
-    remain:0,
-  });
-  const [noteData, setNoteData] = useState();
-  //     [
-  //     { clef: "treble", meter: [4, 4], notes: ["G4-4n"] },
-  //     { clef: "alto", key: 4, notes: ["G4-4n"] },
-  //     { clef: "bass", key: 4, notes: ["G4-4n"] }
-  //   ]
-  // );
+  const [gameTick, setGameTick] = useState(0);
+  const [direction, setDirection] = useState("right");
+  const [length, setLength] = useState(3);
 
-  const newGuess = () => {
-    const generate = ()=>{    
-      setFelixState('idle')
-      const n = 2 + Math.floor(Math.random() * 6);
-      setGameStats({remain: n, target:n, correct:0})
-      const arr = [];
-      for (let i = 0; i < n; i++) {
-        const nt = Math.floor(Math.random() * 7);
-        const acc = Math.floor(Math.random() * 2 - 1);
-        const str = String.fromCharCode("A".charCodeAt(0) + nt%7) + "4-8n";
-        arr.push(str);
+  useEffect(() => {
+    const keyHandle = (ev) => {
+      console.log(ev)
+      if (ev.key === "w") setDirection("up");
+      if (ev.key === "s") setDirection("down");
+      if (ev.key === "a") setDirection("left");
+      if (ev.key === "d") setDirection("right");
+      if (ev.key === "g") setLength((l) => l + 1);
+      if (ev.key === "t")
+        setGameTick((t) => {
+          return t + 1;
+        });
+      if(ev.key === 'n') newGuess()
+    };
+    window.addEventListener("keydown", keyHandle);
+    return ()=>{window.removeEventListener("keydown", keyHandle)}
+  }, []);
+
+  const [isHorizontal, setIsHorizontal] = useState(true)
+  const [noteData, setNoteData] = useState()
+  const onSelectNote = useCallback((n)=>{
+    //check chosen directon
+    const nt1 = noteData[0].notes[0].split('-')[0]
+    const nt2 = noteData[1].notes[0].split('-')[0]
+    // console.log([n,nt1,nt2])
+    if(nt1 === n || nt2 === n){
+      if(nt1 === n && isHorizontal) setDirection('up')
+      else if(nt2 === n && isHorizontal) setDirection('down')
+      else if(nt1 === n && !isHorizontal) setDirection('left')
+      else if(nt2 === n && !isHorizontal) setDirection('right')
+      setIsHorizontal(h=>!h)
+      newGuess()
+    }
+    //? apply chosen direction
+    //generate new note set
+  },[noteData])
+  const newGuess = ()=>{
+    const [nt1, nt2] = generateNoteData()
+    setNoteData([
+      {
+        clef:'treble',
+        notes:[nt1+'-4n']
+      }, 
+      {
+        clef:'treble',
+        notes:[nt2+'-4n']
       }
-      console.log(arr)
-      setNoteData([{ clef: "treble", notes: arr }]);
-    }
+    ])
+  }
+  const generateNoteData = ()=>{
+    const r = Math.floor(Math.random()*7)
+    let nr
+    do{
+      nr = Math.floor(Math.random()*7)
+    }while(nr == r)
+    const data = [];
+    const nt1 = String.fromCharCode("A".charCodeAt(0) + r) + "4";
+    const nt2 = String.fromCharCode("A".charCodeAt(0) + nr) + "4";
+    data.push(nt1, nt2);
+    return data
+  }
 
-    if(noteData){
-      setNoteData(null)
-      setTimeout(generate,500)
-    }
-    else{
-      generate()
-    }
-  };
-  const noteOff = (n) => {
-    noise.triggerRelease();
-    if (!gameStats.remain) return;
-
-    const arrLen = noteData[0].notes.length;
-    const nr = gameStats.remain - 1;
-    const ng = arrLen - (nr + 1);
-    const noteToGuess = noteData[0].notes[ng].split("-")[0];
-    const isOk = n === noteToGuess;
-    const cr = isOk ? gameStats.correct+1 : gameStats.correct
-    setGameStats({...gameStats, remain: nr, correct: cr})
-    let guessData = JSON.parse(JSON.stringify(noteData));
-    guessData[0].notes[ng] += isOk ? "-ok" : "-x";
-    setNoteData(guessData);
-    if (!nr) {
-      if(cr === gameStats.target){
-        setFelixState('happy')
-      }
-      else{
-        setFelixState('tired')
-      }
-      setTimeout(() => {
-        setFelixState('idle')
-        setNoteData(null);
-      }, 1500);
-    }
-  };
-
-  const felixBG = felixState === 'idle' ? (noteData ? 'Wheat' : 'ivory') : ( felixState === 'happy' ? 'YellowGreen' : 'Tomato')
-
-  const [gameStatus, setGameStatus] = useState(false)
-  const toggleGame = ()=>{setGameStatus(!gameStatus)}
+  useEffect(()=>{
+    newGuess()
+    console.log("new dirs")
+  },[])
 
   return (
     <div className="App">
-      <button onClick={()=>setDebug(!debug)}>Debug</button>
-      <div className="Frame" style={{position:'relative'}}>
-        <SnakeView isPlaying={gameStatus} showDebug={debug} options={{scrolling:false}}/>
+      <div className="Frame" style={{ marginBottom:0, position: "relative" }}>
+        <SnakeView
+          style={gameStyle}
+          showDebug={debug}
+          options={{ scrolling: false }}
+          direction={direction}
+          length={length}
+          gameTick={gameTick}
+        >
+        </SnakeView>
+        {noteData && <>
+          <NoteView 
+            data={[noteData[0]]}
+            stavesExtra={0}
+            slide={-0.5}
+            style={{
+              left: isHorizontal ? '50%' : 0,
+              top: isHorizontal ? 0 : '50%',
+              transform: isHorizontal
+              ? 'translate(-50%, 0)'
+              : 'translate(0, -50%)',
+              ...noteStyle
+            }}
+          />
+          <NoteView 
+            data={[noteData[1]]}
+            stavesExtra={0}
+            slide={-0.5}
+            style={{
+              right: isHorizontal ? '50%' : 0,
+              bottom: isHorizontal ? 0 : '50%',
+              transform: isHorizontal
+              ? 'translate(50%, 0)'
+              : 'translate(0, 50%)',
+              ...noteStyle
+            }}
+          />
+          </>}
       </div>
+      <div className="Frame" style={inputStyle}>
+        <NoteInput
+          style={{width:'100%', height:'100%'}}
+          keys={7}
+          onNoteOff={(n)=>{
+            sounder.triggerRelease()
+            onSelectNote(n)
+          }}
+          onNoteOn={(n)=>{
+            sounder.triggerAttack(n)
+          }}
+          showDebug={debug}
+        />
+      </div>
+      <button onClick={() => setDebug(!debug)}>Debug</button>
     </div>
   );
 }

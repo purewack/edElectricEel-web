@@ -27,20 +27,13 @@ import "./style.css";
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-export default function SnakeView({ options, showDebug }) {
+export default function SnakeView({ style, options, showDebug, direction, length, gameTick }) {
   const [parentDiv, parentSize] = useOnResizeComponent();
-
   const textureLoaded = useRef(false);
   const [sprites, setSprites] = useState(null);
-
-  const [gameTick, setGameTick] = useState(1);
-  const [direction, setDirection] = useState("right");
-  const [length, setLength] = useState(3);
-
   const [scenery, setScenery] = useState([]);
-
   const [visuals, setVisuals] = useState({ u: 1, uu: 1, preferredHeightU: 1 });
-  const [visualsBusy, setVisualsBusy] = useState(false)
+  
   useEffect(() => {
     // console.log(parentSize);
     const shipAreaU = 2;
@@ -85,20 +78,6 @@ export default function SnakeView({ options, showDebug }) {
     }
   };
   useEffect(() => {
-    const keyHandle = (ev) => {
-      // console.log(ev)
-      if (ev.key === "w") setDirection("up");
-      if (ev.key === "s") setDirection("down");
-      if (ev.key === "a") setDirection("left");
-      if (ev.key === "d") setDirection("right");
-      if (ev.key === "g") setLength((l) => l + 1);
-      if (ev.key === "t")
-        setGameTick((t) => {
-          advanceScenery(false);
-          return t + 1;
-        });
-    };
-    window.addEventListener("keydown", keyHandle);
 
     if (!textureLoaded.current) {
       textureLoaded.current = true;
@@ -117,21 +96,19 @@ export default function SnakeView({ options, showDebug }) {
         }
       );
     }
-
-    return () => {
-      window.removeEventListener("keydown", keyHandle);
-    };
   }, []);
 
+  useEffect(()=>{
+    advanceScenery(false);
+  },[gameTick])
 
 
   return (
     <div
       ref={parentDiv}
-      style={{
+      style={style ? style : {
         width: "90vw",
-        height: "70vh",
-        background: scene_atlas.meta.backgroundColor
+        height: "70vh"
       }}
       className="View SnakeView"
     >
@@ -186,7 +163,7 @@ export default function SnakeView({ options, showDebug }) {
             return null;
           })}
 
-          <Item
+          {/* <Item
             visuals={{
               u: uu,
               x: Math.floor(visuals.grid[0]-1),
@@ -195,7 +172,7 @@ export default function SnakeView({ options, showDebug }) {
             }}
           />
 
-          <Boat sprites={sprites} visuals={{...visuals, chainLength:2, chainType:'chain'}}/>
+          <Boat sprites={sprites} visuals={{...visuals, chainLength:2, chainType:'chain'}}/> */}
 
           <Snake
             visuals={{
@@ -208,7 +185,7 @@ export default function SnakeView({ options, showDebug }) {
               scrolling: options?.scrolling,
             }}
             range={{left:0, right:0, top:2, bottom:2}}
-            tick={{value:gameTick, tickPerMove:2}}
+            tick={{value:gameTick, tickPerMove:4}}
           />
 
           {showDebug && (
@@ -360,7 +337,7 @@ function Snake({ visuals, tick, onAdvance }) {
 
           const tex =
             cornerDir !== null
-              ? i % 2
+              ? altTick
                 ? sprites.sTurnBotRightAlt
                 : sprites.sTurnBotRight
               : idxToSprite(i, len);
