@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Sprite } from "@pixi/react";
 
-export default function Item({ onCollect, visuals }) {
+export default function Item({ where, type='noteblock', visuals }) {
   useEffect(() => {
     console.log("new item spawn");
   }, []);
 
   const uu = visuals.u;
-  const xx = visuals.x * uu;
-  const yy = visuals.y * uu;
+  const xx = where[0] * uu;
+  const yy = where[1] * uu;
   const ss = { x: uu / 8, y: uu / 8 };
-  return <Sprite x={xx} y={yy} scale={ss} texture={visuals.sprite} />;
+  const tex = visuals.sprites.items[type]
+  return tex && <Sprite x={xx} y={yy} scale={ss} texture={tex} />;
 }

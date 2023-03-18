@@ -5,6 +5,9 @@ import {
   useState,
   useCallback,
   useLayoutEffect,
+  Children,
+  isValidElement,
+  cloneElement
 } from "react";
 import {
   Stage,
@@ -27,7 +30,7 @@ import "./style.css";
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-export default function SnakeView({ style, options, showDebug, direction, length, gameTick}) {
+export function SnakeView({ style, options, gameTick, onGrid, children, showDebug}) {
   const [parentDiv, parentSize] = useOnResizeComponent();
   const textureLoaded = useRef(false);
   const [sprites, setSprites] = useState(null);
@@ -47,6 +50,7 @@ export default function SnakeView({ style, options, showDebug, direction, length
     const vv = {u,uu,preferredHeightU:minPlayableHeightU, grid:[gw,gh]}
     console.log(vv)
     setVisuals(vv)
+    onGrid && onGrid([gw,gh])
   }, [parentSize]);
   const u = visuals.u
   const uu = visuals.uu
@@ -89,10 +93,11 @@ export default function SnakeView({ style, options, showDebug, direction, length
 
       Promise.all([snake_SS.parse(), scene_SS.parse(), items_SS.parse(), entity_SS.parse()]).then(
         (s) => {
-          setSprites({ snake: s[0], scene: s[1], items: s[2], entity: s[3]});
+          const _sprites = { snake: s[0], scene: s[1], items: s[2], entity: s[3]}
+          setSprites(_sprites);
           advanceScenery(true);
           console.log("sprites loaded");
-          console.log(s);
+          console.log(_sprites);
         }
       );
     }
@@ -174,7 +179,7 @@ export default function SnakeView({ style, options, showDebug, direction, length
 
           <Boat sprites={sprites} visuals={{...visuals, chainLength:2, chainType:'chain'}}/> */}
 
-          {visuals && <Snake
+          {/* <Snake
             visuals={{
               u: uu,
               sprites: sprites.snake,
@@ -193,13 +198,28 @@ export default function SnakeView({ style, options, showDebug, direction, length
             }}
             range={{left:0, right:0, top:2, bottom:2}}
             tick={{value:gameTick, tickPerMove:options.ticksPerMove}}
-          />}
+          /> */}
+
+          {children && Children.map(children, child => {
+            // Checking isValidElement is the safe way and avoids a
+            // typescript error too.
+            if (isValidElement(child)) {
+              return cloneElement(child, { 
+                visuals:{
+                  u: uu,
+                  sprites: sprites,
+                  scrolling: options?.scrolling,
+                }
+              });
+            }
+            return child;
+          })}
 
           {showDebug && (
             <>
               <DebugGrid u={uu / 2} uw={parentSize.height}  uh={parentSize.width} />
               <Text
-                text={`gameTick:${gameTick} length:${length} direction: ${direction}`}
+                text={`gameTick:${gameTick}`}
                 style={
                   new PIXI.TextStyle({
                     fontFamily: "courier",
@@ -216,22 +236,18 @@ export default function SnakeView({ style, options, showDebug, direction, length
   );
 }
 
-function Snake({ visuals, tick, onAdvance }) {
-  const [len, setLen] = useState(0);
-  const [dir, setDir] = useState("right");
+export function Snake({ where, length, direction, onAdvance, tick, options, visuals}) {
   const [path, setPath] = useState(null);
 
   //spawn
   useEffect(() => {
-    if (!visuals) return;
     if (path) return;
-    if (!visuals?.respawn) return;
-    const spawn = visuals.spawn;
-    const dd = visuals.direction;
+    const spawn = where;
+    const dd = direction;
     const px = dd === "right" ? -1 : dd === "left" ? 1 : 0;
     const py = dd === "up" ? 1 : dd === "down" ? -1 : 0;
     let poss = [];
-    for (let i = 0; i < visuals.length; i++)
+    for (let i = 0; i < length; i++)
       poss.push({
         x: spawn[0] + px * i,
         y: spawn[1] + py * i,
@@ -240,47 +256,44 @@ function Snake({ visuals, tick, onAdvance }) {
     console.log("new spawn");
     console.log(poss);
     setPath(poss);
-    if (onAdvance) onAdvance(poss);
-  }, [visuals.respawn]);
+  }, []);
 
-  //turn
-  useEffect(() => {
-    if (!visuals) return;
-    if(dir === 'left' && visuals.direction === 'right') return;
-    if(dir === 'right' && visuals.direction === 'left') return;
-    if(dir === 'down' && visuals.direction === 'up') return;
-    if(dir === 'up' && visuals.direction === 'down') return;
-    setDir(visuals.direction);
-  }, [visuals.direction]);
+  // //turn
+  // useEffect(() => {
+  //   if(dir === 'left' && direction === 'right') return;
+  //   if(dir === 'right' && direction === 'left') return;
+  //   if(dir === 'down' && direction === 'up') return;
+  //   if(dir === 'up' && direction === 'down') return;
+  //   setDir(direction);
+  // }, [direction]);
 
-  //grow
-  useEffect(() => {
-    if (!visuals) return;
-    setLen(visuals.length);
-    const ll = visuals.length;
-    if (len >= 3) {
-      const tailGrow = { ...path[ll - 2], d: path[ll - 3].d };
-      const nextPath = [...path, tailGrow];
-      setPath(nextPath);
-    }
-  }, [visuals.length]);
+  // //grow
+  // useEffect(() => {
+  //   if (!visuals) return;
+  //   const ll = length;
+  //   if (len >= 3) {
+  //     const tailGrow = { ...path[ll - 2], d: path[ll - 3].d };
+  //     const nextPath = [...path, tailGrow];
+  //     setPath(nextPath);
+  //   }
+  // }, [length]);
 
   //advance @ tick
   useEffect(() => {
     if (!path) return;
-    if(tick.value % tick.tickPerMove) return
+    if(tick.value % tick.speed) return
     //offsets for next move based on direction
-    const pxx = visuals.scrolling ? -(1/tick.tickPerMove) : 0;
-    const px = dir === "right" ? 1 : dir === "left" ? -1 : 0;
-    const py = dir === "down" ? 1 : dir === "up" ? -1 : 0;
+    const pxx = options?.scrolling ? -(1/tick.speed) : 0;
+    const px = direction === "right" ? 1 : direction === "left" ? -1 : 0;
+    const py = direction === "down" ? 1 : direction === "up" ? -1 : 0;
 
     //snake segments from head to just before tail
-    const tailMove = { ...path[len - 2], d: path[len - 3].d };
-    const interMove = path.slice(0, len - 2);
+    const tailMove = { ...path[length - 2], d: path[length - 3].d };
+    const interMove = path.slice(0, length - 2);
     const nextPos = {
       x: path[0].x + px,
       y: path[0].y + py,
-      d: dirToIdx[dir],
+      d: dirToIdx[direction],
     };
     const nn = [nextPos, ...interMove, tailMove];
     const nextMove = nn.map((p) => {
@@ -292,8 +305,8 @@ function Snake({ visuals, tick, onAdvance }) {
     if (onAdvance) onAdvance(nextMove);
   }, [tick.value]);
 
-  const uu = visuals?.u;
-  const sprites = visuals?.sprites;
+  const uu = visuals.u;
+  const sprites = visuals.sprites.snake;
 
   //helpers
   const idxToDir = {
@@ -333,7 +346,7 @@ function Snake({ visuals, tick, onAdvance }) {
         path.map((p, i, a) => {
           const i_p = i - 1 < 0 ? null : i - 1;
           const isCorner =
-            i_p === null ? false : i === len - 1 ? false : p.d !== a[i_p].d;
+            i_p === null ? false : i === length - 1 ? false : p.d !== a[i_p].d;
           const cornerDir = isCorner ? cornerRot(a[i_p].d, p.d) : null;
           const altTick = tick.value % 2;
           //clockwise, starting at 3oclock === 0
@@ -347,7 +360,7 @@ function Snake({ visuals, tick, onAdvance }) {
               ? altTick
                 ? sprites.sTurnBotRightAlt
                 : sprites.sTurnBotRight
-              : idxToSprite(i, len);
+              : idxToSprite(i, length);
 
           return (
             <SnakeSeg

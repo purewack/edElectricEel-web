@@ -1,11 +1,12 @@
 import { Container, Sprite, TilingSprite } from "@pixi/react";
 
-export default function Boat({ sprites, visuals }) {
-  const { grid, uu, u } = visuals;
+export default function Boat({ where, visuals }) {
+  const { uu, u } = visuals;
+  const sprites = visuals.sprites
   const sc = { x: u, y: u };
 
   return (
-    <Container x={Math.floor(grid[0] - 3) * uu} y={uu}>
+    <Container x={Math.floor(where[0]) * uu} y={where[1] * uu}>
       <Sprite texture={sprites.entity.soundboat} scale={sc} />
       <Sprite
         texture={

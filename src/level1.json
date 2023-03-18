@@ -1,6 +1,6 @@
 {
     "startHealth":5,
-    "startLength":3,
+    "startLength":5,
     "startDirection":"right",
     "startPoint":[0.5,0.5],
     "guessSelection":[

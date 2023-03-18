@@ -2,13 +2,14 @@ import "./App.css";
 import NoteInput from "./NoteInput/index.js";
 import NoteView from "./NoteView/index.js";
 import FelixStatus from "./FelixStatus/index.js";
-import SnakeView from "./SnakeView/index.js";
+import {Snake, SnakeView} from "./SnakeView/index.js";
 import { prepareSound, newBassLine } from "./sound";
 import { useCallback, useEffect, useState } from "react";
 import * as Tone from "tone";
 import levelData from './level1.json'
 import arrowSVG from './img/icons/arrow.svg'
 import heartSVG from './img/icons/heart.svg'
+import Item from "./SnakeView/Item";
 
 export default function App() {
   const [debug, setDebug] = useState(false);
@@ -123,18 +124,42 @@ export default function App() {
     up: 3,
   };
 
+  const [item, setItem] = useState([6,4])
+  const [grid, setGrid] = useState([1,1])
+  const newItem = (g)=>{
+    setItem([
+      Math.floor(Math.random()*g[0]),
+      Math.floor(Math.random()*g[1])
+    ]) 
+  }
+  const newGrid = (g)=>{
+    setGrid(g) 
+    newItem(g)
+  }
+  const onSnakeMove = (pos)=>{
+    const head = pos[0]
+    if(head.x === item[0] && head.y === item[1]){
+      newItem(grid)
+      setLength(l=>l+1)
+    }
+  }
+
   return (
     <div className="App">
       <section className="Frame" style={{ marginBottom:0, position: "relative" }}>
         <SnakeView
           style={gameStyle}
           showDebug={debug}
-          options={{ scrolling: false, ticksPerMove:levelData.ticksPerMove, start:levelData.startPoint }}
+          options={{ scrolling: false }}
           direction={direction}
           length={length}
           gameTick={gameTick}
+          onGrid={newGrid}
         >
+          <Snake where={[5,5]} length={length} direction={direction} tick={{value:gameTick, speed:levelData.ticksPerMove}} onAdvance={onSnakeMove}/>
+          <Item where={item} type='pizza'/>
         </SnakeView>
+
         {noteData && isStarted && <>
           <NoteView 
             data={[noteData[0]]}
