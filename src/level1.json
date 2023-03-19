@@ -2,7 +2,10 @@
     "startHealth":5,
     "startLength":5,
     "startDirection":"right",
-    "startPoint":[0.5,0.5],
+    "startPoint":[10,7],
+    "levelSize":[20,12],
+    "gameTickInterval":"8n",
+    "ticksPerMove":"4",
     "guessSelection":[
         "C4","D4","E4","F4","G4","A4","B4","C5"
     ],
@@ -37,7 +40,5 @@
 
         }
     },
-    "gameTickInterval":"8n",
-    "ticksPerMove":"4",
     "enemies":{}
 }

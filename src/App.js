@@ -42,7 +42,7 @@ export default function App() {
   const [isStarted, setIsStarted] = useState(false)
   const [isReady, setIsReady] = useState(false)
   const [instruments, setInstruments] = useState(null);
-  const [currentBassLine, setCurrentBassLine] = useState(null)
+  const [soundSeq, setSoundSeq] = useState(null)
   
   const [health, setHelath] = useState(levelData.startHealth);
   const [direction, setDirection] = useState(levelData.startDirection);
@@ -81,7 +81,7 @@ export default function App() {
       else if(nt2 === n && !isHorizontal) setDirection('right')
       setIsHorizontal(h=>!h)
       newGuess()
-      newBassLine(n,instruments.bass,levelData.music.bass,currentBassLine,setCurrentBassLine)
+      newBassLine(n,instruments.bass,levelData.music.bass,soundSeq,setSoundSeq)
     }
     //? apply chosen direction
     //generate new note set
@@ -114,8 +114,8 @@ export default function App() {
   }
 
   useEffect(()=>{
-    newGuess()
-  },[])
+    if(!isReady) newGuess()
+  },[isReady])
 
   const dirToIdx = {
     right: 0,
@@ -125,23 +125,21 @@ export default function App() {
   };
 
   const [item, setItem] = useState([6,4])
-  const [grid, setGrid] = useState([1,1])
   const newItem = (g)=>{
     setItem([
       Math.floor(Math.random()*g[0]),
       Math.floor(Math.random()*g[1])
     ]) 
   }
-  const newGrid = (g)=>{
-    setGrid(g) 
-    newItem(g)
-  }
   const onSnakeMove = (pos)=>{
     const head = pos[0]
     if(head.x === item[0] && head.y === item[1]){
-      newItem(grid)
+      newItem(levelData.levelSize)
       setLength(l=>l+1)
     }
+    // else if(head.x < 0 || head.y < 0 || head.x > levelData.levelSize[0] || head.levelData.levelSize[1]){
+    //   setIsReady(false);
+    // }
   }
 
   return (
@@ -150,11 +148,15 @@ export default function App() {
         <SnakeView
           style={gameStyle}
           showDebug={debug}
-          options={{ scrolling: false }}
           direction={direction}
           length={length}
           gameTick={gameTick}
-          onGrid={newGrid}
+          options={{ 
+            scrolling: levelData?.scrolling, 
+            levelSize: levelData.levelSize, 
+            levelMarginTop: levelData?.levelMarginTop, 
+            levelMarginBot: levelData?.levelMarginBot, 
+          }}
         >
           <Snake where={[5,5]} length={length} direction={direction} tick={{value:gameTick, speed:levelData.ticksPerMove}} onAdvance={onSnakeMove}/>
           <Item where={item} type='pizza'/>
@@ -206,7 +208,7 @@ export default function App() {
                 transform: 'translate(-50%, -50%)'
               }}
               onClick={()=>{
-                prepareSound(levelData,setInstruments,()=>{ 
+                prepareSound(levelData,setInstruments,setSoundSeq,()=>{ 
                   setGameTick(tt=>tt+1)
                 })
                 setIsStarted(true)

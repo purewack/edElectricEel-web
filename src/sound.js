@@ -1,9 +1,9 @@
 import * as Tone from "tone";
-import splKick from './sound/kick8bit.wav'
-import splSnare from './sound/snare8bit.wav'
-import splHat from './sound/hat8bit2.wav'
+import splKick from './sound/kick_soft.wav'
+import splSnare from './sound/snare_noise.wav'
+import splHat from './sound/hat8bit1.wav'
 
-export function prepareSound (levelData,setInstruments,onGametick){
+export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGametick){
     Tone.start()
     Tone.Transport.bpm.value = levelData.music.bpm
     Tone.Transport.start(0.2)
@@ -39,16 +39,16 @@ export function prepareSound (levelData,setInstruments,onGametick){
         spl.triggerAttackRelease(n,'8n',t)
     },levelData.music.beat.data)
     pat.interval = levelData.music.beat.interval
-    Tone.Transport.scheduleRepeat((t)=>{
+    const tickId = Tone.Transport.scheduleRepeat((t)=>{
         Tone.Draw.schedule(()=>{
             onGametick()
         })
     }, levelData.gameTickInterval, when)
     pat.start(when)
-    
+    setCurrentPatterns({tick: tickId, beat:pat})
 }
 
-export function newBassLine (root, instrument, bassData, currentBassLine, setCurrentBassLine){
+export function newBassLine (root, instrument, bassData, currentPatterns, setCurrentPatterns){
     const n = root[0]
     const nToInterval = {
       'C': 1,
@@ -65,7 +65,7 @@ export function newBassLine (root, instrument, bassData, currentBassLine, setCur
     const newRoot = midiRoot + nn -1
     console.log(newRoot)
 
-    if(currentBassLine) currentBassLine.dispose()
+    if(currentPatterns.bass) currentPatterns.bass.dispose()
     const p = new Tone.Pattern((t,n)=>{
         instrument.triggerAttackRelease(
             Tone.Midi(newRoot + n - 1).toFrequency(),
@@ -74,5 +74,9 @@ export function newBassLine (root, instrument, bassData, currentBassLine, setCur
         )
     }, bassData.data).start('@1m')
     p.interval = bassData.interval
-    setCurrentBassLine(p)
+    setCurrentPatterns({...currentPatterns, bass:p})
   }
+
+export function endSound(){
+
+}

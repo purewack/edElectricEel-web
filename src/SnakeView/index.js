@@ -4,7 +4,6 @@ import {
   useRef,
   useState,
   useCallback,
-  useLayoutEffect,
   Children,
   isValidElement,
   cloneElement
@@ -30,36 +29,60 @@ import "./style.css";
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-export function SnakeView({ style, options, gameTick, onGrid, children, showDebug}) {
+export function SnakeView({ style, options, gameTick, children, showDebug}) {
   const [parentDiv, parentSize] = useOnResizeComponent();
   const textureLoaded = useRef(false);
   const [sprites, setSprites] = useState(null);
   const [scenery, setScenery] = useState([]);
-  const [visuals, setVisuals] = useState({ u: 1, uu: 1, preferredHeightU: 1 });
+  const [visuals, setVisuals] = useState({ u: 1, uu: 1});
   
   useEffect(() => {
     // console.log(parentSize);
-    const shipAreaU = 2;
-    const minPlayableHeightU = 14; //playable area height
-    const ww = parentSize.width/128
-    const hh = parentSize.height/(minPlayableHeightU+shipAreaU)/8
-    const u = Math.min(ww,hh);
-    const uu = u * 8;
-    const gw = parentSize.width / uu;
-    const gh = parentSize.height / uu;
-    const vv = {u,uu,preferredHeightU:minPlayableHeightU, grid:[gw,gh]}
-    console.log(vv)
-    setVisuals(vv)
-    onGrid && onGrid([gw,gh])
-  }, [parentSize]);
+    const [lwwU, lhhU] = options.levelSize || [14,10]
+    const shipAreaU = options.levelMarginTop || 2;
+    const floorAreaU = options.levelMarginBot || 1;
+    const totalFieldWidthU = lwwU
+    const totalFieldHeightU = lhhU + shipAreaU + floorAreaU
+
+    const tileSize = 8;
+    const tilesHeights = tileSize * totalFieldHeightU
+    const tilesWidths = tileSize * totalFieldWidthU
+    const uHeight = parentSize.height / tilesHeights
+    const uWidth = parentSize.width / tilesWidths
+
+    const u = Math.min(uWidth,uHeight);
+    const uu = u * tileSize;
+    const tilesHeightsPXU = lhhU * uu
+    const tilesWidthsPXU = lwwU * uu
+
+    const left = 0.5*(parentSize.width - tilesWidthsPXU)
+    const top = floorAreaU * uu + 0.5*(parentSize.height - tilesHeightsPXU)
+
+    const vis = {
+      u,
+      uu,
+      pxMarginTop: top,
+      pxMarginLeft: left,
+      pxMarginRight: left + tilesWidthsPXU,
+      pxMarginBot: top + tilesHeightsPXU,
+      pxArea: [tilesWidthsPXU,tilesHeightsPXU], 
+      uArea:[lwwU,lhhU], 
+    }
+    setVisuals(vis)
+    // console.log(vis)
+  }, [parentSize, options.levelSize]);
+
   const u = visuals.u
   const uu = visuals.uu
-  const preferredHeightU = visuals.preferredHeightU
+  const top = visuals.pxMarginTop
+  const bot = visuals.pxMarginBot
+  const left = visuals.pxMarginLeft
+  const right = visuals.pxMarginRight
 
   const advanceScenery = (spawn) => {
     if (spawn) {
       let arr = [];
-      for (let i = 0; i < 24; i++) {
+      for (let i = 0; i < options.levelSize[0]; i++) {
         const r = Math.random();
         if (r < 0.6 || i % 3) continue;
         arr.push({
@@ -75,7 +98,11 @@ export function SnakeView({ style, options, gameTick, onGrid, children, showDebu
     } else if(options?.scrolling) {
       setScenery((ss) =>
         ss.map((e, i, a) => {
-          if (e.x < 0) return { ...e, x: Math.floor(visuals.grid[0]), n: Math.floor(Math.random() * 6) };
+          if (e.x < 0) return { 
+            ...e, 
+            x: Math.floor(options.levelSize[0]), 
+            n: Math.floor(Math.random() * 6) 
+          };
           return { ...e, x: e.x - e.speed };
         })
       );
@@ -130,7 +157,7 @@ export function SnakeView({ style, options, gameTick, onGrid, children, showDebu
             scale={{ x: u, y: u }}
             height={8}
             width={parentSize.width + uu}
-            y={uu * 2}
+            y={top - uu}
             x={gameTick % 2 ? -uu : 0}
           />
           <TilingSprite
@@ -138,16 +165,33 @@ export function SnakeView({ style, options, gameTick, onGrid, children, showDebu
             scale={{ x: u * 2, y: u * 2 }}
             height={parentSize.height}
             width={parentSize.width + uu}
-            y={preferredHeightU * uu}
+            y={bot}
             x={options?.scrolling && gameTick % 2 ? -uu/2 : 0}
           />
+          <TilingSprite
+            texture={sprites.scene.gravel}
+            scale={{ x: -u, y: u }}
+            width={left/u}
+            height={parentSize.height}
+            y={0}
+            x={left}
+          />
+          <TilingSprite
+            texture={sprites.scene.gravel}
+            scale={{ x: u, y: u }}
+            width={left/u}
+            height={parentSize.height}
+            y={0}
+            x={right}
+          />
+          
           {scenery.map((e, i, a) => {
             if (e.type === "seaweed") {
               return (
                 <Container
                   key={`snr_${i}`}
-                  y={preferredHeightU * uu}
-                  x={e.x * uu}
+                  y={bot}
+                  x={left + e.x * uu}
                 >
                   {[...Array(e.n)].map((ee, ii, aa) => {
                     const ss = {y:u, x: Math.random() > 0.7 ? -u : u}
@@ -200,26 +244,53 @@ export function SnakeView({ style, options, gameTick, onGrid, children, showDebu
             tick={{value:gameTick, tickPerMove:options.ticksPerMove}}
           /> */}
 
-          {children && Children.map(children, child => {
-            // Checking isValidElement is the safe way and avoids a
-            // typescript error too.
-            if (isValidElement(child)) {
-              return cloneElement(child, { 
-                visuals:{
-                  u: uu,
-                  sprites: sprites,
-                  scrolling: options?.scrolling,
-                }
-              });
-            }
-            return child;
-          })}
+          <Container 
+            x={left}
+            y={top}
+          >
+            {children && Children.map(children, child => {
+              // Checking isValidElement is the safe way and avoids a
+              // typescript error too.
+              if (isValidElement(child)) {
+                return cloneElement(child, { 
+                  visuals:{
+                    u: uu,
+                    sprites: sprites,
+                    scrolling: options?.scrolling,
+                  }
+                });
+              }
+              return child;
+            })}
+          </Container>
 
           {showDebug && (
             <>
-              <DebugGrid u={uu / 2} uw={parentSize.height}  uh={parentSize.width} />
+              {options.levelSize && <Graphics draw={(g)=>{
+                g.clear()
+                g.lineStyle(2,0xff0000,1)
+                g.drawRect(
+                  left,
+                  top,
+                  visuals.pxArea[0],
+                  visuals.pxArea[1]
+                )
+              }} />}
+  
+              <DebugGrid 
+                u={uu / 2} 
+                ux={left}
+                uy={top}
+                uw={visuals.uArea[0]*2}  
+                uh={visuals.uArea[1]*2} 
+              />
               <Text
-                text={`gameTick:${gameTick}`}
+                text={`
+                gameTick:${gameTick} 
+                left:${visuals.pxMarginLeft} 
+                top:${visuals.pxMarginTop} 
+                areaPx:${JSON.stringify(visuals.pxArea)} 
+                `}
                 style={
                   new PIXI.TextStyle({
                     fontFamily: "courier",
@@ -407,14 +478,14 @@ function DebugGrid({ u, ux = 0, uy = 0, uw = 32, uh = 32 }) {
       //horiz
       for (let yy = 0; yy < uw; yy++) {
         g.lineStyle(1, yy % 2 ? 0xffff00 : 0xaa0000, 0.3);
-        g.moveTo(ux, yy * u);
-        g.lineTo(uw * u, yy * u);
+        g.moveTo(ux, uy + yy * u);
+        g.lineTo(ux + uw * u, uy + yy * u);
       }
       //vert
       for (let xx = 0; xx < uw; xx++) {
         g.lineStyle(1, xx % 2 ? 0xffff00 : 0xaa0000, 0.3);
-        g.moveTo(xx * u, uy);
-        g.lineTo(xx * u, uh * u);
+        g.moveTo(ux + xx * u, uy);
+        g.lineTo(ux + xx * u, uy + uh * u);
       }
     },
     [u, ux, uy, uw, uh]
