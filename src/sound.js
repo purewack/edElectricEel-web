@@ -77,6 +77,9 @@ export function newBassLine (root, instrument, bassData, currentPatterns, setCur
     setCurrentPatterns({...currentPatterns, bass:p})
   }
 
-export function endSound(){
-
+export function endSound(currentPatterns,setCurrentPatterns){
+    currentPatterns.bass && currentPatterns.bass.dispose()
+    currentPatterns.beat && currentPatterns.beat.dispose()
+    Tone.Transport.cancel()
+    setCurrentPatterns(null)
 }
