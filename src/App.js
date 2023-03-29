@@ -44,7 +44,7 @@ export default function App() {
   const [instruments, setInstruments] = useState(null);
   const [soundSeq, setSoundSeq] = useState(null)
   
-  const [health, setHelath] = useState(levelData.startHealth);
+  const [health, setHealth] = useState(levelData.startHealth);
   const [direction, setDirection] = useState(levelData.startDirection);
   const [length, setLength] = useState(levelData.startLength);
   const [gameTick, setGameTick] = useState(-1);
@@ -69,6 +69,7 @@ export default function App() {
 
   const [isHorizontal, setIsHorizontal] = useState(true)
   const [noteData, setNoteData] = useState()
+  const [currentNote, setCurrentNote] = useState(null)
   const onSelectNote = useCallback((n)=>{
     //check chosen directon
     const nt1 = noteData[0].notes[0].split('-')[0]
@@ -80,15 +81,16 @@ export default function App() {
       else if(nt1 === n && !isHorizontal) setDirection('left')
       else if(nt2 === n && !isHorizontal) setDirection('right')
       setIsHorizontal(h=>!h)
-      newGuess()
+      newGuess(n)
+      setCurrentNote(n)
       newBassLine(n,instruments.bass,levelData.music.bass,soundSeq,setSoundSeq)
     }
     //? apply chosen direction
     //generate new note set
   },[noteData, instruments, levelData])
 
-  const newGuess = ()=>{
-    const [nt1, nt2] = generateNoteData()
+  const newGuess = (n)=>{
+    const [nt1, nt2] = generateNoteData(n)
     setNoteData([
       {
         clef:'treble',
@@ -97,15 +99,20 @@ export default function App() {
       {
         clef:'treble',
         notes:[nt2+'-4n']
-      }
+      },
+      null,
     ])
   }
-  const generateNoteData = ()=>{
-    const r = Math.floor(Math.random()*7)
-    let nr
+  const generateNoteData = (c)=>{
+    let r;
+    do{
+      r = Math.floor(Math.random()*7)
+    }while(r === c)
+
+    let nr;
     do{
       nr = Math.floor(Math.random()*7)
-    }while(nr === r)
+    }while(nr === r || nr === c)
     const data = [];
     const nt1 = String.fromCharCode("A".charCodeAt(0) + r) + "4";
     const nt2 = String.fromCharCode("A".charCodeAt(0) + nr) + "4";
