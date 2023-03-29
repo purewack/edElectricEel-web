@@ -27,17 +27,26 @@
             ]
         },
         "bass":{
+            "grain": 4,
             "interval":"4n",
             "root":36,
-            "data":[1,5,8,5]
+            "data":[
+                1,5,8,5,
+                -4,1,8,13,
+                1,5,8,5,
+                1,-4,1,8
+            ]
         },
         "samples":{
-            "A1":"./sound/kick8bit.wav",
-            "B1":"./sound/snare8bit.wav",
-            "C1":"./sound/hat8bit2.wav"
+            "A1":"sound/kick_soft.wav",
+            "B1":"sound/snare_noise.wav",
+            "C1":"sound/hat_soft.wav",
+            "A2":"sound/ok.wav",
+            "B2":"sound/movement3.wav"
         },
         "sounds":{
-
+            "move": ["B2","4n"],
+            "item": ["A2","2n"]
         }
     },
     "enemies":{}

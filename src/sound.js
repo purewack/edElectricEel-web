@@ -1,7 +1,4 @@
 import * as Tone from "tone";
-import splKick from './sound/kick_soft.wav'
-import splSnare from './sound/snare_noise.wav'
-import splHat from './sound/hat8bit1.wav'
 
 export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGametick){
     Tone.start()
@@ -16,11 +13,7 @@ export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGame
     bass.volume.value = -24
 
     const spl = new Tone.Sampler({
-        urls: {
-        A1: splKick,
-        B1: splSnare,
-        C1: splHat,
-        },
+        urls: levelData.music.samples,
         onload: () => {
         console.log('samples loaded')
         }
@@ -41,29 +34,32 @@ export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGame
         })
     }, levelData.gameTickInterval, when)
 
-    const pat = new Tone.Pattern((t,n)=>{
+    const beatLine = new Tone.Pattern((t,n)=>{
         spl.triggerAttackRelease(n,'8n',t)
     },levelData.music.beat.data).start(when)
-    pat.interval = levelData.music.beat.interval
+    beatLine.interval = levelData.music.beat.interval
 
-    const patBass = new Tone.Pattern((t,n)=>{
+    const bassLine = new Tone.Pattern((t,n)=>{
         bass.triggerAttackRelease(
             Tone.Midi(n).toFrequency(),
             Tone.Time(levelData.music.bass.interval).toSeconds()/2,
             t
         )
     })
-    patBass.interval = levelData.music.bass.interval
-    patBass.pattern = 'up'
+    bassLine.interval = levelData.music.bass.interval
 
-    setCurrentPatterns({tick: tickId, beat:pat, bass:patBass})
+    setCurrentPatterns({tick: tickId, beat:beatLine, bass:bassLine})
 
     Tone.Transport.start(0.2)
     Tone.Transport.position = '0:0:0'
     console.log(when)
     console.log(Tone.Transport.position)
     console.log(Tone.Transport.state)
-    console.log(pat)
+    console.log(beatLine)
+}
+
+export function playSound(sampler, sound){
+    sampler.triggerAttackRelease(sound[0], sound[1]);
 }
 
 export function newBassLine (root, instrument, bassData, currentPatterns, setCurrentPatterns){
@@ -83,10 +79,9 @@ export function newBassLine (root, instrument, bassData, currentPatterns, setCur
     const newRoot = midiRoot + nn -1
     const newPattern = bassData.data.map(p=>newRoot + p - 1)
 
-    const when = QuanTime(Tone.Transport.position,4,4)
+    const when = QuanTime(Tone.Transport.position,bassData.grain,4)
     console.log(Tone.Transport.position, when)
     Tone.Transport.scheduleOnce((tt)=>{
-        console.log(tt)
         currentPatterns.bass.values = newPattern
     }, Tone.Time(when).toSeconds() - 0.05)
     if(currentPatterns.bass.state === 'stopped') currentPatterns.bass.start(when)

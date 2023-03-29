@@ -3,7 +3,7 @@ import NoteInput from "./NoteInput/index.js";
 import NoteView from "./NoteView/index.js";
 import FelixStatus from "./FelixStatus/index.js";
 import {Snake, SnakeView} from "./SnakeView/index.js";
-import { prepareSound, newBassLine, endSound } from "./sound";
+import { prepareSound, newBassLine, endSound, playSound } from "./sound";
 import { useCallback, useEffect, useState } from "react";
 import * as Tone from "tone";
 import levelData from './level1.json'
@@ -134,12 +134,16 @@ export default function App() {
   const onSnakeMove = (pos)=>{
     const head = pos[0]
     if(head.x === item[0] && head.y === item[1]){
+      playSound(instruments.sampler, levelData.music.sounds["item"])
       newItem(levelData.levelSize)
       setLength(l=>l+1)
     }
     else if(head.x < 0 || head.y < 0 || head.x >= levelData.levelSize[0] || head.y >= levelData.levelSize[1]){
       setIsStarted(false);
       endSound(soundSeq,setSoundSeq)
+    }
+    else{
+      playSound(instruments.sampler, levelData.music.sounds["move"])
     }
 
   }
