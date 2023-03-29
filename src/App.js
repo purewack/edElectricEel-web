@@ -137,10 +137,11 @@ export default function App() {
       newItem(levelData.levelSize)
       setLength(l=>l+1)
     }
-    else if(head.x === 0 || head.y === 0 || head.x >= levelData.levelSize[0] || head.y >= levelData.levelSize[1]){
+    else if(head.x < 0 || head.y < 0 || head.x >= levelData.levelSize[0] || head.y >= levelData.levelSize[1]){
       setIsStarted(false);
       endSound(soundSeq,setSoundSeq)
     }
+
   }
 
   return (
@@ -228,9 +229,7 @@ export default function App() {
             }}
             onNoteOn={(n)=>{
               onSelectNote(n)
-              Tone.Transport.scheduleOnce((t)=>{
-                instruments.piano.triggerAttackRelease(n,'8n',t)
-              },'@8n')
+              instruments.piano.triggerAttackRelease(n,'8n','@8n')
             }}
             allowDragging={false}
             showDebug={debug}
