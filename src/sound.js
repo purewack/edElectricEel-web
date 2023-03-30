@@ -12,17 +12,17 @@ export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGame
     bass.oscillator.type = "pwm";
     bass.volume.value = -24
 
-    const spl = new Tone.Sampler({
+    const sampler = new Tone.Sampler({
         urls: levelData.music.samples,
         onload: () => {
         console.log('samples loaded')
         }
     }).toDestination();
-    spl.volume.value = -20
+    sampler.volume.value = -20
 
     setInstruments({
         piano, 
-        sampler:spl, 
+        sampler, 
         bass
     })
 
@@ -34,8 +34,13 @@ export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGame
         })
     }, levelData.gameTickInterval, when)
 
+    const moveInterval = parseInt(levelData.gameTickInterval) / levelData.ticksPerMove + 'n'
+    const moveId = Tone.Transport.scheduleRepeat((t)=>{
+        playSound(sampler, levelData.music.sounds.move)
+    }, moveInterval, when)
+
     const beatLine = new Tone.Pattern((t,n)=>{
-        spl.triggerAttackRelease(n,'8n',t)
+        sampler.triggerAttackRelease(n,'8n',t)
     },levelData.music.beat.data).start(when)
     beatLine.interval = levelData.music.beat.interval
 
@@ -48,7 +53,7 @@ export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGame
     })
     bassLine.interval = levelData.music.bass.interval
 
-    setCurrentPatterns({tick: tickId, beat:beatLine, bass:bassLine})
+    setCurrentPatterns({tick: tickId, snake:moveId, beat:beatLine, bass:bassLine})
 
     Tone.Transport.start(0.2)
     Tone.Transport.position = '0:0:0'
@@ -90,6 +95,7 @@ export function newBassLine (root, instrument, bassData, currentPatterns, setCur
 export function endSound(currentPatterns,setCurrentPatterns){
     currentPatterns.bass && currentPatterns.bass.dispose()
     currentPatterns.beat && currentPatterns.beat.dispose()
+    Tone.Transport.clear()
     Tone.Transport.cancel()
     setCurrentPatterns(null)
 }

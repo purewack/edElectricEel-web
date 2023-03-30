@@ -149,10 +149,6 @@ export default function App() {
       setIsStarted(false);
       endSound(soundSeq,setSoundSeq)
     }
-    else{
-      playSound(instruments.sampler, levelData.music.sounds["move"])
-    }
-
   }
 
   return (

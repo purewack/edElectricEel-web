@@ -3,7 +3,7 @@
     "startLength":5,
     "startDirection":"right",
     "startPoint":[10,7],
-    "levelSize":[20,12],
+    "levelSize":[20,15],
     "gameTickInterval":"8n",
     "ticksPerMove":"4",
     "guessSelection":[
@@ -31,8 +31,8 @@
             "interval":"4n",
             "root":36,
             "data":[
-                1,5,8,5,
-                -4,1,8,13,
+                1,5,8,0,
+                1,5,8,13,
                 1,5,8,5,
                 1,-4,1,8
             ]
