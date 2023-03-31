@@ -1,14 +1,18 @@
 import "./App.css";
+import arrowSVG from './img/icons/arrow.svg'
+import heartSVG from './img/icons/heart.svg'
+
+import * as Tone from "tone";
+import { useCallback, useEffect, useState } from "react";
+
+import { prepareSound, newBassLine, endSound, playSound } from "./sound";
+import { newGuess } from "./NoteGuess";
+import levelData from './level1.json'
+
 import NoteInput from "./NoteInput/index.js";
 import NoteView from "./NoteView/index.js";
 import FelixStatus from "./FelixStatus/index.js";
 import {Snake, SnakeView} from "./SnakeView/index.js";
-import { prepareSound, newBassLine, endSound, playSound } from "./sound";
-import { useCallback, useEffect, useState } from "react";
-import * as Tone from "tone";
-import levelData from './level1.json'
-import arrowSVG from './img/icons/arrow.svg'
-import heartSVG from './img/icons/heart.svg'
 import Item from "./SnakeView/Item";
 
 export default function App() {
@@ -40,18 +44,32 @@ export default function App() {
   }
   
   const [isStarted, setIsStarted] = useState(false)
-  const [isReady, setIsReady] = useState(false)
   const [instruments, setInstruments] = useState(null);
   const [soundSeq, setSoundSeq] = useState(null)
   
-  const [health, setHealth] = useState(levelData.startHealth);
-  const [direction, setDirection] = useState(levelData.startDirection);
-  const [length, setLength] = useState(levelData.startLength);
+  const [health, setHealth] = useState();
+  const [direction, setDirection] = useState();
+  const [length, setLength] = useState();
   const [gameTick, setGameTick] = useState(-1);
+  const [isHorizontal, setIsHorizontal] = useState()
 
+  useEffect(()=>{
+    if(isStarted) return;
+    //new game
+    setNoteData(newGuess(0))
+    setHealth(levelData.startHealth);
+    setDirection(levelData.startDirection);
+    setLength(levelData.startLength);
+    setIsHorizontal(levelData.startDirection === 'left' || levelData.startDirection === 'right')
+    setGameTick(-1);
+    console.log("new game")
+
+  },[isStarted])
+
+
+  //computer keyboard input
   useEffect(() => {
     const keyHandle = (ev) => {
-      // console.log(ev)
       if (ev.key === "w") setDirection("up");
       if (ev.key === "s") setDirection("down");
       if (ev.key === "a") setDirection("left");
@@ -61,13 +79,14 @@ export default function App() {
         setGameTick((t) => {
           return t + 1;
         });
-      if(ev.key === 'n') newGuess()
+      if(ev.key === 'n') 
+        setNoteData(newGuess(0))
     };
     window.addEventListener("keydown", keyHandle);
     return ()=>{window.removeEventListener("keydown", keyHandle)}
   }, []);
 
-  const [isHorizontal, setIsHorizontal] = useState(true)
+
   const [noteData, setNoteData] = useState()
   const [currentNote, setCurrentNote] = useState(null)
   const onSelectNote = useCallback((n)=>{
@@ -81,48 +100,12 @@ export default function App() {
       else if(nt1 === n && !isHorizontal) setDirection('left')
       else if(nt2 === n && !isHorizontal) setDirection('right')
       setIsHorizontal(h=>!h)
-      newGuess(n)
+      setNoteData(newGuess(n))
       setCurrentNote(n)
       newBassLine(n,instruments.bass,levelData.music.bass,soundSeq,setSoundSeq)
     }
-    //? apply chosen direction
-    //generate new note set
   },[noteData, instruments, levelData])
 
-  const newGuess = (n)=>{
-    const [nt1, nt2] = generateNoteData(n)
-    setNoteData([
-      {
-        clef:'treble',
-        notes:[nt1+'-4n']
-      }, 
-      {
-        clef:'treble',
-        notes:[nt2+'-4n']
-      },
-      null,
-    ])
-  }
-  const generateNoteData = (c)=>{
-    let r;
-    do{
-      r = Math.floor(Math.random()*7)
-    }while(r === c)
-
-    let nr;
-    do{
-      nr = Math.floor(Math.random()*7)
-    }while(nr === r || nr === c)
-    const data = [];
-    const nt1 = String.fromCharCode("A".charCodeAt(0) + r) + "4";
-    const nt2 = String.fromCharCode("A".charCodeAt(0) + nr) + "4";
-    data.push(nt1, nt2);
-    return data
-  }
-
-  useEffect(()=>{
-    if(!isReady) newGuess()
-  },[isReady])
 
   const dirToIdx = {
     right: 0,
@@ -151,6 +134,59 @@ export default function App() {
     }
   }
 
+  const [pianoStats,setPianoStats] = useState(null)
+  useEffect(()=>{
+    if(pianoStats) return
+
+    const notes = levelData.guessData.notes
+
+    //find required midi range
+    let range;
+    let whiteKeys = 0;
+    if(levelData.guessData.type === 'selection'){
+      let low = notes[0];
+      let high = notes[0];
+      notes.forEach((n)=>{
+        const note = Tone.Frequency(n).toMidi()
+        if(note < low) low = note
+        else if(note > high) high = note
+
+        if(!n.includes('#')) whiteKeys+=1;
+      })
+      range = [low, high]
+    }
+    else{
+      const lowMidi = Tone.Frequency(notes[0]).toMidi();
+      const highMidi = Tone.Frequency(notes[1]).toMidi();
+      const count = highMidi - lowMidi
+
+      const isBlackKey = (m)=>{
+        const midiBlackKeys = [1,3,6,8,10];
+        for(let i=0; i<midiBlackKeys.length; i++)
+          if(m%12 === midiBlackKeys[i]) return true;
+        return false;
+      }
+
+      [...Array(count)].forEach((k,i)=>{
+        if(!isBlackKey(i + lowMidi)) whiteKeys+=1;
+      })
+    }
+
+    //calculate keys and NoteView params
+
+  },[])
+
+  return (
+    <NoteInput 
+    style={{width:'100%', height:'100%'}}
+    root={Tone.Frequency('F4').toMidi()}
+    count={12}
+    allowDragging={false}
+    showDebug={true}
+    />
+  )
+
+
   return (
     <div className="App">
       <section className="Frame" style={{ marginBottom:0, position: "relative" }}>
@@ -167,7 +203,15 @@ export default function App() {
             levelMarginBot: levelData?.levelMarginBot, 
           }}
         >
-          {isStarted && <Snake where={levelData.startPoint} length={length} direction={direction} tick={{value:gameTick, speed:levelData.ticksPerMove}} onAdvance={onSnakeMove}/>}
+          {isStarted && 
+            <Snake 
+              where={levelData.startPoint} 
+              length={length} 
+              direction={direction} 
+              tick={{value:gameTick, speed:levelData.ticksPerMove}} 
+              onAdvance={onSnakeMove}
+            />
+          }
           <Item where={item} type='pizza'/>
         </SnakeView>
 
@@ -221,7 +265,8 @@ export default function App() {
                   setGameTick(tt=>tt+1)
                 })
                 setIsStarted(true)
-            }}>
+              }}
+            >
               Ready
             </button>
           </>}
@@ -231,7 +276,8 @@ export default function App() {
         <div className="Frame" style={inputStyle}>
           <NoteInput
             style={{width:'100%', height:'100%'}}
-            keys={7}
+            keys={pianoStats?.keys}
+            range={pianoStats?.range}
             onNoteOff={(n)=>{
             }}
             onNoteOn={(n)=>{

@@ -2,15 +2,14 @@ import piano_white from "./svg/piano_white.svg";
 import piano_black from "./svg/piano_black.svg";
 import piano_body from "./svg/piano_body.svg";
 
-import { useState, useLayoutEffect, useEffect } from "react";
+import { useState, useEffect } from "react";
 import useOnResizeComponent from "../Hooks.js";
 import anime from "animejs";
 
 export default function NoteInput({
   style,
-  keys = 8,
-  range = null,
-  octave = 4,
+  root = 48,
+  count = 12,
   onNoteOn = null,
   onNoteOff = null,
   allowDragging = true,
@@ -20,32 +19,65 @@ export default function NoteInput({
   const hh = Math.floor(size.height / 2) * 2;
   const ww = hh / 4;
 
-  const avRange = range ? range[1] - range[0] : keys;
-  const middleWhere =
-    avRange === 0 || !range ? keys / 2 : (avRange - 2) / 2 + range[0];
+  const rootMIDI = root;
+  const naturals = ["C", "D", "E", "F", "G", "A", "B", "C"];
+  const sharpsIndex = [-1, 1, 2, -1, 4, 5, 6, -1];
+  const naturalRoot = (rootMIDI % 12);
 
+  const rootLow = Math.floor(rootMIDI/12)*12;
+  const octave = rootLow / 12 - 1
+  const octaves = Math.ceil((naturalRoot + count)/12) ;
+  const rangeWhite = octaves*7;
+  const rangeActive = [naturalRoot, naturalRoot+count];
+
+  const middleWhere = (rangeActive[1] - rangeActive[0]) / 2
   const middleNow = ww * middleWhere;
   const middleOffset = size.width / 2 - middleNow;
   const middleTransform = `translate(${middleOffset} 0)`;
 
-  const naturals = ["C", "D", "E", "F", "G", "A", "B", "C"];
-  const sharpsIndex = [-1, 1, 2, -1, 4, 5, 6, -1];
+  const midiNaturals = [
+    0,
+    0.5,
+    1,
+    1.5,
+    2,
+    3,
+    3.5,
+    4,
+    4.5,
+    5,
+    5.5,
+    6
+  ];
 
-  const handleNoteSignal = (name, state) => {
-    if (state && onNoteOn) onNoteOn(name);
-    else if (!state && onNoteOff) onNoteOff(name);
-  };
+  const shouldDisableWhite = (i) => {
+    const ol = Math.floor(rangeActive[0]/12)*7
+    const oh = Math.floor(rangeActive[1]/12)*7
+    const rl = midiNaturals[rangeActive[0] % 12] + ol
+    const rh = midiNaturals[rangeActive[1] % 12] + oh
+    if(i >= rl && i < rh) return false
+    return true
+  }
 
-  const enabledIndexes = range ? range : [0, keys + 1];
-  const shouldDisableWhite = (i) =>
-    !(i + 1 >= enabledIndexes[0] && i + 1 < Math.floor(enabledIndexes[1]));
-  const shouldDisableBlack = (i) =>
-    !(i + 1 > enabledIndexes[0] && i + 1 < enabledIndexes[1]);
+  const shouldDisableBlack = (i) => {
+    const ol = Math.floor(rangeActive[0]/12)*7
+    const oh = Math.floor(rangeActive[1]/12)*7
+    const rl = midiNaturals[rangeActive[0] % 12] + ol
+    const rh = midiNaturals[rangeActive[1] % 12] + oh
+    if(i > rl && i <= rh) return false
+    return true
+  }
+
   const nameWhite = (i) => naturals[i % 7] + Math.floor(octave + i / 7);
   const nameBlack = (i) =>
     i !== -1
       ? naturals[(i - 1) % 7] + "#" + Math.floor(octave + (i - 1) / 7)
       : null;
+
+  const handleNoteSignal = (name, state) => {
+    if (state && onNoteOn) onNoteOn(name);
+    else if (!state && onNoteOff) onNoteOff(name);
+  };
 
   return (
     <svg
@@ -62,14 +94,14 @@ export default function NoteInput({
           fill="#241100"
         />
 
-        <image height={hh} x={ww * keys} href={piano_body} />
+        <image height={hh} x={ww * rangeWhite} href={piano_body} />
         <rect
-          x={ww * keys + ww / 2}
+          x={ww * rangeWhite + ww / 2}
           width={size.width}
           height={hh}
           fill="#241100"
         />
-        {[...Array(keys)].map((e, i) => {
+        {[...Array(rangeWhite)].map((e, i) => {
           return (
             <PianoKey
               key={`white_${i}`}
@@ -83,7 +115,7 @@ export default function NoteInput({
             />
           );
         })}
-        {[...Array(keys)].map((e, i) => {
+        {[...Array(rangeWhite)].map((e, i) => {
           const ii = sharpsIndex[i % 7];
           return i % 7 === ii ? (
             <PianoKey
@@ -99,7 +131,15 @@ export default function NoteInput({
           ) : null;
         })}
       </g>
-      {showDebug && <text className="debugLabel">{JSON.stringify(size)}</text>}
+      {showDebug && 
+        <text className="debugLabel">{JSON.stringify({
+          size,
+          octave,
+          octaves,
+          rootLow,
+          naturalRoot
+        })}
+      </text>}
     </svg>
   );
 }
@@ -142,18 +182,18 @@ function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragg
   });
 
   const onNoteOn = (e) => {
-    if (disabled) return;
+    // if (disabled) return;
     //prevent animation retoggling mouse event by compensating hitbox
     // const hhh = (whiteKey ? hh : hh * (19 / 32)) * 0.87;
     // const yy = getPositionInElement(e.pageX, e.pageY, e.target).y;
     // if (yy < hhh) {
-    noteSignal && noteSignal(name, true);
+    noteSignal && noteSignal(name, true, disabled);
     setActive(true);
     // }
   };
   const onNoteOff = () => {
-    if (disabled) return;
-    noteSignal && noteSignal(name, false);
+    // if (disabled) return;
+    noteSignal && noteSignal(name, false, disabled);
     setActive(false);
   };
   return (
