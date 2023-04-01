@@ -127,12 +127,15 @@ export function SnakeView({ style, options, gameTick, children, showDebug}) {
           console.log(_sprites);
         }
       );
+
+
     }
   }, []);
 
   useEffect(()=>{
     advanceScenery(false);
   },[gameTick])
+
 
 
   return (
@@ -146,9 +149,10 @@ export function SnakeView({ style, options, gameTick, children, showDebug}) {
     >
       {sprites && (
         <Stage
+          width={parentSize.width || 0}
+          height={parentSize.height || 0} 
           options={{
             backgroundAlpha: 0,
-            resizeTo: parentDiv.current
           }}
         >
 
@@ -211,38 +215,6 @@ export function SnakeView({ style, options, gameTick, children, showDebug}) {
             }
             return null;
           })}
-
-          {/* <Item
-            visuals={{
-              u: uu,
-              x: Math.floor(visuals.grid[0]-1),
-              y: 4,
-              sprite: sprites.items.noteblock,
-            }}
-          />
-
-          <Boat sprites={sprites} visuals={{...visuals, chainLength:2, chainType:'chain'}}/> */}
-
-          {/* <Snake
-            visuals={{
-              u: uu,
-              sprites: sprites.snake,
-              length,
-              direction,
-              spawn: options.start ? [
-                Math.floor(visuals.grid[0] * options.start[0]), 
-                Math.floor(visuals.grid[1] * options.start[1])
-              ]
-              : [
-                Math.floor(visuals.grid[0]/2), 
-                Math.floor(visuals.grid[1]/2)
-              ],
-              respawn: true,
-              scrolling: options?.scrolling,
-            }}
-            range={{left:0, right:0, top:2, bottom:2}}
-            tick={{value:gameTick, tickPerMove:options.ticksPerMove}}
-          /> */}
 
           <Container 
             x={left}
