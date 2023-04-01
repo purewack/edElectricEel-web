@@ -68,20 +68,9 @@ export function playSound(sampler, sound){
 }
 
 export function newBassLine (root, instrument, bassData, currentPatterns, setCurrentPatterns){
-    const n = root[0]
-    const nToInterval = {
-      'C': 1,
-      'D': 3,
-      'E': 5,
-      'F': 6,
-      'G': 8,
-      'A': 10,
-      'B': 12,
-    }
-    const nn  = nToInterval[n]
-    if(nn === undefined) return;
+    const nn  = Tone.Frequency(root).toMidi() % 12
     const midiRoot = bassData.root;
-    const newRoot = midiRoot + nn -1
+    const newRoot = midiRoot + nn
     const newPattern = bassData.data.map(p=>newRoot + p - 1)
 
     const when = QuanTime(Tone.Transport.position,bassData.grain,4)

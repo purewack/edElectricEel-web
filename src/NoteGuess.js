@@ -14,8 +14,11 @@ export function newNote(notePool, currentNote){
         return note
     }
     
+    console.log('avoiding ',currentNote)
     const nt1 = generateNote([currentNote])
+    console.log('got ',nt1)
     const nt2 = generateNote([currentNote,nt1])
+    console.log('got2 ',nt2)
     return [nt1, nt2]
 }
 

@@ -58,7 +58,7 @@ export default function App() {
   const [currentNote, setCurrentNote] = useState(null)
   
 
-  const generateNewGuess = ()=>{
+  const generateNewGuess = (n)=>{
     const range = guessRange(levelData.guessData, (n)=>Tone.Frequency(n).toMidi())
     const notes = [
       Tone.Midi(range.root).toNote(),
@@ -67,8 +67,10 @@ export default function App() {
     const pool = [...Array(range.count)].map((n,i)=>{
       return Tone.Midi(range.root + i).toNote();
     })
-      
-    setNoteData(newNote(pool,currentNote ? currentNote : notes[0]))
+    
+    const cn = n ? n : notes[0] 
+    const nn = newNote(pool,cn)
+    setNoteData(nn)
   }
 
   useEffect(()=>{
@@ -108,7 +110,6 @@ export default function App() {
     //check chosen directon
     const nt1 = noteData[0]
     const nt2 = noteData[1]
-    console.log({n,nt1,nt2})
     // console.log([n,nt1,nt2])
     if(nt1 === n || nt2 === n){
       if(nt1 === n && isHorizontal) setDirection('up')
@@ -116,7 +117,7 @@ export default function App() {
       else if(nt1 === n && !isHorizontal) setDirection('left')
       else if(nt2 === n && !isHorizontal) setDirection('right')
       setIsHorizontal(h=>!h)
-      generateNewGuess()
+      generateNewGuess(n)
       setCurrentNote(n)
       newBassLine(n,instruments.bass,levelData.music.bass,soundSeq,setSoundSeq)
     }
