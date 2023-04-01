@@ -6,7 +6,7 @@ import * as Tone from "tone";
 import { useCallback, useEffect, useState } from "react";
 
 import { prepareSound, newBassLine, endSound, playSound } from "./sound";
-import { newGuess } from "./NoteGuess";
+import { newNote, guessRange } from "./NoteGuess";
 import levelData from './level1.json'
 
 import NoteInput from "./NoteInput/index.js";
@@ -30,7 +30,7 @@ export default function App() {
     background: 'ivory'
   }
   const inputStyle ={
-    width: '60vw',
+    width: '80vw',
     height: '30vh'
   }
   const statusStyle ={
@@ -53,15 +53,33 @@ export default function App() {
   const [gameTick, setGameTick] = useState(-1);
   const [isHorizontal, setIsHorizontal] = useState()
 
+
+  const [noteData, setNoteData] = useState()
+  const [currentNote, setCurrentNote] = useState(null)
+  
+
+  const generateNewGuess = ()=>{
+    const range = guessRange(levelData.guessData, (n)=>Tone.Frequency(n).toMidi())
+    const notes = [
+      Tone.Midi(range.root).toNote(),
+      Tone.Midi(range.root+range.count).toNote()
+    ]
+    const pool = [...Array(range.count)].map((n,i)=>{
+      return Tone.Midi(range.root + i).toNote();
+    })
+      
+    setNoteData(newNote(pool,currentNote ? currentNote : notes[0]))
+  }
+
   useEffect(()=>{
     if(isStarted) return;
     //new game
-    setNoteData(newGuess(0))
     setHealth(levelData.startHealth);
     setDirection(levelData.startDirection);
     setLength(levelData.startLength);
     setIsHorizontal(levelData.startDirection === 'left' || levelData.startDirection === 'right')
     setGameTick(-1);
+    generateNewGuess();
     console.log("new game")
 
   },[isStarted])
@@ -80,19 +98,17 @@ export default function App() {
           return t + 1;
         });
       if(ev.key === 'n') 
-        setNoteData(newGuess(0))
+        generateNewGuess()
     };
     window.addEventListener("keydown", keyHandle);
     return ()=>{window.removeEventListener("keydown", keyHandle)}
   }, []);
 
-
-  const [noteData, setNoteData] = useState()
-  const [currentNote, setCurrentNote] = useState(null)
   const onSelectNote = useCallback((n)=>{
     //check chosen directon
-    const nt1 = noteData[0].notes[0].split('-')[0]
-    const nt2 = noteData[1].notes[0].split('-')[0]
+    const nt1 = noteData[0]
+    const nt2 = noteData[1]
+    console.log({n,nt1,nt2})
     // console.log([n,nt1,nt2])
     if(nt1 === n || nt2 === n){
       if(nt1 === n && isHorizontal) setDirection('up')
@@ -100,7 +116,7 @@ export default function App() {
       else if(nt1 === n && !isHorizontal) setDirection('left')
       else if(nt2 === n && !isHorizontal) setDirection('right')
       setIsHorizontal(h=>!h)
-      setNoteData(newGuess(n))
+      generateNewGuess()
       setCurrentNote(n)
       newBassLine(n,instruments.bass,levelData.music.bass,soundSeq,setSoundSeq)
     }
@@ -138,54 +154,10 @@ export default function App() {
   useEffect(()=>{
     if(pianoStats) return
 
-    const notes = levelData.guessData.notes
-
-    //find required midi range
-    let range;
-    let whiteKeys = 0;
-    if(levelData.guessData.type === 'selection'){
-      let low = notes[0];
-      let high = notes[0];
-      notes.forEach((n)=>{
-        const note = Tone.Frequency(n).toMidi()
-        if(note < low) low = note
-        else if(note > high) high = note
-
-        if(!n.includes('#')) whiteKeys+=1;
-      })
-      range = [low, high]
-    }
-    else{
-      const lowMidi = Tone.Frequency(notes[0]).toMidi();
-      const highMidi = Tone.Frequency(notes[1]).toMidi();
-      const count = highMidi - lowMidi
-
-      const isBlackKey = (m)=>{
-        const midiBlackKeys = [1,3,6,8,10];
-        for(let i=0; i<midiBlackKeys.length; i++)
-          if(m%12 === midiBlackKeys[i]) return true;
-        return false;
-      }
-
-      [...Array(count)].forEach((k,i)=>{
-        if(!isBlackKey(i + lowMidi)) whiteKeys+=1;
-      })
-    }
-
+    const range = guessRange(levelData.guessData, (n)=>Tone.Frequency(n).toMidi())
     //calculate keys and NoteView params
-
+    setPianoStats(range);
   },[])
-
-  return (
-    <NoteInput 
-    style={{width:'100%', height:'100%'}}
-    root={Tone.Frequency('F4').toMidi()}
-    count={12}
-    allowDragging={false}
-    showDebug={true}
-    />
-  )
-
 
   return (
     <div className="App">
@@ -217,7 +189,7 @@ export default function App() {
 
         {noteData && isStarted && <>
           <NoteView 
-            data={[noteData[0]]}
+            data={[{clef:'treble', notes:[noteData[0]+'-4n']}]}
             stavesExtra={0}
             slide={-0.5}
             style={{
@@ -230,7 +202,7 @@ export default function App() {
             }}
           />
           <NoteView 
-            data={[noteData[1]]}
+            data={[{clef:'treble', notes:[noteData[1]+'-4n']}]}
             stavesExtra={0}
             slide={-0.5}
             style={{
@@ -274,10 +246,10 @@ export default function App() {
 
       <section style={{display:'flex'}}>
         <div className="Frame" style={inputStyle}>
-          <NoteInput
+          {pianoStats && <NoteInput
             style={{width:'100%', height:'100%'}}
-            keys={pianoStats?.keys}
-            range={pianoStats?.range}
+            root={pianoStats.root-12}
+            count={pianoStats.count}
             onNoteOff={(n)=>{
             }}
             onNoteOn={(n)=>{
@@ -286,7 +258,7 @@ export default function App() {
             }}
             allowDragging={false}
             showDebug={debug}
-          />
+          />}
         </div>
         <div className="Frame" style={statusStyle}>
           <img src={arrowSVG} className={'statusArrow'} style={{

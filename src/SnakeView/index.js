@@ -324,8 +324,7 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
         y: spawn[1] + py * i,
         d: dirToIdx[dd],
       });
-    console.log("new spawn");
-    console.log(poss);
+    console.log("new spawn", poss);
     setPath(poss);
   }, []);
 

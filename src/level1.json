@@ -6,11 +6,10 @@
     "levelSize":[20,15],
     "gameTickInterval":"8n",
     "ticksPerMove":"4",
-    "guessSelection":[
-        "C4","D4","E4","F4","G4","A4","B4","C5"
-    ],
-    "guessSelectionCount":8,
-    "guessSelectionClef":"treble",
+    "guessData":{
+        "type" : "selection",
+        "notes": ["C#4","D4","D#4","E4"]
+    },
     "music":{
         "bpm":110,
         "beat":{

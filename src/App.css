@@ -34,7 +34,8 @@ svg text {
 .debugLabel {
   stroke: none;
   fill: white;
-  filter: drop-shadow(1px 1px 1px);
+  background: black;
+  filter: drop-shadow(1px 1px 0px #00f);
 }
 
 .FelixStatus {

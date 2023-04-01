@@ -25,7 +25,7 @@ export default function NoteInput({
   const naturalRoot = (rootMIDI % 12);
 
   const rootLow = Math.floor(rootMIDI/12)*12;
-  const octave = rootLow / 12 - 1
+  const octave = rootLow / 12
   const octaves = Math.ceil((naturalRoot + count)/12) ;
   const rangeWhite = octaves*7;
   const rangeActive = [naturalRoot, naturalRoot+count];
@@ -131,15 +131,24 @@ export default function NoteInput({
           ) : null;
         })}
       </g>
-      {showDebug && 
+      {showDebug && <>
         <text className="debugLabel">{JSON.stringify({
-          size,
-          octave,
-          octaves,
-          rootLow,
-          naturalRoot
+          size
         })}
-      </text>}
+        </text>
+        <text y={16} className="debugLabel">{JSON.stringify({
+            octave,
+            octaves,
+            rootLow,
+            naturalRoot
+          })}
+        </text>
+        <text y={32} className="debugLabel">{JSON.stringify({
+            rangeActive,
+            rangeWhite
+          })}
+        </text>
+      </>}
     </svg>
   );
 }
