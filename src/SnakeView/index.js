@@ -28,6 +28,10 @@ import tiles_img from "./img/tiles64.png";
 import "./style.css";
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+const isSafari = window.safari !== undefined;
+if(isSafari){
+    PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL;
+}
 
 export function SnakeView({ style, options, gameTick, children, showDebug}) {
   const [parentDiv, parentSize] = useOnResizeComponent();

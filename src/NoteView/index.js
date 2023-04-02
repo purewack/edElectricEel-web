@@ -19,7 +19,14 @@ export default function NoteView({
   let lastKey = 0;
 
   return (
-    <svg className='View NoteView' ref={sizeRef} style={{ background: "ivory", ...style }}>
+  <div ref={sizeRef} 
+    style={style}>
+    <svg className='View NoteView' ref={sizeRef} 
+      style={{ 
+        background: "ivory", 
+        height:'100%',
+        width:'100%' 
+      }}>
       {showDebug && <text className="debugLabel">{JSON.stringify(size)}</text>}
       <g
         transform={`
@@ -128,7 +135,7 @@ export default function NoteView({
         /> */}
       </g>
     </svg>
-  );
+  </div>);
 }
 
 function Staves({ u }) {

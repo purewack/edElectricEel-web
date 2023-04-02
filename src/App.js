@@ -27,7 +27,8 @@ export default function App() {
     width: '10vh',
     height: '10vh',
     border: 'solid orange 0.25rem',
-    background: 'ivory'
+    background: 'ivory',
+    boxSizing: 'content-box'
   }
   const inputStyle ={
     width: '80vw',
@@ -191,7 +192,7 @@ export default function App() {
         {noteData && isStarted && <>
           <NoteView 
             data={[{clef:'treble', notes:[noteData[0]+'-4n']}]}
-            stavesExtra={0}
+            stavesExtra={1}
             slide={-0.5}
             style={{
               left: isHorizontal ? '50%' : 0,
@@ -204,7 +205,7 @@ export default function App() {
           />
           <NoteView 
             data={[{clef:'treble', notes:[noteData[1]+'-4n']}]}
-            stavesExtra={0}
+            stavesExtra={1}
             slide={-0.5}
             style={{
               right: isHorizontal ? '50%' : 0,

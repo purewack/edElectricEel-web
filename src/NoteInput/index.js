@@ -80,11 +80,40 @@ export default function NoteInput({
   };
 
   return (
+    <div ref={sizeRef} 
+      style={style}>
     <svg
-      ref={sizeRef}
-      style={style}
+      height={'100%'}
+      width={'100%'}
       className="View NoteInput"
     >
+      <filter id='pianoKeyFilter_disabled'>
+        <feColorMatrix
+              in="SourceGraphic"
+              type="matrix"
+              values="0.1 0 0 0 0
+                      0 0.1 0 0 0
+                      0 0 0.1 0 0
+                      0 0 0 1 0" /> 
+      </filter>
+      <filter id='pianoKeyFilter_hover'>
+        <feColorMatrix
+              in="SourceGraphic"
+              type="matrix"
+              values="0.1 0.1 0.1 0.5 0
+                      0.1 0.1 0.1 0.5 0
+                      0 0 0 0 0
+                      0 0 0 1 0" /> 
+      </filter>
+      <filter id='pianoKeyFilter_press'>
+        <feColorMatrix
+              in="SourceGraphic"
+              type="matrix"
+              values="0.1 0.1 0.1 0 0.1
+                      0.8 1 0.8 0.5 0
+                      0.1 0.1 0.1 0 0.1
+                      0 0 0 1 0" /> 
+      </filter>
       <g style={{ transition: "transform 1s" }} transform={middleTransform}>
         <image height={hh} x={-ww} href={piano_body} />
         <rect
@@ -150,7 +179,7 @@ export default function NoteInput({
         </text>
       </>}
     </svg>
-  );
+  </div>);
 }
 
 function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragging }) {
@@ -162,11 +191,9 @@ function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragg
   const xx = index * ww - (!whiteKey ? ww / 2.25 : 0);
 
   const filter = disabled
-    ? "contrast(0.3)"
-    : hover
-    ? `contrast(${active ? 0 : 0.5}) sepia(100%) hue-rotate(${
-        active ? 90 : 10
-      }deg)`
+    ? "url(#pianoKeyFilter_disabled)"
+      : hover
+      ? `url(#pianoKeyFilter_${active ? 'press' : 'hover'})`
     : null;
 
   const styleText = {
@@ -191,17 +218,12 @@ function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragg
   });
 
   const onNoteOn = (e) => {
-    // if (disabled) return;
-    //prevent animation retoggling mouse event by compensating hitbox
-    // const hhh = (whiteKey ? hh : hh * (19 / 32)) * 0.87;
-    // const yy = getPositionInElement(e.pageX, e.pageY, e.target).y;
-    // if (yy < hhh) {
+    if(disabled) return
     noteSignal && noteSignal(name, true, disabled);
     setActive(true);
-    // }
   };
   const onNoteOff = () => {
-    // if (disabled) return;
+    if(disabled) return
     noteSignal && noteSignal(name, false, disabled);
     setActive(false);
   };
@@ -214,16 +236,16 @@ function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragg
         width={ww}
         filter={filter}
         transform={active ? "translate(0 0)" : "translate(0 -4)"}
-        onMouseDown={onNoteOn}
-        onMouseUp={onNoteOff}
-        onMouseEnter={(ev) => {
+        onPointerDown={onNoteOn}
+        onPointerUp={onNoteOff}
+        onPointerEnter={(ev) => {
           setHover(true);
           if(!allowDragging) return
           if (ev.buttons === 1 && !active) {
             onNoteOn(ev);
           }
         }}
-        onMouseLeave={(ev) => {
+        onPointerLeave={(ev) => {
           setHover(false);
           if (ev.buttons === 1 && active) {
             onNoteOff(ev);
