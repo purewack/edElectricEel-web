@@ -17,11 +17,10 @@ import Item from "./SnakeView/Item";
 
 export default function App() {
   const [debug, setDebug] = useState(false);
+  useEffect(()=>{
+    window.toggleDebug = ()=>{setDebug(d=>!d)}
+  },[])
 
-  const gameStyle = {
-    width: "90vw",
-    height: "60vh",
-  };
   const noteStyle = {
     position: 'absolute',
     width: '10vh',
@@ -30,14 +29,10 @@ export default function App() {
     background: 'ivory',
     boxSizing: 'content-box'
   }
-  const inputStyle ={
-    width: '80vw',
-    height: '30vh'
-  }
   const statusStyle ={
     width: 'min-content',
-    height: '30vh',
     padding: 0,
+    width:'10rem',
     background: 'black',
     display:'flex',
     alignItems:'center',
@@ -163,9 +158,8 @@ export default function App() {
 
   return (
     <div className="App">
-      <section className="Frame" style={{ marginBottom:0, position: "relative" }}>
+      <section className="Frame Snake" style={{ marginBottom:0, position: "relative" }}>
         <SnakeView
-          style={gameStyle}
           showDebug={debug}
           direction={direction}
           length={length}
@@ -194,7 +188,7 @@ export default function App() {
             data={[{clef:'treble', notes:[noteData[0]+'-4n']}]}
             stavesExtra={1}
             slide={-0.5}
-            style={{
+            viewStyle={{
               left: isHorizontal ? '50%' : 0,
               top: isHorizontal ? 0 : '50%',
               transform: isHorizontal
@@ -207,7 +201,7 @@ export default function App() {
             data={[{clef:'treble', notes:[noteData[1]+'-4n']}]}
             stavesExtra={1}
             slide={-0.5}
-            style={{
+            viewStyle={{
               right: isHorizontal ? '50%' : 0,
               bottom: isHorizontal ? 0 : '50%',
               transform: isHorizontal
@@ -247,9 +241,8 @@ export default function App() {
       </section>
 
       <section style={{display:'flex'}}>
-        <div className="Frame" style={inputStyle}>
+        <div className="Frame Input" >
           {pianoStats && <NoteInput
-            style={{width:'100%', height:'100%'}}
             root={pianoStats.root-12}
             count={pianoStats.count}
             onNoteOff={(n)=>{
@@ -262,26 +255,22 @@ export default function App() {
             showDebug={debug}
           />}
         </div>
-        <div className="Frame" style={statusStyle}>
-          <img src={arrowSVG} className={'statusArrow'} style={{
+        <div className="Frame Status" style={statusStyle}>
+          <img className={'statusArrow'}  src={arrowSVG} alt='statusArrow' style={{
             transition:'transform 250ms',
             transform:`rotateZ(${90 * (1+dirToIdx[direction])}deg)`,
-            height:'50%', 
+            height:'40%', 
             margin: '0.5rem',
           }} />
-          <div style={{
+          {/* <div style={{
             width:'4vh',
             margin: '0.5rem',
           }}>
             {[...Array(health)].map((e,i)=>{
-              return <img key={`heart_${i}`} src={heartSVG} className={'statusHeart'} /> 
+              return <img key={`heart_${i}`} className={'statusHeart'} src={heartSVG} alt='statusHeart' /> 
             })}
-          </div>
+          </div> */}
         </div>
-      </section>
-
-      <section>
-        <button onClick={() => setDebug(!debug)}>Debug</button>
       </section>
     </div>
   );

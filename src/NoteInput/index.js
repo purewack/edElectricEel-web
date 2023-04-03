@@ -7,12 +7,12 @@ import useOnResizeComponent from "../Hooks.js";
 import anime from "animejs";
 
 export default function NoteInput({
-  style,
   root = 48,
   count = 12,
   onNoteOn = null,
   onNoteOff = null,
   allowDragging = true,
+  viewStyle,
   showDebug
 }) {
   const [sizeRef, size] = useOnResizeComponent();
@@ -80,13 +80,11 @@ export default function NoteInput({
   };
 
   return (
-    <div ref={sizeRef} 
-      style={style}>
-    <svg
-      height={'100%'}
-      width={'100%'}
-      className="View NoteInput"
+    <div className="View NoteInput" 
+      ref={sizeRef} 
+      style={viewStyle}
     >
+    <svg>
       <filter id='pianoKeyFilter_disabled'>
         <feColorMatrix
               in="SourceGraphic"

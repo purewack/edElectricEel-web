@@ -144,11 +144,8 @@ export function SnakeView({ style, options, gameTick, children, showDebug}) {
 
   return (
     <div
+      style={style}
       ref={parentDiv}
-      style={style ? style : {
-        width: "90vw",
-        height: "70vh"
-      }}
       className="View SnakeView"
     >
       {sprites && (

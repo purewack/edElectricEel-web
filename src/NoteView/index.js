@@ -5,7 +5,7 @@ import useOnResizeComponent from "../Hooks.js";
 export default function NoteView({
   data,
   slide,
-  style,
+  viewStyle,
   stavesExtra,
   showDebug
 }) {
@@ -19,14 +19,8 @@ export default function NoteView({
   let lastKey = 0;
 
   return (
-  <div ref={sizeRef} 
-    style={style}>
-    <svg className='View NoteView' ref={sizeRef} 
-      style={{ 
-        background: "ivory", 
-        height:'100%',
-        width:'100%' 
-      }}>
+  <div className='View NoteView' style={viewStyle}>
+    <svg ref={sizeRef} >
       {showDebug && <text className="debugLabel">{JSON.stringify(size)}</text>}
       <g
         transform={`
