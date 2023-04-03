@@ -30,7 +30,7 @@ export default function NoteInput({
   const rangeWhite = octaves*7;
   const rangeActive = [naturalRoot, naturalRoot+count];
 
-  const middleWhere = (rangeActive[1] - rangeActive[0]) / 2
+  const middleWhere = naturalRoot + (rangeWhite / 2)
   const middleNow = ww * middleWhere;
   const middleOffset = size.width / 2 - middleNow;
   const middleTransform = `translate(${middleOffset} 0)`;
@@ -91,9 +91,9 @@ export default function NoteInput({
         <feColorMatrix
               in="SourceGraphic"
               type="matrix"
-              values="0.1 0 0 0 0
-                      0 0.1 0 0 0
-                      0 0 0.1 0 0
+              values="0.1 0 0 0 0.1
+                      0 0.1 0 0 0.1
+                      0 0 0.1 0 0.1
                       0 0 0 1 0" /> 
       </filter>
       <filter id='pianoKeyFilter_hover'>
@@ -114,7 +114,7 @@ export default function NoteInput({
                       0.1 0.1 0.1 0 0.1
                       0 0 0 1 0" /> 
       </filter>
-      <g style={{ transition: "transform 1s" }} transform={middleTransform}>
+      <g transform={middleTransform}>
         <image height={hh} x={-ww} href={piano_body} />
         <rect
           x={-size.width - ww / 2}
@@ -175,6 +175,12 @@ export default function NoteInput({
         <text y={32} className="debugLabel">{JSON.stringify({
             rangeActive,
             rangeWhite
+          })}
+        </text>
+        <text y={48} className="debugLabel">{JSON.stringify({
+            middleWhere,
+            middleNow,
+            middleOffset
           })}
         </text>
       </>}

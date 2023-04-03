@@ -42,7 +42,7 @@ export function guessRange (guessData,toMidi){
     else{
       const lowMidi = toMidi(notes[0]);
       const highMidi = toMidi(notes[1]);
-      count = highMidi - lowMidi
+      count = highMidi - lowMidi + 1
       root = lowMidi
     }
     return {root,count}
