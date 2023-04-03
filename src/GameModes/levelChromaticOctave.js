@@ -1,21 +1,21 @@
-import "./App.css";
-import arrowSVG from './img/icons/arrow.svg'
-import heartSVG from './img/icons/heart.svg'
-
 import * as Tone from "tone";
 import { useCallback, useEffect, useState } from "react";
 
-import { prepareSound, newBassLine, endSound, playSound } from "./sound";
-import { newNote, guessRange } from "./NoteGuess";
-import levelData from './level1.json'
+import { prepareSound, newBassLine, endSound, playSound } from "../sound";
+import { newNote, guessRange } from "../NoteGuess";
 
-import NoteInput from "./NoteInput/index.js";
-import NoteView from "./NoteView/index.js";
-import FelixStatus from "./FelixStatus/index.js";
-import {Snake, SnakeView} from "./SnakeView/index.js";
-import Item from "./SnakeView/Item";
+import "./levelChromaticOctave.css";
+import levelData from './levelChromaticOctave.json'
 
-export default function App() {
+import arrowSVG from '../img/icons/arrow.svg'
+import heartSVG from '../img/icons/heart.svg'
+
+import NoteInput from "../NoteInput/index.js";
+import NoteView from "../NoteView/index.js";
+import {Snake, SnakeView} from "../SnakeView/index.js";
+import Item from "../SnakeView/Item";
+
+export default function LevelChromaticOctave() {
   const [debug, setDebug] = useState(false);
   useEffect(()=>{
     window.toggleDebug = ()=>{setDebug(d=>!d)}

@@ -41,7 +41,7 @@ svg text {
 .Frame {
   padding: 0;
   border: solid 16px;
-  border-image: url('./img/borderFill.png');
+  border-image: url('../img/borderFill.png');
   border-image-slice: 3;
   overflow: hidden;
   image-rendering: pixelated;
@@ -51,7 +51,7 @@ button {
   font-size: 1.5rem;
   background-color: transparent;
   border: solid 16px;
-  border-image: url('./img/border.png');
+  border-image: url('../img/border.png');
   border-image-slice: 3 fill;
   image-rendering: pixelated;
   overflow: hidden;
