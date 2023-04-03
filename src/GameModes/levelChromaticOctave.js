@@ -1,7 +1,7 @@
 import * as Tone from "tone";
 import { useCallback, useEffect, useState } from "react";
 
-import { prepareSound, newBassLine, endSound, playSound } from "../sound";
+import { prepareSound, newBassLine, endSound, playSound } from "../Sound";
 import { newNote, guessRange } from "../NoteGuess";
 
 import "./levelChromaticOctave.css";
