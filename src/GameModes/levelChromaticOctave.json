@@ -6,6 +6,7 @@
     "levelSize":[20,15],
     "gameTickInterval":"8n",
     "ticksPerMove":"4",
+    "canOverlapSelf" : false,
     "guessData":{
         "type" : "range",
         "notes": ["C4","B4"]

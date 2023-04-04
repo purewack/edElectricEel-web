@@ -15,7 +15,7 @@ import NoteView from "../NoteView/index.js";
 import {Snake, SnakeView} from "../SnakeView/index.js";
 import Item from "../SnakeView/Item";
 
-export default function LevelChromaticOctave() {
+export default function LevelChromaticOctave({settings}) {
   const [debug, setDebug] = useState(false);
   useEffect(()=>{
     window.toggleDebug = ()=>{setDebug(d=>!d)}
@@ -135,6 +135,7 @@ export default function LevelChromaticOctave() {
     ]) 
   }
   const onSnakeMove = (pos)=>{
+    let collision = false;
     const head = pos[0]
     if(head.x === item[0] && head.y === item[1]){
       playSound(instruments.sampler, levelData.music.sounds["item"])
@@ -142,6 +143,20 @@ export default function LevelChromaticOctave() {
       setLength(l=>l+1)
     }
     else if(head.x < 0 || head.y < 0 || head.x >= levelData.levelSize[0] || head.y >= levelData.levelSize[1]){
+      collision = true
+    }
+    else{
+      pos.forEach((p,i)=>{
+        if(i !== 0){
+          if(head.x === p.x && head.y === p.y) {
+            collision = true;
+            return;
+          }
+        }        
+      })
+    }
+
+    if(collision){
       setIsStarted(false);
       endSound(soundSeq,setSoundSeq)
     }
