@@ -27,7 +27,7 @@ import entity_atlas from "./img/entity.json";
 import tiles_img from "./img/tiles64.png";
 import "./style.css";
 
-PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
 const isSafari = window.safari !== undefined;
 if(isSafari){
     PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL;
@@ -43,8 +43,8 @@ export function SnakeView({ style, options, gameTick, children, showDebug}) {
   useEffect(() => {
     // console.log(parentSize);
     const [lwwU, lhhU] = options.levelSize || [14,10]
-    const shipAreaU = options.levelMarginTop || 2;
-    const floorAreaU = options.levelMarginBot || 1;
+    const shipAreaU = options?.levelMarginTop || 2;
+    const floorAreaU = options?.levelMarginBot || 1;
     const totalFieldWidthU = lwwU
     const totalFieldHeightU = lhhU + shipAreaU + floorAreaU
 
@@ -280,12 +280,12 @@ export function SnakeView({ style, options, gameTick, children, showDebug}) {
   );
 }
 
-export function Snake({ where, length, direction, onAdvance, tick, options, visuals}) {
+export function Snake({ where, length, direction, onAdvance, tick, options, visuals, selfSprite = false}) {
   const [path, setPath] = useState(null);
 
   //spawn
   useEffect(() => {
-    if (path) return;
+    // if (path) return;
     const spawn = where;
     const dd = direction;
     const px = dd === "right" ? -1 : dd === "left" ? 1 : 0;
@@ -299,7 +299,7 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
       });
     console.log("new spawn", poss);
     setPath(poss);
-  }, []);
+  }, [where]);
 
   // //turn
   // useEffect(() => {
@@ -324,7 +324,8 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
   //advance @ tick
   useEffect(() => {
     if (!path) return;
-    if(tick.value % tick.speed) return
+    if(tick.speed === 0) return;
+    if(tick.value % tick.speed) return;
     //offsets for next move based on direction
     const pxx = options?.scrolling ? -(1/tick.speed) : 0;
     const px = direction === "right" ? 1 : direction === "left" ? -1 : 0;
@@ -349,7 +350,25 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
   }, [tick.value]);
 
   const uu = visuals.u;
-  const sprites = visuals.sprites.snake;
+  const [sprites,setSprites] = useState(null)
+  const textureLoaded = useRef(false)
+
+  useEffect(()=>{
+    if (selfSprite) {
+      if(!textureLoaded.current){
+        console.log("load sprites snake")
+        textureLoaded.current = true;
+        const tex = PIXI.BaseTexture.from(tiles_img);
+        const snake_SS = new PIXI.Spritesheet(tex, snake_atlas);
+        snake_SS.parse().then((r)=>{
+          setSprites(r)
+        })
+      } 
+    }
+    else {
+      setSprites(visuals.sprites.snake)
+    }
+  },[selfSprite])
 
   //helpers
   const idxToDir = {
@@ -385,7 +404,7 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
 
   return (
     <>
-      {path &&
+      {path && sprites &&
         path.map((p, i, a) => {
           const i_p = i - 1 < 0 ? null : i - 1;
           const isCorner =
@@ -464,4 +483,28 @@ function DebugGrid({ u, ux = 0, uy = 0, uw = 32, uh = 32 }) {
   );
 
   return <Graphics draw={draw} />;
+}
+
+export function SnakePreview ({length}){
+  const [ref, size] = useOnResizeComponent()
+
+  const u = Math.floor(size.width / 5);
+
+  return <div ref={ref} className='SnakePreviewContainer'>
+        <Stage
+          width={size.width || 0}
+          height={size.height || 0}
+          options={{
+              backgroundAlpha: 0
+        }}>
+            <Snake 
+                where={[1.5 + (length)/2,0]} 
+                length={length} 
+                direction={'right'}
+                visuals={{u}}
+                tick={{value:0, speed:0}}
+                selfSprite={true}
+            />
+        </Stage>
+    </div>
 }

@@ -1,0 +1,167 @@
+.SelectDifficulty p,
+.SelectDifficulty span {
+  font-size: 1.5rem;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background-color: mintcream;
+  color: black;
+}
+
+.SelectDifficulty .View {
+  border: none;
+}
+.SelectDifficulty span {
+  filter: drop-shadow(1px 1px 2px gray);
+}
+
+.SelectDifficulty h1 {
+  color:black;
+  font-size: 2rem;
+}
+.SelectDifficulty h1::before {
+  content: ' ';
+  vertical-align:middle;
+  image-rendering: pixelated;
+  background-size: 4rem;
+  width: 4rem;
+  height: 4rem;
+  margin: 0.5rem;
+  display: inline-block;
+}
+.SettingsTitle::before {
+  background-image: url('./img/icons/star2.png');
+}
+.TweakTitle::before  {
+  background-image: url('./img/icons/spanner.png');
+}
+
+.SelectionFlex{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.GalleryFlex {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.btnCustom{
+  margin-inline: auto;
+}
+.btnCustom img{ 
+  height: 2rem;
+  transform: translateY(-20%) translateX(33%);
+}
+
+.Difficulties div:nth-child(1){
+  display:flex;
+}
+.Difficulties div:nth-child(2){
+  text-align: center;
+  margin-inline: auto;
+}
+
+.btnDifficulty img{
+  height: 2rem;
+  transform: translateX(20%);
+}
+.btnDifficulty:nth-child(1){
+  color:forestgreen;
+}
+.btnDifficulty:nth-child(2){
+  color:royalblue;
+}
+.btnDifficulty:nth-child(3){
+  color:orangered;
+}
+
+
+.CustomOptions{
+  background-color:palegoldenrod;
+  overflow: hidden;
+  /* height: 3rem; */
+}
+  .NoteInput{
+    height:10rem;
+  }
+
+  .Clefs {
+    text-align: center;
+  }
+
+  .btnClef .NoteView {
+    width: 5rem;
+    height: 5rem;
+    background-color: transparent;
+  }
+  .btnClef {
+    filter: sepia(1) grayscale(1) brightness(0.3);
+  }
+  .btnClef span {
+    text-transform:capitalize;
+  }
+  .btnClef.btnSelected {
+    filter: none;
+  }
+
+  .SelectBPM {
+    color: black;
+    font-size: 1.5rem;
+    background-color: ivory;
+    padding-inline: 1rem;
+  }
+
+  .btnHealth{
+    width: calc(2rem * 8);
+    text-align: center;
+  }
+  .btnHealth .Hearts{
+    justify-content: space-evenly;
+    align-items: center;
+  }
+  .Hearts img{
+    height: 2rem;
+  }
+
+
+  .SnakePreviewContainer {
+    width: 16rem;
+    height: 3rem;
+  }
+
+  .btnRandom{
+    margin-block: 2rem;
+    filter: hue-rotate(90deg);
+  }
+  .btnRandom .scene {
+    --face-size: 2.5rem;
+    --face-trz:calc(var(--face-size)*0.50);
+    margin-left: 1em;
+    width:2em;
+    height:2em;
+  }
+
+
+.btnBack{
+  margin-right: auto;
+}
+.btnBack img {
+  height:4rem;
+  padding: 0.5rem;
+  transform: rotate(-90deg);
+  filter: hue-rotate(-90deg);
+}
+
+.btnGo  {
+  margin-left: auto;
+}
+.btnGo img {
+  height:4rem;
+  padding: 0.5rem;
+  transform: rotate(90deg);
+}

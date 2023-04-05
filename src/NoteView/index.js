@@ -7,6 +7,7 @@ export default function NoteView({
   slide,
   viewStyle,
   stavesExtra,
+  noBarStart,
   showDebug
 }) {
   const [sizeRef, size] = useOnResizeComponent();
@@ -100,14 +101,14 @@ export default function NoteView({
                 })}
 
                 {/* barline at start*/}
-                <line
+                {!noBarStart && <line
                   strokeWidth={u / 8}
                   stroke={"green"}
                   y1={u * -2}
                   y2={u * 2}
                   x1={barStartX}
                   x2={barStartX}
-                />
+                />}
               </g>
             );
           })}

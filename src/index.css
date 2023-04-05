@@ -1,7 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 * {
   font-family: 'VT323', monospace;
+
+  /* font-family: 'DotGothic16', sans-serif;
+  font-size: small; */
+
+  /* font-family: 'Press Start 2P', cursive;
+  font-size: small; */
+
   box-sizing: border-box;
 }
 
@@ -12,6 +21,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #282c34;
+  color: white;
 }
 
 code {
@@ -25,10 +36,8 @@ code {
   align-items: center;
   justify-content: center;
   text-align: center;
-  background-color: #282c34;
   min-height: 100vh;
   font-size: calc(10px + 2vmin);
-  color: white;
 }
 
 svg {
@@ -60,6 +69,7 @@ button {
   border-image-slice: 3 fill;
   image-rendering: pixelated;
   overflow: hidden;
+  margin: 4px;
 }
 button:hover {
   filter: contrast(0.75) sepia(2) hue-rotate(20deg)

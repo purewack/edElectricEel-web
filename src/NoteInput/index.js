@@ -9,6 +9,9 @@ import anime from "animejs";
 export default function NoteInput({
   root = 48,
   count = 12,
+  showRange = null,
+  showOctave = true,
+  showName = true,
   onNoteOn = null,
   onNoteOff = null,
   allowDragging = true,
@@ -66,6 +69,17 @@ export default function NoteInput({
     const rh = midiNaturals[rangeActive[1] % 12] + oh
     if(i > rl && i <= rh) return false
     return true
+  }
+
+  const shouldHighlight = (nm) => {
+    let state = true;
+    showRange.forEach(e => {
+      if(e === nm) {
+        state = false
+        return
+      }
+    });
+    return state
   }
 
   const nameWhite = (i) => naturals[i % 7] + Math.floor(octave + i / 7);
@@ -133,12 +147,18 @@ export default function NoteInput({
             <PianoKey
               key={`white_${i}`}
               index={i}
-              disabled={shouldDisableWhite(i)}
               name={nameWhite(i)}
+              disabled={ 
+                showRange 
+                ? shouldHighlight(nameWhite(i)) 
+                : shouldDisableWhite(i)
+              }
               size={size}
               whiteKey={true}
               noteSignal={handleNoteSignal}
               allowDragging={allowDragging}
+              showOctave={showOctave}
+              showName={showName}
             />
           );
         })}
@@ -149,7 +169,11 @@ export default function NoteInput({
               key={`black_${i}`}
               index={i}
               name={nameBlack(i)}
-              disabled={shouldDisableBlack(i)}
+              disabled={ 
+                showRange 
+                ? shouldHighlight(nameBlack(i)) 
+                : shouldDisableBlack(i)
+              }
               size={size}
               whiteKey={false}
               noteSignal={handleNoteSignal}
@@ -186,7 +210,7 @@ export default function NoteInput({
   </div>);
 }
 
-function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragging }) {
+function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragging, showOctave, showName=true }) {
   const [active, setActive] = useState(false);
   const [hover, setHover] = useState(false);
 
@@ -222,12 +246,12 @@ function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragg
   });
 
   const onNoteOn = (e) => {
-    if(disabled) return
+    // if(disabled) return
     noteSignal && noteSignal(name, true, disabled);
     setActive(true);
   };
   const onNoteOff = () => {
-    if(disabled) return
+    // if(disabled) return
     noteSignal && noteSignal(name, false, disabled);
     setActive(false);
   };
@@ -257,8 +281,8 @@ function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragg
         }}
       />
       {whiteKey && (
-        <text style={styleText} fontSize={ww / 2} y={hh - ww} x={xx + ww / 4}>
-          {name}
+        <text style={styleText} fontSize={ww / 2} y={hh - ww} x={xx + ww / 4 + (!showOctave && ww/8)}>
+          {showName && (showOctave ? name : name.slice(0,-1))}
         </text>
       )}
     </g>

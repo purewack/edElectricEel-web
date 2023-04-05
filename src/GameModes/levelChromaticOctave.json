@@ -9,10 +9,11 @@
     "canOverlapSelf" : false,
     "guessData":{
         "type" : "range",
-        "notes": ["C4","B4"]
+        "notes": ["C4","B4"],
+        "clefs" : ["treble"]
     },
     "music":{
-        "bpm":110,
+        "bpm":100,
         "beat":{
             "interval":"8n",
             "data":[
