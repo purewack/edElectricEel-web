@@ -58,10 +58,7 @@ body {
   transform: translateY(-20%) translateX(33%);
 }
 
-.Difficulties div:nth-child(1){
-  display:flex;
-}
-.Difficulties div:nth-child(2){
+.Difficulties div{
   text-align: center;
   margin-inline: auto;
 }
@@ -132,6 +129,11 @@ body {
   .SnakePreviewContainer {
     width: 16rem;
     height: 3rem;
+  }
+
+  .SnakePreviewContainer canvas {
+    cursor: not-allowed;
+    pointer-events: none;
   }
 
   .btnRandom{

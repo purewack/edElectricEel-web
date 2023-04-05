@@ -112,7 +112,7 @@ export function SelectDifficulty(){
         
         setHearts(rand(1,5))
         setLength(rand(2,5))
-        setBPM(rand(100,150))
+        setBPM(Math.floor(rand(100,150)/2) * 2)
 
         setClefs({
             treble:true,
@@ -124,6 +124,11 @@ export function SelectDifficulty(){
             if(Math.random() > 0.5) return e
             return null
         }))
+        setShowRange(r => {
+            const rr = r.filter(e => e!==null)
+            if(rr.length === 0) return ['C4', 'A4']
+            return rr
+        })
     }
 
     const noteon = (n)=>{
@@ -144,14 +149,14 @@ export function SelectDifficulty(){
     const isTweaking = difficulty?.custom
 
     return (<div className="SelectDifficulty ">
+        
+        <h1 className={!isTweaking ? 'SettingsTitle' : 'TweakTitle'}>
+            {!isTweaking
+        ? 'Select Difficulty:'
+        : 'Tweak Settings:'
+        }</h1>
 
         <section className='Difficulties'>
-            <h1 className={!isTweaking ? 'SettingsTitle' : 'TweakTitle'}>
-                {!isTweaking
-            ? 'Select Difficulty:'
-            : 'Tweak Settings:'
-            }</h1>
-
             <div className='Frame'>
                 <button className='btnDifficulty' onClick={()=>{newSettings('easy')}}>
                     <span>Beginner</span><br/>
@@ -240,9 +245,6 @@ export function SelectDifficulty(){
                 <span>Pick for Me!</span>
                 <Dice3D />
             </button>
-
-            <p>{JSON.stringify(showRange)}</p>
-
         </section>
         </div>
         </>}
