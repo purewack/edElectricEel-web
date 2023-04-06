@@ -32,10 +32,10 @@ body {
   display: inline-block;
 }
 .SettingsTitle::before {
-  background-image: url('./img/icons/star2.png');
+  background-image: url('../img/icons/star2.png');
 }
 .TweakTitle::before  {
-  background-image: url('./img/icons/spanner.png');
+  background-image: url('../img/icons/spanner.png');
 }
 
 .SelectionFlex{

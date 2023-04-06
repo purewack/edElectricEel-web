@@ -1,26 +1,25 @@
-import './Select.css'
-import './Styles/dice.css'
-import './Styles/metronome.css'
+import '../Styles//SelectDifficulty.css'
+import '../Styles/dice.css'
+import '../Styles/metronome.css'
 
 import * as Tone from "tone";
 import { useRef, useEffect, useState } from "react";
 import { isBrowser } from 'react-device-detect';
-import { prepareSound, newBassLine, endSound, playSound } from "./Sound";
-import { newNote, guessRange } from "./NoteGuess";
+import { prepareSound, newBassLine, endSound, playSound } from "../Sound";
+import { newNote, guessRange } from "../NoteGuess";
 
-import NoteInput from "./NoteInput/index"
-import NoteView from "./NoteView/index"
-import {SnakeLoadbar} from "./SnakeView/index"
+import NoteInput from "../NoteInput/index"
+import NoteView from "../NoteView/index"
+import {SnakeLoadbar} from "../SnakeView/index"
 
-import arrowSVG from "./img/icons/arrow.svg"
-import heartSVG from "./img/icons/heart.svg"
-import noteSVG from "./NoteView/svg/8n.svg"
-import sharpSVG from "./NoteView/svg/sharp.svg"
-import flatSVG from "./NoteView/svg/flat.svg"
-import metroSVG from "./img/metro/metro.svg"
-import metroNeedleSVG from "./img/metro/metro_needle.svg"
-import { setSelectionRange } from '@testing-library/user-event/dist/utils';
-import { Stage } from '@pixi/react';
+import arrowSVG from "../img/icons/arrow.svg"
+import heartSVG from "../img/icons/heart.svg"
+import noteSVG from "../NoteView/svg/8n.svg"
+import sharpSVG from "../NoteView/svg/sharp.svg"
+import flatSVG from "../NoteView/svg/flat.svg"
+import metroSVG from "../img/metro/metro.svg"
+import metroNeedleSVG from "../img/metro/metro_needle.svg"
+
 
 export function SelectDifficulty(){
     const [sounds, setSounds] = useState()

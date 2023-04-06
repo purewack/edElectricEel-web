@@ -487,7 +487,7 @@ function DebugGrid({ u, ux = 0, uy = 0, uw = 32, uh = 32 }) {
   return <Graphics draw={draw} />;
 }
 
-export function SnakeLoadbar ({type='circle', tick = null, length = 8, area=5}){
+export function SnakeLoadbar ({type='circle', tick = null, autoTickSpeed = 200, length = 8, area=5}){
   const [ref, cvSize] = useOnResizeComponent()
   const u = Math.floor(cvSize.width / area);
 
@@ -509,7 +509,7 @@ export function SnakeLoadbar ({type='circle', tick = null, length = 8, area=5}){
       setTick(0)
       intervalId.current = setInterval(()=>{
         setTick(t => t+1)
-      },200)
+      },autoTickSpeed)
     }
     
     setOnAdvance(()=>{
@@ -537,7 +537,7 @@ export function SnakeLoadbar ({type='circle', tick = null, length = 8, area=5}){
     return (()=>{
       clearInterval(intervalId.current)
     })
-  },[cvSize,length,area])
+  },[cvSize,length,area,autoTickSpeed])
 
 
   return <div ref={ref} className='SnakeLoadbar'>
@@ -554,6 +554,7 @@ export function SnakeLoadbar ({type='circle', tick = null, length = 8, area=5}){
                 onAdvance={onAdvance}
                 selfSprite={true}
             />
+            
             {/* <DebugGrid u={u}/> */}
         </Stage>
     </div>

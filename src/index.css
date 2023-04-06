@@ -74,6 +74,9 @@ button {
 button:hover {
   filter: contrast(0.75) sepia(2) hue-rotate(20deg)
 }
+button:disabled {
+  filter: brightness(0.5) contrast(0.6);
+}
 
 .Frame {
   padding: 0;

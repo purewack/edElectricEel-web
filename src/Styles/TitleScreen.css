@@ -1,0 +1,44 @@
+.TitleScreen {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.TitleSnake {
+    position: relative;
+    filter: drop-shadow(2px 2px 8px black);
+    overflow: hidden;
+    width: 30rem;
+    height: 10rem;
+}
+.TitleSnake canvas {
+    position: absolute;
+    top:0;
+    left:0;
+    border: dotted gold 1rem;
+    border-radius: 2rem;
+}
+.TitleSnake h1::first-letter {
+    color: limegreen;
+}
+.TitleSnake h1 {
+    margin-left: 15rem;
+    margin-top: 5rem;
+    width: min-content;
+    font-size: 5rem;
+    color:forestgreen;
+    transform: translate(-50%,-50%);
+}
+.SnakeLoadbar {
+    width: 30rem;
+    height: 10rem;
+}
+
+.TitleScreen {
+    padding-top: 4rem;
+}
+.TitleScreen section {
+    display: flex;
+    flex-direction: column;
+}
