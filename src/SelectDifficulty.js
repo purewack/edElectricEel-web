@@ -10,7 +10,7 @@ import { newNote, guessRange } from "./NoteGuess";
 
 import NoteInput from "./NoteInput/index"
 import NoteView from "./NoteView/index"
-import {SnakePreview} from "./SnakeView/index"
+import {SnakeLoadbar} from "./SnakeView/index"
 
 import arrowSVG from "./img/icons/arrow.svg"
 import heartSVG from "./img/icons/heart.svg"
@@ -230,14 +230,14 @@ export function SelectDifficulty(){
             <button className='btnLength'
                 onClick={()=>{
                     setLength(h => {
-                        if(h===2) return 5
+                        if(h===3) return 6
                         return h-1
                     })
                 }}
             >
                 <span>Starting Length</span>
                 
-                <SnakePreview length={length} type={'line'} direction={'right'}/>
+                <SnakeLoadbar length={length} type={'line'} area={6} tick={0}/>
             </button>
 
 

@@ -33,6 +33,20 @@ if(isSafari){
     PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL;
 }
 
+//helpers
+const idxToDir = {
+  0: "right",
+  1: "down",
+  2: "left",
+  3: "up",
+};
+const dirToIdx = {
+  right: 0,
+  down: 1,
+  left: 2,
+  up: 3,
+};
+
 export function SnakeView({ style, options, gameTick, children, showDebug}) {
   const [parentDiv, parentSize] = useOnResizeComponent();
   const textureLoaded = useRef(false);
@@ -370,19 +384,7 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
     }
   },[selfSprite])
 
-  //helpers
-  const idxToDir = {
-    0: "right",
-    1: "down",
-    2: "left",
-    3: "up",
-  };
-  const dirToIdx = {
-    right: 0,
-    down: 1,
-    left: 2,
-    up: 3,
-  };
+ 
   const idxToSprite = (i, l) => {
     if (i === 0) return sprites.sHead;
     else if (i + 1 === l) return sprites.sTail;
@@ -468,13 +470,13 @@ function DebugGrid({ u, ux = 0, uy = 0, uw = 32, uh = 32 }) {
       g.clear();
       //horiz
       for (let yy = 0; yy < uw; yy++) {
-        g.lineStyle(1, yy % 2 ? 0xffff00 : 0xaa0000, 0.3);
+        g.lineStyle(2, yy % 2 ? 0xff0000 : 0x0000ff, 0.3);
         g.moveTo(ux, uy + yy * u);
         g.lineTo(ux + uw * u, uy + yy * u);
       }
       //vert
       for (let xx = 0; xx < uw; xx++) {
-        g.lineStyle(1, xx % 2 ? 0xffff00 : 0xaa0000, 0.3);
+        g.lineStyle(2, xx % 2 ? 0xff0000 : 0x0000ff, 0.3);
         g.moveTo(ux + xx * u, uy);
         g.lineTo(ux + xx * u, uy + uh * u);
       }
@@ -485,26 +487,74 @@ function DebugGrid({ u, ux = 0, uy = 0, uw = 32, uh = 32 }) {
   return <Graphics draw={draw} />;
 }
 
-export function SnakePreview ({length}){
-  const [ref, size] = useOnResizeComponent()
+export function SnakeLoadbar ({type='circle', tick = null, length = 8, area=5}){
+  const [ref, cvSize] = useOnResizeComponent()
+  const u = Math.floor(cvSize.width / area);
 
-  const u = Math.floor(size.width / 5);
+  const [_tick, setTick] = useState(0)
+  const [dir, setDir] = useState('right');
+  const [spawn, setSpawn] = useState([0,0])
 
-  return <div ref={ref} className='SnakePreviewContainer'>
+  const intervalId = useRef(null)
+  const [onAdvance,setOnAdvance] = useState()
+  
+  useEffect(()=>{
+    const field = [
+      Math.max(1 , Math.floor(cvSize.width/u)), 
+      Math.max(1 , Math.floor(cvSize.height/u))
+    ]
+    setDir('right')
+
+    if(tick === null){
+      setTick(0)
+      intervalId.current = setInterval(()=>{
+        setTick(t => t+1)
+      },200)
+    }
+    
+    setOnAdvance(()=>{
+      return (poss)=>{
+        const head = poss[0]
+        if(idxToDir[head.d] === 'right'){
+          if(head.x >= field[0]-1) setDir('down')
+        }
+        else if(idxToDir[head.d] === 'down'){
+          if(head.y >= field[1]-1) setDir('left')
+        }
+        else if(idxToDir[head.d] === 'left'){
+          if(head.x <= 0) setDir('up')
+        }
+        else if(idxToDir[head.d] === 'up'){
+          if(head.y <= 0) setDir('right')
+        }
+      }
+    })
+
+    setSpawn(type === 'line' 
+    ? [field[0]-1,0] 
+    : [0,0])
+
+    return (()=>{
+      clearInterval(intervalId.current)
+    })
+  },[cvSize,length,area])
+
+
+  return <div ref={ref} className='SnakeLoadbar'>
         <Stage
-          width={size.width || 0}
-          height={size.height || 0}
-          options={{
-              backgroundAlpha: 0
-        }}>
+          width={cvSize.width}
+          height={cvSize.height}
+          options={{backgroundAlpha: 0}}>
             <Snake 
-                where={[1.5 + (length)/2,0]} 
+                where={spawn} 
                 length={length} 
-                direction={'right'}
+                direction={dir}
                 visuals={{u}}
-                tick={{value:0, speed:0}}
+                tick={{value:tick !== null ? tick : _tick, speed: type ==='circle' ? 1 : 0}}
+                onAdvance={onAdvance}
                 selfSprite={true}
             />
+            {/* <DebugGrid u={u}/> */}
         </Stage>
     </div>
 }

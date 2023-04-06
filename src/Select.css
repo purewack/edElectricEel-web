@@ -126,12 +126,12 @@ body {
   }
 
 
-  .SnakePreviewContainer {
+  .SelectDifficulty .SnakeLoadbar {
     width: 16rem;
     height: 3rem;
   }
 
-  .SnakePreviewContainer canvas {
+  .SelectDifficulty .SnakeLoadbar canvas {
     cursor: not-allowed;
     pointer-events: none;
   }
