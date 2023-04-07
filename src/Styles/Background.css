@@ -20,10 +20,19 @@
     transform: rotate(30deg) scale(2);
     z-index: -1;
 
-    animation: starsKF 3s linear infinite;
+    animation: starsKF 3s linear infinite, fade-in 1.2s ease-in-out both;;
 }
 
 @keyframes starsKF {
     from{background-position: 0px 0px;}
     to{background-position: 3rem 0rem;}
 }
+
+@keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0.3;
+    }
+  }
