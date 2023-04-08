@@ -69,12 +69,35 @@ svg text {
   user-select: none;
   pointer-events: none;
 }
+.View {
+  border: solid black 1px;
+  width: 100%;
+  height: 100%;
+  /* position: relative; */
+}
+
+.View svg {
+  height: 100%;
+  width: 100%;
+}
+
 
 .debugLabel {
   stroke: none;
   fill: white;
   background: black;
   filter: drop-shadow(1px 1px 0px #00f);
+}
+.debugInfo {
+  position:fixed;
+  top:0;
+  left:0;
+  background-color: white;
+  border:solid hotpink 1px;
+  opacity: 0;
+}
+.View:hover .debugInfo{
+  opacity: 1;
 }
 
 button {
@@ -135,17 +158,6 @@ button:disabled {
   top: calc(6px);
   left: unset;
   right: calc(100% + 26px); 
-}
-
-.View {
-  border: solid black 1px;
-  width: 100%;
-  height: 100%;
-}
-
-.View svg {
-  height: 100%;
-  width: 100%;
 }
 
 

@@ -7,9 +7,13 @@ import tongue from "./felix/tongue.png";
 import mouthO from "./felix/mouthO.png";
 import mouthS from "./felix/mouthStress.png";
 import mouthH from "./felix/mouthHappy.png";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 
-export default function FelixStatus({ style, animType = "idle", showDebug }) {
+
+import { DebugContext } from "../App";
+
+export default function FelixStatus({ style, animType = "idle" }) {
+  const showDebug = useContext(DebugContext)
   const ref = useRef(null);
   const container = useRef(null);
   const sprites = useRef(null);

@@ -23,6 +23,7 @@ section.MainTitle {
 .SnakeLoadbar {
     width: inherit;
     height: inherit;
+    border: none;
 }
 .MainTitle h1::first-letter {
     color: limegreen;

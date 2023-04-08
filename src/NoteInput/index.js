@@ -2,9 +2,11 @@ import piano_white from "./svg/piano_white.svg";
 import piano_black from "./svg/piano_black.svg";
 import piano_body from "./svg/piano_body.svg";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import useOnResizeComponent from "../Hooks.js";
 import anime from "animejs";
+
+import { DebugContext } from "../App";
 
 export default function NoteInput({
   root = 48,
@@ -15,9 +17,9 @@ export default function NoteInput({
   onNoteOn = null,
   onNoteOff = null,
   allowDragging = true,
-  viewStyle,
-  showDebug
+  viewStyle
 }) {
+  const showDebug = useContext(DebugContext);
   const [sizeRef, size] = useOnResizeComponent();
   const hh = Math.floor(size.height / 2) * 2;
   const ww = hh / 4;
@@ -182,31 +184,25 @@ export default function NoteInput({
           ) : null;
         })}
       </g>
-      {showDebug && <>
-        <text className="debugLabel">{JSON.stringify({
-          size
-        })}
-        </text>
-        <text y={16} className="debugLabel">{JSON.stringify({
-            octave,
-            octaves,
-            rootLow,
-            naturalRoot
-          })}
-        </text>
-        <text y={32} className="debugLabel">{JSON.stringify({
-            rangeActive,
-            rangeWhite
-          })}
-        </text>
-        <text y={48} className="debugLabel">{JSON.stringify({
-            middleWhere,
-            middleNow,
-            middleOffset
-          })}
-        </text>
-      </>}
     </svg>
+    {showDebug &&<div className="debugInfo">
+      <p>{JSON.stringify({size})}</p>
+      <p>{JSON.stringify({
+          octave,
+          octaves,
+          rootLow,
+          naturalRoot
+        })}</p>
+      <p>{JSON.stringify({
+          rangeActive,
+          rangeWhite
+        })}</p>
+      <p>{JSON.stringify({
+          middleWhere,
+          middleNow,
+          middleOffset
+        })}</p>
+    </div>}
   </div>);
 }
 

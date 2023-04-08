@@ -2,14 +2,17 @@ import anime from "animejs";
 import { Clef, Meter, Key, Note } from "./NoteViewElements.js";
 import useOnResizeComponent from "../Hooks.js";
 
+import { DebugContext } from "../App";
+import { useContext } from "react";
+
 export default function NoteView({
   data,
   slide,
   viewStyle,
   stavesExtra,
-  noBarStart,
-  showDebug
+  noBarStart
 }) {
+  const showDebug = useContext(DebugContext)
   const [sizeRef, size] = useOnResizeComponent();
 
   // unit size for scaling up (distance between ledger lines)
@@ -22,7 +25,6 @@ export default function NoteView({
   return (
   <div className='View NoteView' style={viewStyle}>
     <svg ref={sizeRef} >
-      {showDebug && <text className="debugLabel">{JSON.stringify(size)}</text>}
       <g
         transform={`
             translate(0 ${size.height / 2})
@@ -130,6 +132,9 @@ export default function NoteView({
         /> */}
       </g>
     </svg>
+    {showDebug &&<div className="debugInfo">
+      <p>{JSON.stringify({size})}</p>
+    </div>}
   </div>);
 }
 

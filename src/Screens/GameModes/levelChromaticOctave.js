@@ -1,5 +1,5 @@
 import * as Tone from "tone";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useContext} from "react";
 
 import { prepareSound, newBassLine, endSound, playSound } from "../../Sound";
 import { newNote, guessRange } from "../../NoteGuess";
@@ -15,12 +15,9 @@ import NoteView from "../../NoteView/index.js";
 import {Snake, SnakeView} from "../../SnakeView/index.js";
 import Item from "../../SnakeView/Item";
 
-export default function LevelChromaticOctave({settings}) {
-  const [debug, setDebug] = useState(false);
-  useEffect(()=>{
-    window.toggleDebug = ()=>{setDebug(d=>!d)}
-  },[])
 
+export default function LevelChromaticOctave({settings}) {
+ 
   const noteStyle = {
     position: 'absolute',
     width: '10vh',
@@ -179,7 +176,6 @@ export default function LevelChromaticOctave({settings}) {
     <>
       <section className="Frame Snake" style={{ marginBottom:0, position: "relative" }}>
         <SnakeView
-          showDebug={debug}
           direction={direction}
           length={length}
           gameTick={gameTick}
@@ -269,7 +265,6 @@ export default function LevelChromaticOctave({settings}) {
               instruments.piano.triggerAttackRelease(n,'8n','@8n')
             }}
             allowDragging={false}
-            showDebug={debug}
           />}
         </div>
         <div className="Frame Status" style={statusStyle}>

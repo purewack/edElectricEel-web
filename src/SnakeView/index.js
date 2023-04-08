@@ -6,7 +6,8 @@ import {
   useCallback,
   Children,
   isValidElement,
-  cloneElement
+  cloneElement,
+  useContext
 } from "react";
 import {
   Stage,
@@ -26,6 +27,7 @@ import items_atlas from "./img/items.json";
 import entity_atlas from "./img/entity.json";
 import tiles_img from "./img/tiles64.png";
 import "./style.css";
+import { DebugContext } from "../App.js";
 
 PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
 const isSafari = window.safari !== undefined;
@@ -47,7 +49,8 @@ const dirToIdx = {
   up: 3,
 };
 
-export function SnakeView({ style, options, gameTick, children, showDebug}) {
+export function SnakeView({ style, options, gameTick, children}) {
+  const showDebug = useContext(DebugContext)
   const [parentDiv, parentSize] = useOnResizeComponent();
   const textureLoaded = useRef(false);
   const [sprites, setSprites] = useState(null);
@@ -271,25 +274,17 @@ export function SnakeView({ style, options, gameTick, children, showDebug}) {
                 uw={visuals.uArea[0]*2}  
                 uh={visuals.uArea[1]*2} 
               />
-              <Text
-                text={`
-                gameTick:${gameTick} 
-                left:${visuals.pxMarginLeft} 
-                top:${visuals.pxMarginTop} 
-                areaPx:${JSON.stringify(visuals.pxArea)} 
-                `}
-                style={
-                  new PIXI.TextStyle({
-                    fontFamily: "courier",
-                    fill: "green",
-                    fontSize: 16,
-                  })
-                }
-              />
             </>
           )}
         </Stage>
       )}
+      {showDebug &&<div className="debugInfo">
+        <p>{JSON.stringify({
+          gameTick, 
+          pxMarginLeft:visuals.pxMarginLeft, 
+          pxMarginLeft:visuals.pxMarginTop, 
+          areaPx:JSON.stringify(visuals.pxArea)})}</p>
+      </div>}
     </div>
   );
 }
@@ -488,6 +483,8 @@ function DebugGrid({ u, ux = 0, uy = 0, uw = 32, uh = 32 }) {
 }
 
 export function SnakeLoadbar ({type='circle', tick = null, autoTickSpeed = 200, length = 8, area=5}){
+  const showDebug = useContext(DebugContext)
+  
   const [ref, cvSize] = useOnResizeComponent()
   const u = Math.floor(cvSize.width / area);
 
@@ -540,7 +537,7 @@ export function SnakeLoadbar ({type='circle', tick = null, autoTickSpeed = 200, 
   },[cvSize,length,area,autoTickSpeed])
 
 
-  return <div ref={ref} className='SnakeLoadbar'>
+  return <div ref={ref} className='View SnakeLoadbar'>
         <Stage
           width={cvSize.width}
           height={cvSize.height}
@@ -555,7 +552,12 @@ export function SnakeLoadbar ({type='circle', tick = null, autoTickSpeed = 200, 
                 selfSprite={true}
             />
             
-            {/* <DebugGrid u={u}/> */}
+            {showDebug && <DebugGrid u={u}/>}
         </Stage>
+       
+        {showDebug &&<div className="debugInfo">
+        <p>{JSON.stringify({
+          size:cvSize, spawn, length, direction:dir})}</p>
+      </div>}
     </div>
 }

@@ -2,10 +2,17 @@ import LevelChromaticOctave from './Screens/GameModes/levelChromaticOctave'
 import { SelectDifficulty } from './Screens/SelectDifficulty'
 import { SnakeLoadbar } from './SnakeView'
 import {Title} from './Screens/Title'
-import { useCallback, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 import * as Tone from 'tone'
 
+export const DebugContext = createContext(false);
+
 export default function App(){
+    const [showDebug, setShowDebug] = useState(false)
+    useEffect(()=>{
+        window.toggleDebug = ()=>{setShowDebug(d=>!d)}
+    },[])
+    
     const [screen, setScreen] = useState('info');
     const [isPresenting, setIsPresenting] = useState(false);
 
@@ -26,8 +33,11 @@ export default function App(){
                 setScreen('title')
             }}>Ok!</button>   
         </div>}
-        {screen === 'title' && <Title onPresent={handlePresentScreen}/>}
-        {screen === 'selectDifficulty' && <SelectDifficulty onPresent={handlePresentScreen}/>}
-        {screen === 'game' && <LevelChromaticOctave onPresent={handlePresentScreen}/>}
+
+        <DebugContext.Provider value={showDebug}>
+            {screen === 'title' && <Title onPresent={handlePresentScreen}/>}
+            {screen === 'selectDifficulty' && <SelectDifficulty onPresent={handlePresentScreen}/>}
+            {screen === 'game' && <LevelChromaticOctave onPresent={handlePresentScreen}/>}
+        </DebugContext.Provider>
     </div>)
 }
