@@ -83,7 +83,7 @@ body {
   overflow: hidden;
   /* height: 3rem; */
 }
-  .NoteInput{
+  .CustomOptions .NoteInput{
     height:10rem;
   }
 

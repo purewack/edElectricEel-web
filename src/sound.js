@@ -1,7 +1,6 @@
 import * as Tone from "tone";
 
 export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGametick){
-    Tone.start()
     Tone.Transport.bpm.value = levelData.music.bpm
 
     const piano = new Tone.Synth().toDestination();
@@ -55,7 +54,10 @@ export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGame
 
     setCurrentPatterns({tick: tickId, snake:moveId, beat:beatLine, bass:bassLine})
 
-    Tone.Transport.start(0.2)
+    const countdown = new Tone.Pattern((t,n)=>{
+        sampler.triggerAttackRelease(n,'8n',t)
+    },['C1','C1','C1','B1']).start('0:0:0').stop(when)
+    
     Tone.Transport.position = '0:0:0'
     console.log(when)
     console.log(Tone.Transport.position)

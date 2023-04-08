@@ -21,7 +21,7 @@ import metroSVG from "../img/metro/metro.svg"
 import metroNeedleSVG from "../img/metro/metro_needle.svg"
 
 
-export function SelectDifficulty(){
+export function SelectDifficulty({onPresent}){
     const [sounds, setSounds] = useState()
     
     const [difficulty, setDifficulty] = useState({level:'easy'});
@@ -262,11 +262,17 @@ export function SelectDifficulty(){
             </button>
         }
         <section className='Navigation GalleryFlex'>
-            <button className='btnBack GalleryFlex'>
+            <button className='btnBack GalleryFlex'
+            onClick={()=>{
+                onPresent('title')
+            }}>
                 <img alt="arrow" src={arrowSVG} />
                 <span>Back</span> 
             </button>
-            <button className='btnGo GalleryFlex'>
+            <button className='btnGo GalleryFlex'
+            onClick={()=>{
+                onPresent('game')
+            }}>
                 <span>Lets Go!</span> 
                 <img alt="arrow" src={arrowSVG} />
             </button>

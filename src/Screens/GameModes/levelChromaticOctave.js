@@ -1,19 +1,19 @@
 import * as Tone from "tone";
 import { useCallback, useEffect, useState } from "react";
 
-import { prepareSound, newBassLine, endSound, playSound } from "../Sound";
-import { newNote, guessRange } from "../NoteGuess";
+import { prepareSound, newBassLine, endSound, playSound } from "../../Sound";
+import { newNote, guessRange } from "../../NoteGuess";
 
 import "./levelChromaticOctave.css";
 import levelData from './levelChromaticOctave.json'
 
-import arrowSVG from '../img/icons/arrow.svg'
-import heartSVG from '../img/icons/heart.svg'
+import arrowSVG from '../../img/icons/arrow.svg'
+import heartSVG from '../../img/icons/heart.svg'
 
-import NoteInput from "../NoteInput/index.js";
-import NoteView from "../NoteView/index.js";
-import {Snake, SnakeView} from "../SnakeView/index.js";
-import Item from "../SnakeView/Item";
+import NoteInput from "../../NoteInput/index.js";
+import NoteView from "../../NoteView/index.js";
+import {Snake, SnakeView} from "../../SnakeView/index.js";
+import Item from "../../SnakeView/Item";
 
 export default function LevelChromaticOctave({settings}) {
   const [debug, setDebug] = useState(false);
@@ -79,8 +79,12 @@ export default function LevelChromaticOctave({settings}) {
     setGameTick(-1);
     generateNewGuess();
     console.log("new game")
+    prepareSound(levelData,setInstruments,setSoundSeq,()=>{ 
+      setGameTick(tt=>tt+1)
+    })
 
   },[isStarted])
+
 
 
   //computer keyboard input
@@ -172,7 +176,7 @@ export default function LevelChromaticOctave({settings}) {
   },[])
 
   return (
-    <div className="App">
+    <>
       <section className="Frame Snake" style={{ marginBottom:0, position: "relative" }}>
         <SnakeView
           showDebug={debug}
@@ -244,10 +248,8 @@ export default function LevelChromaticOctave({settings}) {
                 transform: 'translate(-50%, -50%)'
               }}
               onClick={()=>{
-                prepareSound(levelData,setInstruments,setSoundSeq,()=>{ 
-                  setGameTick(tt=>tt+1)
-                })
                 setIsStarted(true)
+                Tone.Transport.start(Tone.now())
               }}
             >
               Ready
@@ -287,6 +289,6 @@ export default function LevelChromaticOctave({settings}) {
           </div> */}
         </div>
       </section>
-    </div>
+    </>
   );
 }

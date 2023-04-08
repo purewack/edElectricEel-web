@@ -79,6 +79,15 @@ section.MainTitle {
     width: 2rem;
     height: 2rem;
 }
+.WhatsNew ul{
+  list-style-position: inside;
+}
+.WhatsNew ul li.new {
+  color:forestgreen;
+}
+.WhatsNew ul li.del {
+  color:orangered;
+}
 
 .VersionTag{
     position: absolute;

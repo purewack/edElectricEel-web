@@ -3,12 +3,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 /* safari ios prevent scrolling of page on drag */
-html, body {
+/* html, body {
   overflow: hidden;
 }
 body{
   position: relative;
-}
+} */
 
 * {
   font-family: 'VT323', monospace;
@@ -36,6 +36,24 @@ code {
 .App {
   min-height: 100vh;
   font-size: calc(10px + 2vmin);
+  position: relative;
+}
+
+.App::after {
+  position: fixed;
+  top:0;
+  left:0;
+  width: 100vw;
+  height: 100vh;
+  background-color: transparent;
+  pointer-events: none;
+  content: '';
+  background-color: black;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.App.PresentFade::after{
+  opacity: 1;
 }
 
 svg {
