@@ -1,6 +1,10 @@
 import * as Tone from "tone";
 
+let soundPrepared = false;
+
 export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGametick){
+    if(soundPrepared) return;
+    soundPrepared = true;
     Tone.Transport.bpm.value = levelData.music.bpm
 
     const piano = new Tone.Synth().toDestination();
@@ -84,6 +88,8 @@ export function newBassLine (root, instrument, bassData, currentPatterns, setCur
   }
 
 export function endSound(currentPatterns,setCurrentPatterns){
+    if(!soundPrepared) return;
+    soundPrepared = false
     currentPatterns.bass && currentPatterns.bass.dispose()
     currentPatterns.beat && currentPatterns.beat.dispose()
     Tone.Transport.clear()
