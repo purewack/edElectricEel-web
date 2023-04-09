@@ -104,7 +104,7 @@ button {
   font-size: 1.5rem;
   background-color: transparent;
   border: solid 16px;
-  border-image: url('./img/border.png');
+  border-image: url('../AssetsImport/borders/border.png');
   border-image-slice: 3 fill;
   image-rendering: pixelated;
   overflow: hidden;
@@ -113,6 +113,9 @@ button {
 button:hover {
   filter: contrast(0.75) sepia(2) hue-rotate(20deg)
 }
+button.alt:hover{
+  filter: contrast(0.75) sepia(2) hue-rotate(90deg)
+}
 button:disabled {
   filter: brightness(0.5) contrast(0.6);
 }
@@ -120,7 +123,7 @@ button:disabled {
 .Frame {
   padding: 0;
   border: solid 16px;
-  border-image: url('./img/borderFill.png');
+  border-image: url('../AssetsImport/borders/borderFill.png');
   border-image-slice: 3;
   overflow: hidden;
   image-rendering: pixelated;
@@ -128,7 +131,7 @@ button:disabled {
 .Bubble {
   padding: 0;
   border: solid  20px rgba(0,0,0,0.5);
-  border-image: url('./img/bubbleBorder.png');
+  border-image: url('../AssetsImport/borders/bubbleBorder.png');
   border-image-slice: 7;
   image-rendering: pixelated;
 
@@ -150,7 +153,7 @@ button:disabled {
   height: 18px;
   top: calc(100% + 16px);
   left:8px; 
-  background-image: url('./img/bubleStemBot.png');
+  background-image: url('../AssetsImport/borders/bubleStemBot.png');
   background-size: cover;
 }
 .Bubble.Stem.Left::after {

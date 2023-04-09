@@ -47,30 +47,30 @@ background-color: ivory;
 
 .cube-face:nth-child(1){
 transform:translateZ(var(--face-trz));
-background-image: url('../img/dice/1.png');
+background-image: url('../AssetsImport/dice/1.png');
 }
 
 .cube-face:nth-child(2){
 transform:rotateY(90deg) translateZ(var(--face-trz));
-background-image: url('../img/dice/2.png');
+background-image: url('../AssetsImport/dice/2.png');
 }
 
 .cube-face:nth-child(3){
 transform:rotateY(180deg) translateZ(var(--face-trz));
-background-image: url('../img/dice/3.png');
+background-image: url('../AssetsImport/dice/3.png');
 }
 
 .cube-face:nth-child(4){
 transform:rotateY(-90deg) translateZ(var(--face-trz));
-background-image: url('../img/dice/4.png');
+background-image: url('../AssetsImport/dice/4.png');
 }
 
 .cube-face:nth-child(5){
 transform:rotateX(90deg) translateZ(var(--face-trz));
-background-image: url('../img/dice/5.png');
+background-image: url('../AssetsImport/dice/5.png');
 }
 .cube-face:nth-child(6){
 transform:rotateX(-90deg) translateZ(var(--face-trz));
-background-image: url('../img/dice/6.png');
+background-image: url('../AssetsImport/dice/6.png');
 }
   

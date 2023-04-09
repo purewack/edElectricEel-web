@@ -1,24 +1,24 @@
 import '../Styles//SelectDifficulty.css'
-import '../Styles/dice.css'
-import '../Styles/metronome.css'
+import '../Styles/Dice.css'
+import '../Styles/Metronome.css'
+
+import arrowSVG from "../AssetsImport/icons/arrow.svg"
+import heartSVG from "../AssetsImport/icons/heart.svg"
+import noteSVG from "../Components/NoteView/svg/8n.svg"
+import sharpSVG from "../Components/NoteView/svg/sharp.svg"
+import flatSVG from "../Components/NoteView/svg/flat.svg"
+import metroSVG from "../AssetsImport/metronome/metro.svg"
+import metroNeedleSVG from "../AssetsImport/metronome/metro_needle.svg"
 
 import * as Tone from "tone";
 import { useRef, useEffect, useState } from "react";
 import { isBrowser } from 'react-device-detect';
-import { prepareSound, newBassLine, endSound, playSound } from "../Sound";
-import { newNote, guessRange } from "../NoteGuess";
+import { prepareSound, newBassLine, endSound, playSound } from "../Components/Sound";
+import { newNote, guessRange } from "../Components/NoteGuess";
 
-import NoteInput from "../NoteInput/index"
-import NoteView from "../NoteView/index"
-import {SnakeLoadbar} from "../SnakeView/index"
-
-import arrowSVG from "../img/icons/arrow.svg"
-import heartSVG from "../img/icons/heart.svg"
-import noteSVG from "../NoteView/svg/8n.svg"
-import sharpSVG from "../NoteView/svg/sharp.svg"
-import flatSVG from "../NoteView/svg/flat.svg"
-import metroSVG from "../img/metro/metro.svg"
-import metroNeedleSVG from "../img/metro/metro_needle.svg"
+import NoteInput from "../Components/NoteInput/index"
+import NoteView from "../Components/NoteView/index"
+import {SnakeLoadbar} from "../Components/SnakeView"
 
 
 export function SelectDifficulty({onPresent}){
@@ -269,7 +269,7 @@ export function SelectDifficulty({onPresent}){
                 <img alt="arrow" src={arrowSVG} />
                 <span>Back</span> 
             </button>
-            <button className='btnGo GalleryFlex'
+            <button className='alt btnGo GalleryFlex'
             onClick={()=>{
                 onPresent('game')
             }}>

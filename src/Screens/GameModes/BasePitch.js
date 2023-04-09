@@ -1,22 +1,21 @@
+import levelData from './BasePitch.json'
+import arrowSVG from '../../AssetsImport/icons/arrow.svg'
+
 import * as Tone from "tone";
 import { useCallback, useEffect, useState, useContext} from "react";
 
-import { prepareSound, newBassLine, endSound, playSound } from "../../Sound";
-import { newNote, guessRange } from "../../NoteGuess";
+import { prepareSound, newBassLine, endSound, playSound } from "../../Components/Sound";
+import { newNote, guessRange } from "../../Components/NoteGuess";
 
-import "./levelChromaticOctave.css";
-import levelData from './levelChromaticOctave.json'
-
-import arrowSVG from '../../img/icons/arrow.svg'
-import heartSVG from '../../img/icons/heart.svg'
-
-import NoteInput from "../../NoteInput/index.js";
-import NoteView from "../../NoteView/index.js";
-import {Snake, SnakeView} from "../../SnakeView/index.js";
-import Item from "../../SnakeView/Item";
+import NoteInput from "../../Components/NoteInput/index.js";
+import NoteView from "../../Components/NoteView/index.js";
+import {Snake, SnakeView, dirToIdx} from "../../Components/SnakeView/index.js";
+import Item from "../../Components/SnakeView/Item";
+import { DebugContext } from '../../App';
 
 
-export default function LevelChromaticOctave({settings}) {
+export default function LevelBasePitch ({settings}) {
+  const showDebug = useContext(DebugContext)
  
   const noteStyle = {
     position: 'absolute',
@@ -83,26 +82,6 @@ export default function LevelChromaticOctave({settings}) {
   },[isStarted])
 
 
-
-  //computer keyboard input
-  useEffect(() => {
-    const keyHandle = (ev) => {
-      if (ev.key === "w") setDirection("up");
-      if (ev.key === "s") setDirection("down");
-      if (ev.key === "a") setDirection("left");
-      if (ev.key === "d") setDirection("right");
-      if (ev.key === "g") setLength((l) => l + 1);
-      if (ev.key === "t")
-        setGameTick((t) => {
-          return t + 1;
-        });
-      if(ev.key === 'n') 
-        generateNewGuess()
-    };
-    window.addEventListener("keydown", keyHandle);
-    return ()=>{window.removeEventListener("keydown", keyHandle)}
-  }, []);
-
   const onSelectNote = useCallback((n)=>{
     //check chosen directon
     const nt1 = noteData[0]
@@ -119,14 +98,6 @@ export default function LevelChromaticOctave({settings}) {
       newBassLine(n,instruments.bass,levelData.music.bass,soundSeq,setSoundSeq)
     }
   },[noteData, instruments, levelData])
-
-
-  const dirToIdx = {
-    right: 0,
-    down: 1,
-    left: 2,
-    up: 3,
-  };
 
   const [item, setItem] = useState([6,4])
   const newItem = (g)=>{
@@ -171,6 +142,27 @@ export default function LevelChromaticOctave({settings}) {
     //calculate keys and NoteView params
     setPianoStats(range);
   },[])
+
+
+  //computer keyboard input
+  useEffect(() => {
+    const keyHandle = (ev) => {
+      if (ev.key === "ArrowUp") setDirection("up");
+      if (ev.key === "ArrowDown") setDirection("down");
+      if (ev.key === "ArrowLeft") setDirection("left");
+      if (ev.key === "ArrowRight") setDirection("right");
+      if (ev.key === "+") setLength((l) => l + 1);
+      if (ev.key === ".")
+        setGameTick((t) => {
+          return t + 1;
+        });
+      if(ev.key === '?') 
+        generateNewGuess()
+    };
+    if(showDebug)
+    window.addEventListener("keydown", keyHandle);
+    return ()=>{window.removeEventListener("keydown", keyHandle)}
+  }, [showDebug]);
 
   return (
     <>

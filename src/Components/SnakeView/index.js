@@ -1,3 +1,10 @@
+import snake_atlas from "./assets/snake.json";
+import scene_atlas from "./assets/scene.json";
+import items_atlas from "./assets/items.json";
+import entity_atlas from "./assets/entity.json";
+import tiles_img from "./assets/tiles64.png";
+import "./style.css";
+
 import * as PIXI from "pixi.js";
 import {
   useEffect,
@@ -18,16 +25,8 @@ import {
   Container,
 } from "@pixi/react";
 import useOnResizeComponent from "../Hooks.js";
-import Item from "./Item.js";
-import Boat from './Boat.js'
 
-import snake_atlas from "./img/snake.json";
-import scene_atlas from "./img/scene.json";
-import items_atlas from "./img/items.json";
-import entity_atlas from "./img/entity.json";
-import tiles_img from "./img/tiles64.png";
-import "./style.css";
-import { DebugContext } from "../App.js";
+import { DebugContext } from "../../App.js";
 
 PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
 const isSafari = window.safari !== undefined;
@@ -36,13 +35,13 @@ if(isSafari){
 }
 
 //helpers
-const idxToDir = {
+export const idxToDir = {
   0: "right",
   1: "down",
   2: "left",
   3: "up",
 };
-const dirToIdx = {
+export const dirToIdx = {
   right: 0,
   down: 1,
   left: 2,

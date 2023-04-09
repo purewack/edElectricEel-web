@@ -1,10 +1,8 @@
 import { useEffect, useState, useRef} from 'react'
 import '../Styles/TitleScreen.css'
 import '../Styles/Background.css'
-import star from '../img/icons/star2.png'
-import { SnakeLoadbar } from '../SnakeView'
-import VersionTag, {versionText,PatchNotes} from '../Version'
-import * as Tone from 'tone'
+import { SnakeLoadbar } from '../Components/SnakeView'
+import VersionTag, {versionText,PatchNotes} from '../Components/Version'
 
 export function Title({onPresent}){
 

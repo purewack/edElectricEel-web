@@ -6,7 +6,7 @@ import { useState, useEffect, useContext } from "react";
 import useOnResizeComponent from "../Hooks.js";
 import anime from "animejs";
 
-import { DebugContext } from "../App";
+import { DebugContext } from "../../App";
 
 export default function NoteInput({
   root = 48,

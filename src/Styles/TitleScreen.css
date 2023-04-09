@@ -57,14 +57,14 @@ section.MainTitle {
     transform: translateY(-50%);
     height: 3rem;
     width: 3rem;
-    background-image: url('../NoteView/svg/8nn.svg');
+    background-image: url('../Components/NoteView/svg/8nn.svg');
     background-size:auto;
 }
 .SubTitle::before {
     left: unset;
     right: 100%;
     transform: translateX(50%) translateY(-50%);
-    background-image: url('../NoteView/svg/8n.svg');
+    background-image: url('../Components/NoteView/svg/8n.svg');
 }
 
 .WhatsNew{

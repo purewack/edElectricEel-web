@@ -88,7 +88,6 @@ export function newBassLine (root, instrument, bassData, currentPatterns, setCur
   }
 
 export function endSound(currentPatterns,setCurrentPatterns){
-    if(!soundPrepared) return;
     soundPrepared = false
     currentPatterns.bass && currentPatterns.bass.dispose()
     currentPatterns.beat && currentPatterns.beat.dispose()

@@ -1,9 +1,9 @@
 import anime from "animejs";
 import { Clef, Meter, Key, Note } from "./NoteViewElements.js";
 import useOnResizeComponent from "../Hooks.js";
-
-import { DebugContext } from "../App";
 import { useContext } from "react";
+
+import { DebugContext } from "../../App";
 
 export default function NoteView({
   data,

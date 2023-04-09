@@ -1,6 +1,7 @@
-import LevelChromaticOctave from './Screens/GameModes/levelChromaticOctave'
+import './Styles/BasePitch.css'
+
+import LevelBasePitch  from './Screens/GameModes/BasePitch'
 import { SelectDifficulty } from './Screens/SelectDifficulty'
-import { SnakeLoadbar } from './SnakeView'
 import {Title} from './Screens/Title'
 import { createContext, useEffect, useState } from 'react'
 import * as Tone from 'tone'
@@ -37,7 +38,7 @@ export default function App(){
         <DebugContext.Provider value={showDebug}>
             {screen === 'title' && <Title onPresent={handlePresentScreen}/>}
             {screen === 'selectDifficulty' && <SelectDifficulty onPresent={handlePresentScreen}/>}
-            {screen === 'game' && <LevelChromaticOctave onPresent={handlePresentScreen}/>}
+            {screen === 'game' && <LevelBasePitch  onPresent={handlePresentScreen}/>}
         </DebugContext.Provider>
     </div>)
 }
