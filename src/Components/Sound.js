@@ -1,6 +1,108 @@
 import * as Tone from "tone";
+import { Midi } from '@tonejs/midi'
 
 let soundPrepared = false;
+
+class SongPlayer {
+    #transpose = 0;
+
+    constructor(name){
+        if(name) this.load(name)
+        console.log("New SongPlayer")
+    }
+
+    async load(name){
+        if(this.song){
+            this.destroy()
+        }
+
+        const midiJson = await Midi.fromUrl("songs/" + name)
+        console.log(midiJson)
+
+        this.song = midiJson;
+
+        Tone.Transport.cancel();
+        Tone.Transport.clear();
+        Tone.Transport.bpm.value = midiJson.header.tempos[0].bpm
+        Tone.Transport.loopEnd = midiJson.duration;
+        Tone.Transport.loopStart = 0;
+        Tone.Transport.loop = true;
+
+        this.voices = []
+
+        midiJson.tracks.forEach(t => {
+            if(!t.notes.length) return;
+            const drums = t.instrument.percussion
+            let vv;
+            if(drums){
+                vv = new Tone.Sampler({
+                    urls: {
+                        'C2':'Sounds/kick_soft.wav',
+                        'D2':'Sounds/snare_noise.wav',
+                        'F#2':'Sounds/hat8bit1.wav',
+                    },
+                    onload: () => {
+                    console.log('samples loaded')
+                    }
+                }).toDestination();
+            }
+            else{
+                vv = new Tone.PolySynth().toDestination()
+            }
+
+            this.voices.push(vv)
+            t.notes.forEach(n => {
+                if(drums){
+                    Tone.Transport.schedule((tt)=>{
+                        vv.triggerAttackRelease(n.name, '2n', tt, n.velocity);
+                    },n.time)
+                }
+                else{
+                    Tone.Transport.schedule((tt)=>{
+                        const tr = this.getTranspose() 
+                        vv.triggerAttackRelease(Tone.Midi(n.midi + tr).toFrequency(), n.duration, tt, n.velocity);
+                    },n.time)
+                }
+            })
+            vv.volume.value = drums ? -12 : -9;
+        })
+    }
+
+    destroy(){
+        Tone.Transport.stop();
+        Tone.Transport.clear();
+        Tone.Transport.cancel();
+        this.song = null;
+        if(this.voices.length) this.voices.forEach(v => {
+            if(v.releaseAll) v.releaseAll()
+            else v.dispose();
+            console.log(v);
+        })
+        this.voices = null;
+    }
+
+    play(){
+        if(!this.song) return;
+        Tone.Transport.start("+0.5","0:0:0");
+    }
+
+    toggle(){
+
+    }
+
+    stop(){
+
+    }
+
+    getTranspose(){
+        return this.#transpose;
+    }
+
+    setTranspose(t){
+        this.#transpose = t;
+    }
+}
+export const songPlayer = new SongPlayer('menu.mid');
 
 export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGametick){
     if(soundPrepared) return;

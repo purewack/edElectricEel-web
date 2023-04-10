@@ -13,8 +13,6 @@ import metroNeedleSVG from "../AssetsImport/metronome/metro_needle.svg"
 import * as Tone from "tone";
 import { useRef, useEffect, useState } from "react";
 import { isBrowser } from 'react-device-detect';
-import { prepareSound, newBassLine, endSound, playSound } from "../Components/Sound";
-import { newNote, guessRange } from "../Components/NoteGuess";
 
 import NoteInput from "../Components/NoteInput/index"
 import NoteView from "../Components/NoteView/index"
@@ -48,12 +46,12 @@ export function SelectDifficulty({onPresent}){
             p.volume.value = -18
 
             setSounds({piano:p, sampler: s})
-            Tone.Transport.start();
+            // Tone.Transport.start();
         }
         
         return ()=>{
-            Tone.Transport.stop();
-            Tone.Transport.cancel();
+            // Tone.Transport.stop();
+            // Tone.Transport.cancel();
             if(sounds){
                 for(const i in sounds){
                     console.log(i)
@@ -68,8 +66,8 @@ export function SelectDifficulty({onPresent}){
         setBPM(b => {
             if(b <= 30 || b >= 180) return b 
             const bb = b+inc;
-            Tone.Transport.bpm.value = bb;
-            Tone.Transport.position = '0:0:0'
+            // Tone.Transport.bpm.value = bb;
+            // Tone.Transport.position = '0:0:0'
             return bb
         });
     }

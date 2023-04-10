@@ -3,6 +3,8 @@ import '../Styles/TitleScreen.css'
 import '../Styles/Background.css'
 import { SnakeLoadbar } from '../Components/SnakeView'
 import VersionTag, {versionText,PatchNotes} from '../Components/Version'
+import { songPlayer } from '../Components/Sound'
+
 
 export function Title({onPresent}){
 
@@ -17,6 +19,9 @@ export function Title({onPresent}){
 
     const newGamePitch = ()=>{
         onPresent('selectDifficulty')
+        songPlayer.load('jazzy.mid').then(()=>{
+            songPlayer.play()
+        })
     }
 
     return <div className='TitleScreen FlexDown Background'>

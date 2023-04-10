@@ -5,6 +5,7 @@ import { SelectDifficulty } from './Screens/SelectDifficulty'
 import {Title} from './Screens/Title'
 import { createContext, useEffect, useState } from 'react'
 import * as Tone from 'tone'
+import { songPlayer } from './Components/Sound'
 
 export const DebugContext = createContext(false);
 
@@ -30,8 +31,10 @@ export default function App(){
             <h1>Disclaimer</h1>
             <h2>This app will make sound, please adjust your volume to hear it</h2>
             <button onClick={()=>{
-                Tone.start()
-                setScreen('title')
+                Tone.start().then(()=>{
+                    songPlayer.play();
+                    setScreen('title')
+                })
             }}>Ok!</button>   
         </div>}
 
