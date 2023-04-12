@@ -5,6 +5,9 @@ Snake-like game for teaching music theory, with a focus on sight reading pitches
 <div style='display:flex;'>
 <img src='./src/Components/NoteView/svg/8n.svg' width='100px' style="margin-inline:auto; transform: translateX(20%)">
 </div>
+
+Implemented so far is only a basic pitch identification game
+
 ## Plot
 Felix the battery is stuck powering the all power-hungry music jukebox!
 As Sneel the Electric Eel, you have to build up enough charge to keep Felix alive.
