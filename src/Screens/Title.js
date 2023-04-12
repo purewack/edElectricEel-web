@@ -3,7 +3,7 @@ import '../Styles/TitleScreen.css'
 import '../Styles/Background.css'
 import { SnakeLoadbar } from '../Components/SnakeView'
 import VersionTag, {versionText,PatchNotes} from '../Components/Version'
-import { songPlayer } from '../Components/Sound'
+import { midiPlayer, songPlayer } from '../Components/Sound'
 
 
 export function Title({onPresent}){
@@ -16,6 +16,10 @@ export function Title({onPresent}){
     //         s.dispose()
     //     }
     // })
+
+    useEffect(()=>{
+        midiPlayer.play('jazzy.mid');
+    })
 
     const newGamePitch = ()=>{
         onPresent('selectDifficulty')

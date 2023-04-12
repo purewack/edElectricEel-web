@@ -44,18 +44,6 @@ export default function App(){
 
     const handlePresentScreen = (toPresent, bypass=false, data)=>{
         const go = ()=>{
-            if(toPresent === 'title'){
-                // midiPlayer.stop()
-                // songPlayer.play('jazzy.mp3')
-
-                midiPlayer.play('jazzy.mid');
-            }
-            else{
-                // songPlayer.stop(0)
-                // midiPlayer.play('classy.mid');
-
-                midiPlayer.play('classy.mid');
-            }
             setScreen(toPresent)
             setIsPresenting(false)
         }

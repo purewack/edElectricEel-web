@@ -22,9 +22,12 @@ export class MidiFilePlayer {
 
             input: new Tone.Synth().toDestination(),
         }
+        this.output = new Tone.Volume(-3).toDestination()
         const q = this.players.quality
         const f = this.players.filter
-        f.toDestination()
+        const o = this.output
+        o.toDestination()
+        f.connect(o)  
         q.connect(f)
         q.set({wet:1});
         this.players.piano.connect(q)
@@ -102,8 +105,8 @@ export class MidiFilePlayer {
 
     play(song, onBar, exclude){
         if(!song) return;
-        this.stop();
-       
+        this.stop(this.song ? 1.5 : 0).then(()=>{
+            
         const begin = (midiJson)=>{
             console.log('begin',midiJson)
             
@@ -113,6 +116,7 @@ export class MidiFilePlayer {
             exclude?.forEach(e => {
                 this.players[e].volume.value = -120;
             })
+            this.output.volume.value = -3;
             if(onBar){
                 Tone.Transport.scheduleRepeat(()=>{
                     Tone.Draw(()=>{onBar()})
@@ -124,27 +128,39 @@ export class MidiFilePlayer {
         this.#prepare(song, (loaded)=>{
             console.log(loaded)
         }).then(begin)
+   
+        });
     }
 
-    stop(){
-        const dt = 2
-        Tone.Transport.stop();
-        Object.keys(midiPresets).forEach(k => {
-            this.players[k].triggerRelease();
-            this.players[k].volume.linearRampTo(-120,dt);
-        })
+    stop(inTime = 0){
         return new Promise((resolve)=>{
+            const dt = inTime;
+            this.output.volume.linearRampTo(-120,dt);
+            Tone.Transport.stop(Tone.now() + dt);
             setTimeout(()=>{
                 resolve()
             },(dt + 0.1) * 1000)
         })
     }
 
-    getTranspose(){
+    unmute(tracks, inTime = 0){
+        const tr = tracks ? tracks : Object.keys(midiPresets)
+        tr.forEach(k => {
+            this.players[k].volume.linearRampTo(midiPresets[k].volume, inTime);
+        })
+    }
+    mute(tracks, inTime = 0){
+        const tr = tracks ? tracks : Object.keys(midiPresets)
+        tr.forEach(k => {
+            this.players[k].volume.linearRampTo(-120, inTime);
+        })
+    }
+
+    #getTranspose(){
         return this.#transpose;
     }
 
-    setTranspose(t){
+    transpose(t){
         this.#transpose = t;
     }
 
@@ -192,7 +208,7 @@ export class MidiFilePlayer {
                     }
                     else{
                         Tone.Transport.schedule((tt)=>{
-                            const tr = this.getTranspose() 
+                            const tr = this.#getTranspose() 
                             vv.triggerAttackRelease(Tone.Midi(n.midi + tr).toFrequency(), n.duration, tt, n.velocity);
                         },n.time)
                     }
