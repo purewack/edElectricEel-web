@@ -4,6 +4,20 @@
     padding-top: 4rem;
 }
 
+.letsGoClick {
+  display: flex;
+  align-items: center;
+  gap:1rem;
+}
+.letsGoClick img{
+  height: 10vh;
+  animation: kf-float 1s ease-in-out infinite alternate;
+}
+@keyframes kf-float{
+  from{transform:translateX(-0.5rem) rotate(90deg);}
+  to{transform: translateX(0.5rem) rotate(90deg);}
+}
+
 section.MainTitle {
     display: block;
     position: relative;

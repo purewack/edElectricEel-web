@@ -19,9 +19,9 @@ export function Title({onPresent}){
 
     const newGamePitch = ()=>{
         onPresent('selectDifficulty')
-        songPlayer.load('jazzy.mid').then(()=>{
-            songPlayer.play()
-        })
+        // songPlayer.load('jazzy.mp3').then(()=>{
+        //     songPlayer.play()
+        // })
     }
 
     return <div className='TitleScreen FlexDown Background'>

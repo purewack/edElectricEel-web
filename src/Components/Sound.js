@@ -1,97 +1,143 @@
 import * as Tone from "tone";
 import { Midi } from '@tonejs/midi'
+import midiPresets from './midiset.json'
+
+// Tone.setContext(new Tone.Context({ latencyHint : "balanced", lookAhead: 0.5 }))
 
 let soundPrepared = false;
-
-class SongPlayer {
+export class MidiFilePlayer {
     #transpose = 0;
 
-    constructor(name){
-        if(name) this.load(name)
-        console.log("New SongPlayer")
-    }
+    constructor(){
+        this.players = {
+            piano:  new Tone.PolySynth(),
+            lead:  new Tone.DuoSynth(),
+            lead2:  new Tone.DuoSynth(),
+            melody: new Tone.PolySynth(),
+            bass:   new Tone.Synth(),
+            drums:  new Tone.Sampler(),
 
-    async load(name){
-        if(this.song){
-            this.destroy()
+            quality: new Tone.BitCrusher(8),
+            filter: new Tone.Filter(8000,undefined,-24),
+
+            input: new Tone.Synth().toDestination(),
         }
+        const q = this.players.quality
+        const f = this.players.filter
+        f.toDestination()
+        q.connect(f)
+        q.set({wet:1});
+        this.players.piano.connect(q)
+        this.players.lead.connect(q)
+        this.players.lead2.connect(q)
+        this.players.melody.connect(q)
+        this.players.bass.connect(q)
+        this.players.drums.connect(q)
 
-        const midiJson = await Midi.fromUrl("songs/" + name)
-        console.log(midiJson)
-
-        this.song = midiJson;
-
-        Tone.Transport.cancel();
-        Tone.Transport.clear();
-        Tone.Transport.bpm.value = midiJson.header.tempos[0].bpm
-        Tone.Transport.loopEnd = midiJson.duration;
-        Tone.Transport.loopStart = 0;
-        Tone.Transport.loop = true;
-
-        this.voices = []
-
-        midiJson.tracks.forEach(t => {
-            if(!t.notes.length) return;
-            const drums = t.instrument.percussion
-            let vv;
-            if(drums){
-                vv = new Tone.Sampler({
-                    urls: {
-                        'C2':'Sounds/kick_soft.wav',
-                        'D2':'Sounds/snare_noise.wav',
-                        'F#2':'Sounds/hat8bit1.wav',
-                    },
-                    onload: () => {
-                    console.log('samples loaded')
-                    }
-                }).toDestination();
-            }
-            else{
-                vv = new Tone.PolySynth().toDestination()
-            }
-
-            this.voices.push(vv)
-            t.notes.forEach(n => {
-                if(drums){
-                    Tone.Transport.schedule((tt)=>{
-                        vv.triggerAttackRelease(n.name, '2n', tt, n.velocity);
-                    },n.time)
-                }
-                else{
-                    Tone.Transport.schedule((tt)=>{
-                        const tr = this.getTranspose() 
-                        vv.triggerAttackRelease(Tone.Midi(n.midi + tr).toFrequency(), n.duration, tt, n.velocity);
-                    },n.time)
-                }
-            })
-            vv.volume.value = drums ? -12 : -9;
-        })
+        this.players.bass.set(midiPresets.bass)
+        this.players.melody.set(midiPresets.melody)
+        this.players.lead.set(midiPresets.lead)
+        this.players.lead2.set(midiPresets.lead2)
+        this.players.piano.set(midiPresets.piano)
+        
+        this.loadSampler()
+        this.song = null
+        console.log('new MidiFilePlayer');
     }
-
     destroy(){
         Tone.Transport.stop();
         Tone.Transport.clear();
         Tone.Transport.cancel();
         this.song = null;
-        if(this.voices.length) this.voices.forEach(v => {
-            if(v.releaseAll) v.releaseAll()
-            else v.dispose();
-            console.log(v);
+        this.players.drums.dispose();
+        this.players.input.dispose();
+        this.players.bass.dispose();
+        this.players.melody.dispose();
+        this.players.lead.dispose();
+        this.players.lead2.dispose();
+        this.players = null;
+    }
+    loadSampler(onProgress){
+        return new Promise((resolve)=>{
+            const keys = Object.keys(midiPresets.drums.samples);
+            let loaded = 0;
+            const check = ()=>{
+                loaded++
+                onProgress(keys[loaded],[loaded,keys.length])
+                if(loaded === keys.length) resolve(loaded)    
+            }
+            keys.forEach(k => {
+                console.log('loading MIDI drum sample: ',midiPresets.drums.samples[k].sample)
+                this.players.drums.add(k,'Sounds/' + midiPresets.drums.samples[k].sample,check)
+            })
         })
-        this.voices = null;
     }
 
-    play(){
-        if(!this.song) return;
-        Tone.Transport.start("+0.5","0:0:0");
+    load(songList ,onProgress){ 
+        this.songs = {}
+        return new Promise((resolve, reject)=>{
+            const count = songList.length
+            let loaded = 0;
+            let failed = 0; 
+            const check = ()=>{
+                if(failed === count) reject()
+                if(loaded + failed === count) {
+                    resolve(loaded,failed)
+                }
+            }
+            songList.forEach((s,i,a)=>{
+                Midi.fromUrl("Songs/" + s).then((json)=>{
+                    this.songs[s] = json
+                    loaded++
+                    check()
+                    onProgress(s,[i+1,a.length])
+                }).catch(()=>{
+                    failed++
+                    check()
+                })
+            })
+        })
     }
 
-    toggle(){
 
+    play(song, onBar, exclude){
+        if(!song) return;
+        this.stop();
+       
+        const begin = (midiJson)=>{
+            console.log('begin',midiJson)
+            
+            Object.keys(midiPresets).forEach(k => {
+                this.players[k].volume.value = midiPresets[k].volume;
+            })
+            exclude?.forEach(e => {
+                this.players[e].volume.value = -120;
+            })
+            if(onBar){
+                Tone.Transport.scheduleRepeat(()=>{
+                    Tone.Draw(()=>{onBar()})
+                },'1m','0:0:0');
+            }
+            Tone.Transport.start("+0.5","0:0:0");
+        }
+
+        this.#prepare(song, (loaded)=>{
+            console.log(loaded)
+        }).then(begin)
     }
 
     stop(){
-
+        const dt = 2
+        Tone.Transport.stop();
+        Object.keys(midiPresets).forEach(k => {
+            this.players[k].triggerRelease();
+            this.players[k].volume.linearRampTo(-120,dt);
+        })
+        return new Promise((resolve)=>{
+            setTimeout(()=>{
+                resolve()
+            },(dt + 0.1) * 1000)
+        })
     }
 
     getTranspose(){
@@ -101,8 +147,163 @@ class SongPlayer {
     setTranspose(t){
         this.#transpose = t;
     }
+
+    #prepare(song, onProgress){ 
+        const midiJson = this.songs[song]
+        console.log(song,this.songs)
+        
+        return new Promise((resolve, reject)=>{
+            if(this.song === song) {
+                resolve(midiJson)
+                return
+            }
+            Tone.Transport.cancel();
+            Tone.Transport.clear();
+            Tone.Transport.bpm.value = midiJson.header.tempos[0].bpm
+            Tone.Transport.loopEnd = midiJson.duration
+            Tone.Transport.loop = true;
+
+            const count = midiJson.tracks.length
+            let loaded = 0;
+            let failed = 0; 
+            const check = ()=>{
+                if(failed === count) reject()
+                if(loaded + failed === count) {
+                    this.loaded = song
+                    resolve(midiJson, loaded,failed)
+                }
+            }
+    
+            midiJson.tracks.forEach(t => {
+                const drums = t.instrument.percussion
+                const vv = this.players[t.name]
+
+                if(!vv || !t.notes.length) {
+                    failed++
+                    check();
+                    return;
+                }
+
+                t.notes.forEach(n => {
+                    if(drums){
+                        Tone.Transport.schedule((tt)=>{
+                            vv.triggerAttackRelease(n.name, '1n', tt, n.velocity);
+                        },n.time)
+                    }
+                    else{
+                        Tone.Transport.schedule((tt)=>{
+                            const tr = this.getTranspose() 
+                            vv.triggerAttackRelease(Tone.Midi(n.midi + tr).toFrequency(), n.duration, tt, n.velocity);
+                        },n.time)
+                    }
+                })
+                loaded++
+                if(onProgress) onProgress(t.name, [loaded, midiJson.tracks.length])
+                check()
+            })
+        })
+    }
 }
-export const songPlayer = new SongPlayer('menu.mid');
+
+export class BGMPlayer {
+    constructor(){
+        this.songs = new Tone.ToneAudioBuffers();
+        this.players = [
+            new Tone.Player().toDestination(), 
+            new Tone.Player().toDestination()
+        ];
+        this.player = this.players[0];
+        this.players[0].loop = true;
+        this.players[1].loop = true;
+        console.log('new BGMPlayer')
+    }
+    load(songlist, onProgress){
+        this.songs.dispose();
+        this.songs = new Tone.ToneAudioBuffers();
+        return new Promise((resolve, reject)=>{
+            const count = songlist.length;
+            let loaded = 0;
+            let failed = 0; 
+            const check = ()=>{
+                if(failed === count) 
+                    reject()
+                if(loaded + failed === count) 
+                    resolve(loaded,failed)   
+            }
+            songlist.forEach(s => {
+                this.songs.add(s,'Songs/' + s, 
+                ()=>{
+                    loaded++
+                    if(onProgress) onProgress(s,[loaded, songlist.length])
+                    check();
+                },
+                ()=>{
+                    failed++;
+                    check();
+                });
+            })
+        })
+    }
+
+    destroy(){
+        this.songs.dispose();
+        this.players[0].dispose();
+        this.players[1].dispose();
+        this.players = null;
+        this.player = null;
+        this.songs = null;
+    }
+
+    #crossSwap(){
+        if(this.player === this.players[0])
+            this.player = this.players[1]
+        else
+            this.player = this.players[0]
+    }
+
+    play(name, crossfade = undefined){
+        const go = (player)=>{
+            this.player.volume.value = 0;
+            player.buffer = this.songs.get(name);
+            player.start();
+        }
+        if(!crossfade){
+            this.stop().then(()=>{
+                go(this.player);
+            });
+            return;
+        }
+        this.stop(true)
+        this.#crossSwap()
+        go(this.player)
+        this.player.volume.value = -120;
+        const dt = crossfade;
+        this.player.volume.linearRampTo(0, dt);
+        console.log('started @ ',Tone.now())
+    }
+    stop(inTime = 0.5){
+        if(!inTime){
+            this.player.stop(Tone.now());
+            return;
+        }
+        const dt = inTime;
+        const player = this.player
+        console.log('stopping @ ',Tone.now())
+        return new Promise((resolve)=>{
+            if(player.state === 'stopped') {
+                resolve();
+                return;
+            }
+            player.volume.linearRampTo(-120,dt);
+            player.stop(Tone.now() + dt);
+            setTimeout(()=>{
+                resolve()
+            },(dt + 0.1)*1000)
+        })
+    }
+}
+export const songPlayer = new BGMPlayer();
+export const midiPlayer = new MidiFilePlayer();
 
 export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGametick){
     if(soundPrepared) return;

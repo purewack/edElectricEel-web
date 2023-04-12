@@ -1,0 +1,125 @@
+{
+    "bass":
+    {
+        "volume":-9,
+        "envelope": {
+            "attack": 0.003,
+            "release": 0.045
+        },
+        "oscillator": {
+            "type": "pulse",
+            "width": 0.77
+        }
+    },
+    "lead":
+    {
+        "volume": -12,
+        "detune": 6,
+        "portamento":0.013,
+        "vibratoAmount": 0.3,
+        "vibratoRate": 8,
+        "harmonicity":4.02,
+        "voice0": {
+            "envelope": {
+                "attack": 0.01,
+                "release": 0.6
+            },
+            "oscillator":{
+                "type": "triangle"
+            }
+        },
+        "voice1": {
+            "envelope": {
+                "attack": 0.01,
+                "release": 0.6
+            },
+            "oscillator":{
+                "type": "sawtooth",
+                "volume":-15
+            }
+        }
+    },
+    "lead2":
+    {
+        "volume": -13,
+        "detune": -6,
+        "portamento":0.013,
+        "vibratoAmount": 0.3,
+        "vibratoRate": 8,
+        "harmonicity":4.02,
+        "voice0": {
+            "envelope": {
+                "attack": 0.01,
+                "release": 0.6
+            },
+            "oscillator":{
+                "type": "triangle"
+            }
+        },
+        "voice1": {
+            "envelope": {
+                "attack": 0.01,
+                "release": 0.6
+            },
+            "oscillator":{
+                "type": "sine",
+                "volume":-15
+            }
+        }
+    },
+    "melody":
+    {
+        "volume": -5,
+        "detune": 0,
+        "envelope": {
+            "attack": 0.003,
+            "release": 0.045
+        },
+        "oscillator": {
+            "type": "sawtooth"
+        }
+    },
+    "piano":
+    {
+        "volume": -6,
+        "detune": 0,
+        "envelope": {
+            "attack": 0.003,
+            "release": 0.045
+        },
+        "oscillator": {
+            "type": "sine"
+        }
+    },
+    
+
+    "drums":{
+        "volume":-2,
+        "samples":{
+            "C2":{
+                "sample":"kick8bit.wav",
+                "volume":0
+            },
+            "C#2":{
+                "sample":"8bit_stick.wav",
+                "volume":0
+            },
+            "D2":{
+                "sample":"snare8bit.wav",
+                "volume":0
+            },
+            "F#2":{
+                "sample":"hat8bit1.wav",
+                "volume":0
+            },
+            "G#2":{
+                "sample":"open-mixed-hi-hat.wav",
+                "volume":0
+            },
+            "D#3":{
+                "sample":"jazz-ride.wav",
+                "volume":0
+            }
+        }
+    }
+}
