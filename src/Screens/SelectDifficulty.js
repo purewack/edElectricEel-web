@@ -18,6 +18,7 @@ import NoteInput from "../Components/NoteInput/index"
 import NoteView from "../Components/NoteView/index"
 import {SnakeLoadbar} from "../Components/SnakeView"
 import { midiPlayer } from '../Components/Sound'
+import { settings } from 'pixi.js'
 
 
 export function SelectDifficulty({onPresent}){
@@ -42,9 +43,9 @@ export function SelectDifficulty({onPresent}){
         setBPM(b => {
             if(b <= 30 || b >= 180) return b 
             const bb = set ? inc : b+inc;
-            if(difficulty.custom){
+            // if(difficulty.custom)
                 Tone.Transport.bpm.value = bb;
-            }
+            
             return bb
         });
     }
@@ -52,6 +53,7 @@ export function SelectDifficulty({onPresent}){
     const newSettings = (type)=>{
         setClefs({bass:false, alto:false, treble:true})
         setLength(3)
+        setDifficulty(d => {return {...d,level:type}})
         switch(type){
             default:
                 setShowRange(rangeEasy)
@@ -121,6 +123,7 @@ export function SelectDifficulty({onPresent}){
     }
 
     const isTweaking = difficulty?.custom
+    const custom = isTweaking ? ' foreground' : '';
 
     return (<div className="SelectDifficulty ">
         
@@ -130,23 +133,29 @@ export function SelectDifficulty({onPresent}){
         : 'Tweak Settings:'
         }</h1>
 
-        <section className='Difficulties'>
+        <section className={'Difficulties' + (isTweaking ? ' custom' : '')}>
             <div className='Frame'>
-                <button className='btnDifficulty' onClick={()=>{newSettings('easy')}}>
-                    <span>Beginner</span><br/>
-                    <img alt="note" src={noteSVG} />
-                </button>
-                <button className='btnDifficulty' onClick={()=>{newSettings('medium')}}>
-                    <span>Learner</span><br/>
-                    <img alt="note" src={noteSVG} />
-                    <img alt="note" src={noteSVG} />
-                </button>
-                <button className='btnDifficulty' onClick={()=>{newSettings('hard')}}>
-                    <span>Experienced</span><br/>
-                    <img alt="note" src={noteSVG} />
-                    <img alt="note" src={noteSVG} />
-                    <img alt="note" src={noteSVG} />
-                </button>
+                <div className={(difficulty.level === 'easy' && !custom ? 'selected' : '') }>
+                    <button className='btnDifficulty' onClick={()=>{newSettings('easy')}}>
+                        <span>Beginner</span><br/>
+                        <img alt="note" src={noteSVG} />
+                    </button>
+                </div>
+                <div className={(difficulty.level === 'medium' && !custom ? 'selected' : '') }>
+                    <button className='btnDifficulty' onClick={()=>{newSettings('medium')}}>
+                        <span>Learner</span><br/>
+                        <img alt="note" src={noteSVG} />
+                        <img alt="note" src={noteSVG} />
+                    </button>
+                </div>
+                <div className={(difficulty.level === 'hard' && !custom ? 'selected' : '')}>
+                    <button className='btnDifficulty' onClick={()=>{newSettings('hard')}}>
+                        <span>Experienced</span><br/>
+                        <img alt="note" src={noteSVG} />
+                        <img alt="note" src={noteSVG} />
+                        <img alt="note" src={noteSVG} />
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -157,6 +166,7 @@ export function SelectDifficulty({onPresent}){
         <section className='CustomOptions SelectionFlex'>
 
             <NoteInput 
+                noSpawnAnimation
                 allowDragging={isBrowser} 
                 showRange={showRange} 
                 showOctave={false}
@@ -173,7 +183,7 @@ export function SelectDifficulty({onPresent}){
                     newClef('treble')
                 }}/>
             </div>
-
+                
             <div className='Frame'>
             <section className='SelectBPM SelectionFlex'>
                 <div className='GalleryFlex'>
@@ -213,7 +223,6 @@ export function SelectDifficulty({onPresent}){
                 
                 <SnakeLoadbar length={length} type={'line'} area={6} tick={0}/>
             </button>
-
 
             <button className='btnRandom GalleryFlex' onClick={randomize}>
                 <span>Pick for Me!</span>

@@ -6,7 +6,7 @@ import {Title} from './Screens/Title'
 import { createContext, useEffect, useState } from 'react'
 import * as Tone from 'tone'
 import { midiPlayer, songPlayer } from './Components/Sound'
-import arrowSVG from './AssetsImport/icons/arrow.svg'
+import arrow from './AssetsImport/icons/arrow.png'
 
 export const DebugContext = createContext(false);
 
@@ -60,7 +60,7 @@ export default function App(){
             <h2>This app will make sound, please adjust your volume to hear it</h2>
             {loaded ? <div className='letsGoClick'> 
             Lets Go!
-            <img alt="ok" src={arrowSVG} onClick={()=>{
+            <img alt="ok" src={arrow} onClick={()=>{
                 Tone.start().then(()=>{
                     handlePresentScreen('title',true)
                 })

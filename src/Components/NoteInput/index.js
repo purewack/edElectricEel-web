@@ -17,7 +17,8 @@ export default function NoteInput({
   onNoteOn = null,
   onNoteOff = null,
   allowDragging = true,
-  viewStyle
+  viewStyle,
+  noSpawnAnimation = undefined
 }) {
   const showDebug = useContext(DebugContext);
   const [sizeRef, size] = useOnResizeComponent();
@@ -161,6 +162,7 @@ export default function NoteInput({
               allowDragging={allowDragging}
               showOctave={showOctave}
               showName={showName}
+              noSpawnAnimation
             />
           );
         })}
@@ -180,6 +182,7 @@ export default function NoteInput({
               whiteKey={false}
               noteSignal={handleNoteSignal}
               allowDragging={allowDragging}
+              noSpawnAnimation
             />
           ) : null;
         })}
@@ -206,7 +209,7 @@ export default function NoteInput({
   </div>);
 }
 
-function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragging, showOctave, showName=true }) {
+function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragging, showOctave, showName=true, noSpawnAnimation=undefined }) {
   const [active, setActive] = useState(false);
   const [hover, setHover] = useState(false);
 
@@ -229,6 +232,7 @@ function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragg
 
   const [cName, setCName] = useState("PianoKey spawn");
   useEffect(() => {
+    if(noSpawnAnimation) return
     anime({
       targets: ".PianoKey.spawn",
       easing: "easeInOutSine",

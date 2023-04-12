@@ -175,3 +175,24 @@ button:disabled {
   flex-direction: row;
   align-items: center;
 }
+
+.selected  {
+  border-radius: 2rem;
+  background-image:linear-gradient(90deg, #faf089 0%, rgba(99, 179, 237, 0) 67%, #faf089 100%, rgba(255, 0, 0, 0) 30%)
+}
+.selected.foreground {
+  background-image:linear-gradient(90deg, #a8a47c 0%, rgba(99, 179, 237, 0) 67%, #a8a47c  100%, rgba(255, 0, 0, 0) 30%)
+}
+.selected::before,
+.selected::after {
+  content: '';
+  background-image: url('../AssetsImport/icons/arrow.png');
+  background-size: cover;
+  display: inline-block;
+  width:2rem;
+  height:2rem;
+  margin-inline: 1rem;
+}
+.selected::after{
+  transform: rotate(180deg);
+}
