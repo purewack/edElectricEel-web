@@ -2,9 +2,8 @@ import levelData from './BasePitch.json'
 import arrowSVG from '../../AssetsImport/icons/arrow.svg'
 
 import * as Tone from "tone";
-import { useCallback, useEffect, useState, useContext} from "react";
-
-import { prepareSound, newBassLine, endSound, playSound } from "../../Components/Sound";
+import { useCallback, useEffect, useState, useContext, useRef} from "react";
+import { startPitchGameSong, newBassLine, endGameSong, playSound, playGameInput, midiPlayer, setGameSongPitch } from "../../Components/Sound";
 import { newNote, guessRange } from "../../Components/NoteGuess";
 
 import NoteInput from "../../Components/NoteInput/index.js";
@@ -21,7 +20,7 @@ export default function LevelBasePitch ({settings}) {
     position: 'absolute',
     width: '10vh',
     height: '10vh',
-    border: 'solid orange 0.25rem',
+    border: 'solid forestgreen 0.25rem',
     background: 'ivory',
     boxSizing: 'content-box'
   }
@@ -36,19 +35,15 @@ export default function LevelBasePitch ({settings}) {
   }
   
   const [isStarted, setIsStarted] = useState(false)
-  const [instruments, setInstruments] = useState(null);
-  const [soundSeq, setSoundSeq] = useState(null)
-  
+
+  const [guessData, setGuessData] = useState()
+  const [currentKey, setCurrentKey] = useState()
   const [health, setHealth] = useState();
   const [direction, setDirection] = useState();
   const [length, setLength] = useState();
-  const [gameTick, setGameTick] = useState(-1);
+  const [gameTick, setGameTick] = useState(0);
   const [isHorizontal, setIsHorizontal] = useState()
 
-
-  const [noteData, setNoteData] = useState()
-  const [currentNote, setCurrentNote] = useState(null)
-  
 
   const generateNewGuess = (n)=>{
     const range = guessRange(levelData.guessData, (n)=>Tone.Frequency(n).toMidi())
@@ -62,30 +57,30 @@ export default function LevelBasePitch ({settings}) {
     
     const cn = n ? n : notes[0] 
     const nn = newNote(pool,cn)
-    setNoteData(nn)
+    setGuessData(nn)
   }
 
-  useEffect(()=>{
-    if(isStarted) return;
-    //new game
+
+  const newGame = ()=>{
     setHealth(levelData.startHealth);
     setDirection(levelData.startDirection);
     setLength(levelData.startLength);
     setIsHorizontal(levelData.startDirection === 'left' || levelData.startDirection === 'right')
     setGameTick(-1);
     generateNewGuess();
-    console.log("new game")
-    prepareSound(levelData,setInstruments,setSoundSeq,()=>{ 
-      setGameTick(tt=>tt+1)
-    })
+    startPitchGameSong(levelData, ()=>{ setGameTick(t => t+1) })
+    setIsStarted(true)
+    console.log("New pitch game", guessData, isStarted, gameTick)
+  }
 
-  },[isStarted])
+  const endGame = ()=>{
 
+  }
 
   const onSelectNote = useCallback((n)=>{
     //check chosen directon
-    const nt1 = noteData[0]
-    const nt2 = noteData[1]
+    const nt1 = guessData[0]
+    const nt2 = guessData[1]
     // console.log([n,nt1,nt2])
     if(nt1 === n || nt2 === n){
       if(nt1 === n && isHorizontal) setDirection('up')
@@ -94,10 +89,11 @@ export default function LevelBasePitch ({settings}) {
       else if(nt2 === n && !isHorizontal) setDirection('right')
       setIsHorizontal(h=>!h)
       generateNewGuess(n)
-      setCurrentNote(n)
-      newBassLine(n,instruments.bass,levelData.music.bass,soundSeq,setSoundSeq)
+      setCurrentKey(n)
+      setGameSongPitch(n)
+      // newBassLine(n,instruments.bass,levelData.music.bass,soundSeq,setSoundSeq)
     }
-  },[noteData, instruments, levelData])
+  },[guessData, levelData])
 
   const [item, setItem] = useState([6,4])
   const newItem = (g)=>{
@@ -110,7 +106,7 @@ export default function LevelBasePitch ({settings}) {
     let collision = false;
     const head = pos[0]
     if(head.x === item[0] && head.y === item[1]){
-      playSound(instruments.sampler, levelData.music.sounds["item"])
+      // playSound(instruments.sampler, levelData.music.sounds["item"])
       newItem(levelData.levelSize)
       setLength(l=>l+1)
     }
@@ -130,7 +126,7 @@ export default function LevelBasePitch ({settings}) {
 
     if(collision){
       setIsStarted(false);
-      endSound(soundSeq,setSoundSeq)
+      endGameSong()
     }
   }
 
@@ -178,21 +174,19 @@ export default function LevelBasePitch ({settings}) {
             levelMarginBot: levelData?.levelMarginBot, 
           }}
         >
-          {isStarted && 
-            <Snake 
+          {isStarted && <Snake 
               where={levelData.startPoint} 
               length={length} 
               direction={direction} 
               tick={{value:gameTick, speed:levelData.ticksPerMove}} 
               onAdvance={onSnakeMove}
-            />
-          }
+            />}
           <Item where={item} type='pizza'/>
         </SnakeView>
 
-        {noteData && isStarted && <>
+        {guessData && <>
           <NoteView 
-            data={[{clef:'treble', notes:[noteData[0]+'-4n']}]}
+            data={[{clef:'treble', notes:[guessData[0]+'-4n']}]}
             stavesExtra={1}
             slide={-0.5}
             viewStyle={{
@@ -205,7 +199,7 @@ export default function LevelBasePitch ({settings}) {
             }}
           />
           <NoteView 
-            data={[{clef:'treble', notes:[noteData[1]+'-4n']}]}
+            data={[{clef:'treble', notes:[guessData[1]+'-4n']}]}
             stavesExtra={1}
             slide={-0.5}
             viewStyle={{
@@ -235,10 +229,7 @@ export default function LevelBasePitch ({settings}) {
                 top:  '50%',
                 transform: 'translate(-50%, -50%)'
               }}
-              onClick={()=>{
-                setIsStarted(true)
-                Tone.Transport.start(Tone.now())
-              }}
+              onClick={newGame}
             >
               Ready
             </button>
@@ -254,7 +245,7 @@ export default function LevelBasePitch ({settings}) {
             }}
             onNoteOn={(n)=>{
               onSelectNote(n)
-              instruments.piano.triggerAttackRelease(n,'8n','@8n')
+              playGameInput(n)
             }}
             allowDragging={false}
           />}

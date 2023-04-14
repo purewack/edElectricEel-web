@@ -58,7 +58,7 @@ export function SnakeView({ style, options, gameTick, children}) {
   
   useEffect(() => {
     // console.log(parentSize);
-    const [lwwU, lhhU] = options.levelSize || [14,10]
+    const [lwwU, lhhU] = options?.levelSize || [14,10]
     const shipAreaU = options?.levelMarginTop || 2;
     const floorAreaU = options?.levelMarginBot || 1;
     const totalFieldWidthU = lwwU
@@ -89,7 +89,7 @@ export function SnakeView({ style, options, gameTick, children}) {
       uArea:[lwwU,lhhU], 
     }
     setVisuals(vis)
-    // console.log(vis)
+    console.log('Stage visuals',vis)
   }, [parentSize, options.levelSize]);
 
   const u = visuals.u
@@ -112,8 +112,7 @@ export function SnakeView({ style, options, gameTick, children}) {
           speed: 0.25,
         });
       }
-      console.log("new scenery");
-      console.log(arr);
+      console.log("new scenery",arr);
       setScenery(arr);
     } else if(options?.scrolling) {
       setScenery((ss) =>
@@ -143,8 +142,7 @@ export function SnakeView({ style, options, gameTick, children}) {
           const _sprites = { snake: s[0], scene: s[1], items: s[2], entity: s[3]}
           setSprites(_sprites);
           advanceScenery(true);
-          console.log("sprites loaded");
-          console.log(_sprites);
+          console.log("sprites loaded",_sprites);
         }
       );
 
@@ -293,7 +291,7 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
 
   //spawn
   useEffect(() => {
-    // if (path) return;
+    if (path && path.length) return;
     const spawn = where;
     const dd = direction;
     const px = dd === "right" ? -1 : dd === "left" ? 1 : 0;
@@ -305,9 +303,9 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
         y: spawn[1] + py * i,
         d: dirToIdx[dd],
       });
-    console.log("new spawn", poss);
+    console.log("new spawn", poss, where, {direction,length});
     setPath(poss);
-  }, [where]);
+  }, [where, length, direction]);
 
   // //turn
   // useEffect(() => {

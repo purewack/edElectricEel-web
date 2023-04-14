@@ -1,4 +1,4 @@
-<REAPER_PROJECT 0.1 "6.78/OSX64-clang" 1681508371
+<REAPER_PROJECT 0.1 "6.78/OSX64-clang" 1681498833
   <NOTES 0 2
   >
   RIPPLE 0
@@ -16,7 +16,7 @@
   TIMEMODE 1 5 -1 30 0 0 -1
   VIDEO_CONFIG 0 0 256
   PANMODE 3
-  CURSOR 12
+  CURSOR 13.5
   ZOOM 38.45183426372824 0 0
   VZOOMEX 4.78423166 0
   USE_REC_CFG 0
@@ -235,8 +235,8 @@
         E 0 90 33 61
         E 240 80 24 00
         E 0 80 33 00
-        E 240 90 2a 61
-        E 240 80 2a 00
+        e 240 90 2a 61
+        e 240 80 2a 00
         E 240 90 24 61
         E 0 90 25 61
         E 240 80 24 00
@@ -277,16 +277,14 @@
         E 0 90 2a 61
         E 240 80 25 00
         E 0 80 2a 00
-        e 0 90 23 60
-        e 240 80 23 00
-        E 0 b0 7b 00
+        E 240 b0 7b 00
         CCINTERP 32
         CHASE_CC_TAKEOFFS 1
         GUID {B0576ECF-DD7D-F24C-B985-51DAF89D53B2}
         IGNTEMPO 0 120 4 4
         SRCCOLOR 73
         VELLANE -1 100 0
-        CFGEDITVIEW 10579.742538 0.064745 53 9 0 -1 0 0 0 0.5
+        CFGEDITVIEW 0 0.071737 53 9 0 -1 0 0 0 0.5
         KEYSNAP 0
         TRACKSEL 252
         EVTFILTER 0 -1 -1 -1 -1 0 0 0 0 -1 -1 -1 -1 0 -1 0 -1 -1

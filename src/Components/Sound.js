@@ -102,36 +102,21 @@ export class MidiFilePlayer {
         })
     }
 
-
-    play(song, onBar, exclude){
+    // schedule + play immidiate
+    play(song, onBar = null, offset = 0, append = false){
         if(!song) return;
         this.stop(this.song ? 1.5 : 0).then(()=>{
             
-        const begin = (midiJson)=>{
-            console.log('begin',midiJson)
-            
-            Object.keys(midiPresets).forEach(k => {
-                this.players[k].volume.value = midiPresets[k].volume;
-            })
-            exclude?.forEach(e => {
-                this.players[e].volume.value = -120;
-            })
-            this.output.volume.value = -3;
-            if(onBar){
-                Tone.Transport.scheduleRepeat(()=>{
-                    Tone.Draw(()=>{onBar()})
-                },'1m','0:0:0');
-            }
-            Tone.Transport.start("+0.5","0:0:0");
-        }
-
-        this.#prepare(song, (loaded)=>{
+        this.prepare(song, (loaded)=>{
             console.log(loaded)
-        }).then(begin)
+        },offset,append).then(()=>{
+            this.begin(onBar)
+        })
    
         });
     }
 
+    //stop immidiate
     stop(inTime = 0){
         return new Promise((resolve)=>{
             const dt = inTime;
@@ -142,6 +127,80 @@ export class MidiFilePlayer {
             },(dt + 0.1) * 1000)
         })
     }
+
+    //being playing previousely prepared midi
+    begin(onBar){
+        console.log('begin')
+        
+        this.unmute()
+
+        this.output.volume.value = -3;
+        if(onBar){
+            Tone.Transport.scheduleRepeat(()=>{
+                Tone.Draw(()=>{onBar()})
+            },'1m','0:0:0');
+        }
+        Tone.Transport.start("+0.5","0:0:0");
+    }
+
+    //pre schedule events before playing
+    prepare(song, onProgress, offset = 0, append = false){ 
+        const midiJson = this.songs[song]
+        console.log(song,this.songs)
+        
+        return new Promise((resolve, reject)=>{
+            if(this.song === song) {
+                resolve(midiJson)
+                return
+            }
+            if(!append) Tone.Transport.clear();
+            Tone.Transport.bpm.value = midiJson.header.tempos[0].bpm
+            const off = Tone.TransportTime(offset).toSeconds();
+            Tone.Transport.loopEnd = midiJson.duration + off;
+            Tone.Transport.loopStart = off;
+            Tone.Transport.loop = true;
+
+            const count = midiJson.tracks.length
+            let loaded = 0;
+            let failed = 0; 
+            const check = ()=>{
+                if(failed === count) reject()
+                if(loaded + failed === count) {
+                    this.loaded = song
+                    resolve(midiJson, loaded,failed)
+                }
+            }
+    
+            midiJson.tracks.forEach(t => {
+                const drums = t.name.includes('drums')
+                const vv = this.players[t.name]
+
+                if(!vv || !t.notes.length) {
+                    failed++
+                    check();
+                    return;
+                }
+
+                t.notes.forEach(n => {
+                    if(drums){
+                        Tone.Transport.schedule((tt)=>{
+                            vv.triggerAttackRelease(n.name, '1n', tt, n.velocity);
+                        },n.time + off)
+                    }
+                    else{
+                        Tone.Transport.schedule((tt)=>{
+                            const tr = this.#getTranspose() 
+                            vv.triggerAttackRelease(Tone.Midi(n.midi + tr).toFrequency(), n.duration, tt, n.velocity);
+                        },n.time + off)
+                    }
+                })
+                loaded++
+                if(onProgress) onProgress(t.name, [loaded, midiJson.tracks.length])
+                check()
+            })
+        })
+    }
+
 
     unmute(tracks, inTime = 0){
         const tr = tracks ? tracks : Object.keys(midiPresets)
@@ -162,62 +221,6 @@ export class MidiFilePlayer {
 
     transpose(t){
         this.#transpose = t;
-    }
-
-    #prepare(song, onProgress){ 
-        const midiJson = this.songs[song]
-        console.log(song,this.songs)
-        
-        return new Promise((resolve, reject)=>{
-            if(this.song === song) {
-                resolve(midiJson)
-                return
-            }
-            Tone.Transport.cancel();
-            Tone.Transport.clear();
-            Tone.Transport.bpm.value = midiJson.header.tempos[0].bpm
-            Tone.Transport.loopEnd = midiJson.duration
-            Tone.Transport.loop = true;
-
-            const count = midiJson.tracks.length
-            let loaded = 0;
-            let failed = 0; 
-            const check = ()=>{
-                if(failed === count) reject()
-                if(loaded + failed === count) {
-                    this.loaded = song
-                    resolve(midiJson, loaded,failed)
-                }
-            }
-    
-            midiJson.tracks.forEach(t => {
-                const drums = t.instrument.percussion
-                const vv = this.players[t.name]
-
-                if(!vv || !t.notes.length) {
-                    failed++
-                    check();
-                    return;
-                }
-
-                t.notes.forEach(n => {
-                    if(drums){
-                        Tone.Transport.schedule((tt)=>{
-                            vv.triggerAttackRelease(n.name, '1n', tt, n.velocity);
-                        },n.time)
-                    }
-                    else{
-                        Tone.Transport.schedule((tt)=>{
-                            const tr = this.#getTranspose() 
-                            vv.triggerAttackRelease(Tone.Midi(n.midi + tr).toFrequency(), n.duration, tt, n.velocity);
-                        },n.time)
-                    }
-                })
-                loaded++
-                if(onProgress) onProgress(t.name, [loaded, midiJson.tracks.length])
-                check()
-            })
-        })
     }
 }
 
@@ -321,98 +324,55 @@ export class BGMPlayer {
 export const songPlayer = new BGMPlayer();
 export const midiPlayer = new MidiFilePlayer();
 
-export function prepareSound (levelData,setInstruments,setCurrentPatterns,onGametick){
-    if(soundPrepared) return;
-    soundPrepared = true;
-    Tone.Transport.bpm.value = levelData.music.bpm
+let gameTickId = null
 
-    const piano = new Tone.Synth().toDestination();
-    piano.oscillator.type = "triangle";
-    piano.volume.value = -18
+export function startPitchGameSong (levelData,onGametick){
+    if(gameTickId) endGameSong()
 
-    const bass = new Tone.Synth().toDestination();
-    bass.oscillator.type = "pwm";
-    bass.volume.value = -24
-
-    const sampler = new Tone.Sampler({
-        urls: levelData.music.samples,
-        onload: () => {
-        console.log('samples loaded')
-        }
-    }).toDestination();
-    sampler.volume.value = -20
-
-    setInstruments({
-        piano, 
-        sampler, 
-        bass
+    Tone.Transport.stop();
+    Tone.Transport.cancel();
+    Tone.Transport.position = '0:0:0';
+    midiPlayer.prepare('pitch_game.mid',null,'1:0:0',true).then(()=>{
+        const countdown = new Tone.Pattern((t,n)=>{
+            midiPlayer.players.drums.triggerAttackRelease(n,'8n',t)
+        },['F#2','F#2','F#2','D#3']).start('0:0:0').stop('1:0:0')
+        gameTickId = Tone.Transport.scheduleRepeat((t)=>{
+            Tone.Draw.schedule(()=>{
+                onGametick()
+            },t)
+        }, levelData.gameTickInterval, '1:0:0')
+        midiPlayer.begin(null)
     })
-
-
-    const when = '1:0:0'
-    const tickId = Tone.Transport.scheduleRepeat((t)=>{
-        Tone.Draw.schedule(()=>{
-            onGametick()
-        })
-    }, levelData.gameTickInterval, when)
-
-    const moveInterval = parseInt(levelData.gameTickInterval) / levelData.ticksPerMove + 'n'
-    const moveId = Tone.Transport.scheduleRepeat((t)=>{
-        playSound(sampler, levelData.music.sounds.move)
-    }, moveInterval, when)
-
-    const beatLine = new Tone.Pattern((t,n)=>{
-        sampler.triggerAttackRelease(n,'8n',t)
-    },levelData.music.beat.data).start(when)
-    beatLine.interval = levelData.music.beat.interval
-
-    const bassLine = new Tone.Pattern((t,n)=>{
-        bass.triggerAttackRelease(
-            Tone.Midi(n).toFrequency(),
-            Tone.Time(levelData.music.bass.interval).toSeconds()/2,
-            t
-        )
-    })
-    bassLine.interval = levelData.music.bass.interval
-
-    setCurrentPatterns({tick: tickId, snake:moveId, beat:beatLine, bass:bassLine})
-
-    const countdown = new Tone.Pattern((t,n)=>{
-        sampler.triggerAttackRelease(n,'8n',t)
-    },['C1','C1','C1','B1']).start('0:0:0').stop(when)
-    
-    Tone.Transport.position = '0:0:0'
-    console.log(when)
-    console.log(Tone.Transport.position)
-    console.log(Tone.Transport.state)
-    console.log(beatLine)
 }
 
-export function playSound(sampler, sound){
-    sampler.triggerAttackRelease(sound[0], sound[1]);
+export function endGameSong(){
+    // soundPrepared = false
+    // currentPatterns.bass && currentPatterns.bass.dispose()
+    // currentPatterns.beat && currentPatterns.beat.dispose()
+    // Tone.Transport.clear()
+    // Tone.Transport.cancel()
+    // setCurrentPatterns(null)
+    Tone.Transport.clear(gameTickId)
+    Tone.Transport.stop();
+    midiPlayer.stop();
 }
 
-export function newBassLine (root, instrument, bassData, currentPatterns, setCurrentPatterns){
-    const nn  = Tone.Frequency(root).toMidi() % 12
-    const midiRoot = bassData.root;
-    const newRoot = midiRoot + nn
-    const newPattern = bassData.data.map(p=>newRoot + p - 1)
+export function setGameSongPitch(root){
+    const newRoot = Tone.Frequency(root).toMidi() % 12
 
-    const when = QuanTime(Tone.Transport.position,bassData.grain,4)
+    const when = QuanTime(Tone.Transport.position,1,4)
     console.log(Tone.Transport.position, when)
     Tone.Transport.scheduleOnce((tt)=>{
-        currentPatterns.bass.values = newPattern
+        midiPlayer.transpose(newRoot)
     }, Tone.Time(when).toSeconds() - 0.05)
-    if(currentPatterns.bass.state === 'stopped') currentPatterns.bass.start(when)
-  }
+}
 
-export function endSound(currentPatterns,setCurrentPatterns){
-    soundPrepared = false
-    currentPatterns.bass && currentPatterns.bass.dispose()
-    currentPatterns.beat && currentPatterns.beat.dispose()
-    Tone.Transport.clear()
-    Tone.Transport.cancel()
-    setCurrentPatterns(null)
+export function playSoundEffect(name){
+    // sampler.triggerAttackRelease(sound[0], sound[1]);
+}
+
+export function playGameInput(note){
+    midiPlayer.players.input.triggerAttackRelease(note,'8n','@8n');
 }
 
 export function QuanTime(nowTime, atBeats, barBeats){

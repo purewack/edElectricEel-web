@@ -20,7 +20,7 @@ export default function App(){
         window.toggleDebug = ()=>{setShowDebug(d=>!d)}
         const loadSound = async ()=>{
             const songList = ['jazzy.mp3','classy.mp3']
-            const midiList = ['classy.mid', "jazzy.mid"]
+            const midiList = ['classy.mid', "jazzy.mid","pitch_game.mid"]
             const songsLoader = (loadedItem, progressArray)=>{
                 const str = `Song:${loadedItem} [${progressArray[0]}/${progressArray[1]}]`
                 setLoading(str)
@@ -62,7 +62,7 @@ export default function App(){
             Lets Go!
             <img alt="ok" src={arrow} onClick={()=>{
                 Tone.start().then(()=>{
-                    handlePresentScreen('title',true)
+                    handlePresentScreen('game',true)
                 })
             }}/>
             </div>
