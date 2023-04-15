@@ -8,9 +8,9 @@ import { DebugContext } from "../../App";
 export default function NoteView({
   data,
   slide,
-  viewStyle,
   stavesExtra,
-  noBarStart
+  noBarStart,
+  className
 }) {
   const showDebug = useContext(DebugContext)
   const [sizeRef, size] = useOnResizeComponent();
@@ -23,7 +23,7 @@ export default function NoteView({
   let lastKey = 0;
 
   return (
-  <div className='View NoteView' style={viewStyle}>
+  <div className={'View NoteView ' + className}>
     <svg ref={sizeRef} >
       <g
         transform={`

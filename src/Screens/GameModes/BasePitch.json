@@ -4,51 +4,16 @@
     "startDirection":"right",
     "startPoint":[10,7],
     "levelSize":[20,15],
+    "levelMarginTop":3,
+    "levelMarginBot":3,
     "gameTickInterval":"8n",
     "ticksPerMove":"4",
+    "tempo" : 100,
     "canOverlapSelf" : false,
     "guessData":{
         "type" : "range",
         "notes": ["C4","B4"],
         "clefs" : ["treble"]
-    },
-    "music":{
-        "bpm":100,
-        "beat":{
-            "interval":"8n",
-            "data":[
-                ["C1","A1"],
-                ["C1"],
-                ["C1"],
-                ["C1","A1"],
-                ["C1","B1"],
-                ["C1"],
-                ["C1"],
-                ["C1"]
-            ]
-        },
-        "bass":{
-            "grain": 4,
-            "interval":"4n",
-            "root":36,
-            "data":[
-                1,5,8,0,
-                1,5,8,13,
-                1,5,8,5,
-                1,-4,1,8
-            ]
-        },
-        "samples":{
-            "A1":"Sounds/kick_soft.wav",
-            "B1":"Sounds/snare_noise.wav",
-            "C1":"Sounds/hat_soft.wav",
-            "A2":"Sounds/ok.wav",
-            "B2":"Sounds/movement3.wav"
-        },
-        "sounds":{
-            "move": ["B2","4n"],
-            "item": ["A2","2n"]
-        }
     },
     "enemies":{}
 }

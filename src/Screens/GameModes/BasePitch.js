@@ -3,7 +3,7 @@ import arrowSVG from '../../AssetsImport/icons/arrow.svg'
 
 import * as Tone from "tone";
 import { useCallback, useEffect, useState, useContext, useRef} from "react";
-import { startPitchGameSong, newBassLine, endGameSong, playSound, playGameInput, midiPlayer, setGameSongPitch } from "../../Components/Sound";
+import { startPitchGameSong, newBassLine, endGameSong, playSound, playGameInput, midiPlayer, setGameSongPitch, playSoundEffect } from "../../Components/Sound";
 import { newNote, guessRange } from "../../Components/NoteGuess";
 
 import NoteInput from "../../Components/NoteInput/index.js";
@@ -16,30 +16,14 @@ import { DebugContext } from '../../App';
 export default function LevelBasePitch ({settings}) {
   const showDebug = useContext(DebugContext)
  
-  const noteStyle = {
-    position: 'absolute',
-    width: '10vh',
-    height: '10vh',
-    border: 'solid forestgreen 0.25rem',
-    background: 'ivory',
-    boxSizing: 'content-box'
-  }
-  const statusStyle ={
-    width: 'min-content',
-    padding: 0,
-    width:'10rem',
-    background: 'black',
-    display:'flex',
-    alignItems:'center',
-    justifyContent:'space-around'
-  }
-  
   const [isStarted, setIsStarted] = useState(false)
 
   const [guessData, setGuessData] = useState()
   const [currentKey, setCurrentKey] = useState()
+  const [score, setScore] = useState()
   const [health, setHealth] = useState();
   const [direction, setDirection] = useState();
+  const [actionPending, setActionPending] = useState();
   const [length, setLength] = useState();
   const [gameTick, setGameTick] = useState(0);
   const [isHorizontal, setIsHorizontal] = useState()
@@ -62,19 +46,24 @@ export default function LevelBasePitch ({settings}) {
 
 
   const newGame = ()=>{
+    setScore(0);
     setHealth(levelData.startHealth);
     setDirection(levelData.startDirection);
     setLength(levelData.startLength);
     setIsHorizontal(levelData.startDirection === 'left' || levelData.startDirection === 'right')
     setGameTick(-1);
     generateNewGuess();
-    startPitchGameSong(levelData, ()=>{ setGameTick(t => t+1) })
+    startPitchGameSong(levelData, ()=>{ 
+      setGameTick(t => t+1) 
+      setActionPending(false);
+    })
     setIsStarted(true)
     console.log("New pitch game", guessData, isStarted, gameTick)
   }
 
   const endGame = ()=>{
-
+    setIsStarted(false);
+    endGameSong()
   }
 
   const onSelectNote = useCallback((n)=>{
@@ -91,7 +80,13 @@ export default function LevelBasePitch ({settings}) {
       generateNewGuess(n)
       setCurrentKey(n)
       setGameSongPitch(n)
-      // newBassLine(n,instruments.bass,levelData.music.bass,soundSeq,setSoundSeq)
+      setActionPending(true);
+      playGameInput(n)
+      setScore(s => s+50)
+    }
+    else{
+      playSoundEffect('wrong');
+      setHealth(h => h-1)
     }
   },[guessData, levelData])
 
@@ -103,32 +98,37 @@ export default function LevelBasePitch ({settings}) {
     ]) 
   }
   const onSnakeMove = (pos)=>{
-    let collision = false;
     const head = pos[0]
     if(head.x === item[0] && head.y === item[1]){
-      // playSound(instruments.sampler, levelData.music.sounds["item"])
-      newItem(levelData.levelSize)
+      playSoundEffect('item');
+      setScore(s => s+100)
+      setHealth(h => (h<5 ? h+1 : 5))
       setLength(l=>l+1)
+      newItem(levelData.levelSize)
     }
     else if(head.x < 0 || head.y < 0 || head.x >= levelData.levelSize[0] || head.y >= levelData.levelSize[1]){
-      collision = true
+      setHealth(null)
     }
     else{
       pos.forEach((p,i)=>{
         if(i !== 0){
           if(head.x === p.x && head.y === p.y) {
-            collision = true;
+            setHealth(null)
             return;
           }
         }        
       })
     }
 
-    if(collision){
-      setIsStarted(false);
-      endGameSong()
-    }
   }
+
+  useEffect(()=>{
+    if(isStarted){
+      if(!health){
+        endGame()
+      }
+    }
+  },[health,isStarted])
 
   const [pianoStats,setPianoStats] = useState(null)
   useEffect(()=>{
@@ -161,7 +161,12 @@ export default function LevelBasePitch ({settings}) {
   }, [showDebug]);
 
   return (
-    <>
+    <div className='GameBasePitch'>
+      
+      <section>
+        <StatusBar score={score} health={health} direction={direction} pending={actionPending}/>
+      </section>
+      
       <section className="Frame Snake" style={{ marginBottom:0, position: "relative" }}>
         <SnakeView
           direction={direction}
@@ -186,30 +191,16 @@ export default function LevelBasePitch ({settings}) {
 
         {guessData && <>
           <NoteView 
+            className={'GuessA ' + (isHorizontal ? 'GuessHorizontal' : '')}
             data={[{clef:'treble', notes:[guessData[0]+'-4n']}]}
             stavesExtra={1}
             slide={-0.5}
-            viewStyle={{
-              left: isHorizontal ? '50%' : 0,
-              top: isHorizontal ? 0 : '50%',
-              transform: isHorizontal
-              ? 'translate(-50%, 0)'
-              : 'translate(0, -50%)',
-              ...noteStyle,
-            }}
           />
-          <NoteView 
+          <NoteView  
+            className={'GuessB ' + (isHorizontal ? 'GuessHorizontal' : '')}
             data={[{clef:'treble', notes:[guessData[1]+'-4n']}]}
             stavesExtra={1}
             slide={-0.5}
-            viewStyle={{
-              right: isHorizontal ? '50%' : 0,
-              bottom: isHorizontal ? 0 : '50%',
-              transform: isHorizontal
-              ? 'translate(50%, 0)'
-              : 'translate(0, 50%)',
-              ...noteStyle
-            }}
           />
           </>}
 
@@ -236,8 +227,8 @@ export default function LevelBasePitch ({settings}) {
           </>}
       </section>
 
-      <section style={{display:'flex'}}>
-        <div className="Frame Input" >
+      <section >
+        <div className=" Input" >
           {pianoStats && <NoteInput
             root={pianoStats.root-12}
             count={pianoStats.count}
@@ -245,28 +236,28 @@ export default function LevelBasePitch ({settings}) {
             }}
             onNoteOn={(n)=>{
               onSelectNote(n)
-              playGameInput(n)
             }}
             allowDragging={false}
           />}
         </div>
-        <div className="Frame Status" style={statusStyle}>
-          <img className={'statusArrow'}  src={arrowSVG} alt='statusArrow' style={{
-            transition:'transform 250ms',
-            transform:`rotateZ(${90 * (1+dirToIdx[direction])}deg)`,
-            height:'40%', 
-            margin: '0.5rem',
-          }} />
-          {/* <div style={{
-            width:'4vh',
-            margin: '0.5rem',
-          }}>
-            {[...Array(health)].map((e,i)=>{
-              return <img key={`heart_${i}`} className={'statusHeart'} src={heartSVG} alt='statusHeart' /> 
-            })}
-          </div> */}
-        </div>
       </section>
-    </>
+    </div>
   );
+}
+
+
+function StatusBar({score = 0, health, pending}){
+  return (
+  <div className=" Status" >
+    <span>Score: {score}</span>
+    <div className='Frame HealthBar'>
+      {[...Array(5)].map((e,i)=>{
+        return <img key={`heart_${i}`} className={'statusHeart ' + (!health || i>(health-1) ? 'empty' : '') } alt='heal' /> 
+      })}
+    </div>
+    {/* <img className={'statusArrow' + (pending ? ' pending' : '')} alt='dir' style={{
+      transform:`rotateZ(${90 * (1+dirToIdx[direction])}deg)`,
+    }} /> */}
+  </div>
+  )
 }

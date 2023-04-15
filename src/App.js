@@ -39,7 +39,7 @@ export default function App(){
         loadSound()
     },[])
     
-    const [screen, setScreen] = useState('info');
+    const [screen, setScreen] = useState('game');
     const [isPresenting, setIsPresenting] = useState(false);
 
     const handlePresentScreen = (toPresent, bypass=false, data)=>{

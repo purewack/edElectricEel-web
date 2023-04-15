@@ -3,7 +3,7 @@ import { Sprite } from "@pixi/react";
 
 export default function Item({ where, type='noteblock', visuals }) {
   useEffect(() => {
-    console.log("new item spawn");
+    // console.log("new item spawn");
   }, []);
 
   const uu = visuals.u;

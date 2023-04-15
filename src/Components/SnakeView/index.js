@@ -61,7 +61,8 @@ export function SnakeView({ style, options, gameTick, children}) {
     const [lwwU, lhhU] = options?.levelSize || [14,10]
     const shipAreaU = options?.levelMarginTop || 2;
     const floorAreaU = options?.levelMarginBot || 1;
-    const totalFieldWidthU = lwwU
+    const borderAreaU = 0;
+    const totalFieldWidthU = lwwU + borderAreaU
     const totalFieldHeightU = lhhU + shipAreaU + floorAreaU
 
     const tileSize = 8;
@@ -76,7 +77,7 @@ export function SnakeView({ style, options, gameTick, children}) {
     const tilesWidthsPXU = lwwU * uu
 
     const left = 0.5*(parentSize.width - tilesWidthsPXU)
-    const top = floorAreaU * uu + 0.5*(parentSize.height - tilesHeightsPXU)
+    const top = shipAreaU-floorAreaU * uu + (parentSize.height - tilesHeightsPXU)
 
     const vis = {
       u,
@@ -89,7 +90,7 @@ export function SnakeView({ style, options, gameTick, children}) {
       uArea:[lwwU,lhhU], 
     }
     setVisuals(vis)
-    console.log('Stage visuals',vis)
+    // console.log('Stage visuals',vis)
   }, [parentSize, options.levelSize]);
 
   const u = visuals.u
@@ -112,7 +113,7 @@ export function SnakeView({ style, options, gameTick, children}) {
           speed: 0.25,
         });
       }
-      console.log("new scenery",arr);
+      // console.log("new scenery",arr);
       setScenery(arr);
     } else if(options?.scrolling) {
       setScenery((ss) =>
@@ -142,7 +143,7 @@ export function SnakeView({ style, options, gameTick, children}) {
           const _sprites = { snake: s[0], scene: s[1], items: s[2], entity: s[3]}
           setSprites(_sprites);
           advanceScenery(true);
-          console.log("sprites loaded",_sprites);
+          // console.log("sprites loaded",_sprites);
         }
       );
 
@@ -181,7 +182,7 @@ export function SnakeView({ style, options, gameTick, children}) {
           />
           <TilingSprite
             texture={sprites.scene.sand}
-            scale={{ x: u * 2, y: u * 2 }}
+            scale={{ x: u, y: u}}
             height={parentSize.height}
             width={parentSize.width + uu}
             y={bot}
@@ -189,7 +190,7 @@ export function SnakeView({ style, options, gameTick, children}) {
           />
           <TilingSprite
             texture={sprites.scene.gravel}
-            scale={{ x: -u, y: u }}
+            scale={{ x: -u*2, y: u*2 }}
             width={left/u}
             height={parentSize.height}
             y={0}
@@ -197,7 +198,7 @@ export function SnakeView({ style, options, gameTick, children}) {
           />
           <TilingSprite
             texture={sprites.scene.gravel}
-            scale={{ x: u, y: u }}
+            scale={{ x: u*2, y: u*2 }}
             width={left/u}
             height={parentSize.height}
             y={0}

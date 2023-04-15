@@ -42,6 +42,7 @@ export class MidiFilePlayer {
         this.players.lead.set(midiPresets.lead)
         this.players.lead2.set(midiPresets.lead2)
         this.players.piano.set(midiPresets.piano)
+        this.players.input.set(midiPresets.input)
         
         this.loadSampler()
         this.song = null
@@ -326,7 +327,7 @@ export const midiPlayer = new MidiFilePlayer();
 
 let gameTickId = null
 
-export function startPitchGameSong (levelData,onGametick){
+export function startPitchGameSong (levelData,onGametick, onGameBar){
     if(gameTickId) endGameSong()
 
     Tone.Transport.stop();
@@ -342,6 +343,8 @@ export function startPitchGameSong (levelData,onGametick){
             },t)
         }, levelData.gameTickInterval, '1:0:0')
         midiPlayer.begin(null)
+        midiPlayer.mute();
+        midiPlayer.unmute(['bass','drums'])
     })
 }
 
@@ -360,8 +363,8 @@ export function endGameSong(){
 export function setGameSongPitch(root){
     const newRoot = Tone.Frequency(root).toMidi() % 12
 
-    const when = QuanTime(Tone.Transport.position,1,4)
-    console.log(Tone.Transport.position, when)
+    const when = QuanTime(Tone.Transport.position,4,4)
+    console.log(Tone.Transport.position, '->', when)
     Tone.Transport.scheduleOnce((tt)=>{
         midiPlayer.transpose(newRoot)
     }, Tone.Time(when).toSeconds() - 0.05)

@@ -1,17 +1,84 @@
-
-.FelixStatus {
-  transition: background-color 2s;
+.GameBasePitch {
+  background-color: black;
 }
 
-.NoteView {
-  background-color: ivory;
+.GameBasePitch  .NoteView {
+  position: absolute;
+  width: 12vh;
+  height: 12vh;
+  border: solid forestgreen 0.25rem;
+  border-radius: 1rem;
+  background: ivory;
+  transform: translate(-50%,-50%);
+  opacity: 70%;
+}
+.GameBasePitch  .SnakeView {
+  position: relative;
+}
+.GuessA.GuessHorizontal {
+  top: 6vh;
+  left: 50%;
+  right: unset;
+  bottom: unset;
+}
+.GuessB.GuessHorizontal {
+  top: unset;
+  left: 50%;
+  right: unset;
+  bottom: -6vh;
+}
+.GuessA {
+  top: 50%;
+  left: 6vh;
+  right: unset;
+  bottom: unset;
+}
+.GuessB {
+  top: 50%;
+  left: unset;
+  right: -6vh;
+  bottom: unset;
 }
 
-
-.Frame.Snake {
-  height: 70vh;
+.GameBasePitch  .Frame.Snake {
+  height: 65vh;
 }
-.Frame.Input {
-  width: 100%;
-  height: 30vh;
+.GameBasePitch  .Input {
+  height: 25vh;
+}
+.GameBasePitch  .Status {
+  height: 10vh;
+  padding: 0;
+  background: black;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  padding-inline: 2rem;
+}
+
+.GameBasePitch  .Status span{
+  font-size: min(3rem,5vh);
+}
+.GameBasePitch .statusArrow{
+  content: url('../AssetsImport/icons/arrow.png');
+  height:5vh;
+}
+.GameBasePitch .statusArrow.pending{
+  filter: hue-rotate(-90deg);
+}
+.GameBasePitch .HealthBar {
+  width: calc(7vh * 5);
+  height: 10vh;
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+}
+.GameBasePitch .statusHeart{
+  content: url('../AssetsImport/icons/heart.png');
+  width: 5vh;
+}
+.GameBasePitch .statusHeart.empty{
+  content: url('../AssetsImport/icons/heart_empty.png');
+  width: 5vh;
 }
