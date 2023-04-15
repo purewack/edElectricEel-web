@@ -50,15 +50,45 @@
   height: 10vh;
   padding: 0;
   background: black;
-  color:white;
+  color: pink;
   display:flex;
   align-items:center;
   justify-content: space-between;
-  padding-inline: 2rem;
+  padding-inline: 1rem;
 }
 
 .GameBasePitch  .Status span{
-  font-size: min(3rem,5vh);
+  font-size: min(6vh,6vw);
+  text-align: center;
+  position: relative;
+  filter: drop-shadow(0px 0px 5px black);
+}
+.GameBasePitch  .Status .Score.streak::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.5;
+  background-image: url('../AssetsImport/icons/fire.png');
+  background-size: contain;
+  background-repeat:space;
+  background-position: 50%;
+  image-rendering: pixelated;
+}
+.GameBasePitch  .Status .Score.streak::after{
+  content: ' ';
+}
+.GameBasePitch  .Status .Score.streak.low::after{
+  content: ' x2';
+}
+.GameBasePitch  .Status .Score.streak.mid::after{
+  content: ' x3';
+  color:springgreen;
+}
+.GameBasePitch  .Status .Score.streak.high::after{
+  content: ' x4';
+  color:aqua;
 }
 .GameBasePitch .statusArrow{
   content: url('../AssetsImport/icons/arrow.png');

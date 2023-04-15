@@ -62,7 +62,7 @@ export default function App(){
             Lets Go!
             <img alt="ok" src={arrow} onClick={()=>{
                 Tone.start().then(()=>{
-                    handlePresentScreen('game',true)
+                    handlePresentScreen('title',true)
                 })
             }}/>
             </div>

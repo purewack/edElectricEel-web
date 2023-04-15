@@ -154,7 +154,7 @@ export class MidiFilePlayer {
                 resolve(midiJson)
                 return
             }
-            if(!append) Tone.Transport.clear();
+            if(!append) Tone.Transport.cancel();
             Tone.Transport.bpm.value = midiJson.header.tempos[0].bpm
             const off = Tone.TransportTime(offset).toSeconds();
             Tone.Transport.loopEnd = midiJson.duration + off;
@@ -330,6 +330,8 @@ let gameTickId = null
 export function startPitchGameSong (levelData,onGametick, onGameBar){
     if(gameTickId) endGameSong()
 
+    return new Promise((resolve)=>{
+
     Tone.Transport.stop();
     Tone.Transport.cancel();
     Tone.Transport.position = '0:0:0';
@@ -342,9 +344,14 @@ export function startPitchGameSong (levelData,onGametick, onGameBar){
                 onGametick()
             },t)
         }, levelData.gameTickInterval, '1:0:0')
+        Tone.Transport.scheduleOnce((t)=>{
+            Tone.Draw.schedule(resolve,t)
+        },'1:0:0')
         midiPlayer.begin(null)
         midiPlayer.mute();
         midiPlayer.unmute(['bass','drums'])
+    })
+
     })
 }
 

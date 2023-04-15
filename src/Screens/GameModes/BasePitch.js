@@ -17,10 +17,12 @@ export default function LevelBasePitch ({settings}) {
   const showDebug = useContext(DebugContext)
  
   const [isStarted, setIsStarted] = useState(false)
+  const [gameActive, setGameActive] = useState(false)
 
   const [guessData, setGuessData] = useState()
-  const [currentKey, setCurrentKey] = useState()
-  const [score, setScore] = useState()
+  const [currentKey, setCurrentKey] = useState('C4')
+  const [score, setScore] = useState(null)
+  const [streak, setStreak] = useState()
   const [health, setHealth] = useState();
   const [direction, setDirection] = useState();
   const [actionPending, setActionPending] = useState();
@@ -47,6 +49,7 @@ export default function LevelBasePitch ({settings}) {
 
   const newGame = ()=>{
     setScore(0);
+    setStreak(0);
     setHealth(levelData.startHealth);
     setDirection(levelData.startDirection);
     setLength(levelData.startLength);
@@ -56,6 +59,8 @@ export default function LevelBasePitch ({settings}) {
     startPitchGameSong(levelData, ()=>{ 
       setGameTick(t => t+1) 
       setActionPending(false);
+    }).then(()=>{
+      setGameActive(true)
     })
     setIsStarted(true)
     console.log("New pitch game", guessData, isStarted, gameTick)
@@ -63,7 +68,19 @@ export default function LevelBasePitch ({settings}) {
 
   const endGame = ()=>{
     setIsStarted(false);
+    setGameActive(false);
+    setScore(null)
+    setStreak(0)
     endGameSong()
+  }
+
+  const addScore =(add,streak)=>{
+    const mult = (
+      streak >= 30 ? 4
+      : streak >= 20 ? 3
+      : streak >= 10 ? 2
+    : 1)
+    setScore(s => s+(add*mult))
   }
 
   const onSelectNote = useCallback((n)=>{
@@ -82,11 +99,13 @@ export default function LevelBasePitch ({settings}) {
       setGameSongPitch(n)
       setActionPending(true);
       playGameInput(n)
-      setScore(s => s+50)
+      addScore(50,streak)
+      setStreak(s => s+1)
     }
     else{
       playSoundEffect('wrong');
       setHealth(h => h-1)
+      setStreak(0);
     }
   },[guessData, levelData])
 
@@ -101,7 +120,7 @@ export default function LevelBasePitch ({settings}) {
     const head = pos[0]
     if(head.x === item[0] && head.y === item[1]){
       playSoundEffect('item');
-      setScore(s => s+100)
+      addScore(100,streak)
       setHealth(h => (h<5 ? h+1 : 5))
       setLength(l=>l+1)
       newItem(levelData.levelSize)
@@ -164,7 +183,7 @@ export default function LevelBasePitch ({settings}) {
     <div className='GameBasePitch'>
       
       <section>
-        <StatusBar score={score} health={health} direction={direction} pending={actionPending}/>
+        <StatusBar score={score} currentKey={currentKey?.slice(0,-1)} streak={streak} health={health} direction={direction} pending={actionPending}/>
       </section>
       
       <section className="Frame Snake" style={{ marginBottom:0, position: "relative" }}>
@@ -186,7 +205,7 @@ export default function LevelBasePitch ({settings}) {
               tick={{value:gameTick, speed:levelData.ticksPerMove}} 
               onAdvance={onSnakeMove}
             />}
-          <Item where={item} type='pizza'/>
+          {isStarted && <Item where={item} type='pizza'/>}
         </SnakeView>
 
         {guessData && <>
@@ -235,7 +254,7 @@ export default function LevelBasePitch ({settings}) {
             onNoteOff={(n)=>{
             }}
             onNoteOn={(n)=>{
-              onSelectNote(n)
+              gameActive && onSelectNote(n)
             }}
             allowDragging={false}
           />}
@@ -246,15 +265,30 @@ export default function LevelBasePitch ({settings}) {
 }
 
 
-function StatusBar({score = 0, health, pending}){
+function StatusBar({score = 0, health, pending, streak, currentKey}){
+  const _streak =  (
+    streak >= 30 ? 'streak high' 
+    : streak >= 20 ? 'streak mid' 
+    : streak >= 10 ? 'streak low' 
+  : '')
+  const leadingZeros = (num, size)=>{
+      var s = num+"";
+      while (s.length < size) s = "0" + s;
+      return s;
+  }
+  const _score = score === null ? '-----' : leadingZeros(score,5); 
   return (
   <div className=" Status" >
-    <span>Score: {score}</span>
+    <div>
+      {/* <span>Score: </span><br/> */}
+      <span className={'Score ' + _streak}>{_score}</span>
+    </div>
     <div className='Frame HealthBar'>
       {[...Array(5)].map((e,i)=>{
         return <img key={`heart_${i}`} className={'statusHeart ' + (!health || i>(health-1) ? 'empty' : '') } alt='heal' /> 
       })}
     </div>
+    <span className='Key'>Key: {currentKey}</span>
     {/* <img className={'statusArrow' + (pending ? ' pending' : '')} alt='dir' style={{
       transform:`rotateZ(${90 * (1+dirToIdx[direction])}deg)`,
     }} /> */}
