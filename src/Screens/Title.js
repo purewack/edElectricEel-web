@@ -20,7 +20,7 @@ export function Title({onPresent}){
     const [submenu, setSubmenu] = useState()
 
     useEffect(()=>{
-        midiPlayer.play('jazzy.mid');
+        midiPlayer.play('threefour.mid');
     },[])
 
     const newGamePitch = ()=>{
