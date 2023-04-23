@@ -124,7 +124,9 @@ export class MidiFilePlayer {
             this.output.volume.linearRampTo(-120,dt);
             Tone.Transport.stop(Tone.now() + dt);
             setTimeout(()=>{
+                Tone.Transport.cancel();
                 resolve()
+                this.state = 'stopped'
             },(dt + 0.1) * 1000)
         })
     }
@@ -142,6 +144,7 @@ export class MidiFilePlayer {
             },'1m','0:0:0');
         }
         Tone.Transport.start("+0.5","0:0:0");
+        this.state = 'playing'
     }
 
     //pre schedule events before playing
@@ -168,6 +171,7 @@ export class MidiFilePlayer {
                 if(failed === count) reject()
                 if(loaded + failed === count) {
                     this.loaded = song
+                    this.state = 'loaded'
                     resolve(midiJson, loaded,failed)
                 }
             }

@@ -185,14 +185,19 @@ button:disabled {
 }
 .selected::before,
 .selected::after {
-  content: '';
+  /* content: ''; */
   background-image: url('../AssetsImport/icons/arrow.png');
   background-size: cover;
   display: inline-block;
   width:2rem;
   height:2rem;
   margin-inline: 1rem;
+  position: absolute;
+  left:0;
+  top:50%;
+  transform: translateY(-50%);
 }
 .selected::after{
-  transform: rotate(180deg);
+  right:0;
+  left:unset;
 }

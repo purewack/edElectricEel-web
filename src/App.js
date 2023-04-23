@@ -7,6 +7,7 @@ import { createContext, useEffect, useState } from 'react'
 import * as Tone from 'tone'
 import { midiPlayer, songPlayer } from './Components/Sound'
 import arrow from './AssetsImport/icons/arrow.png'
+import { TestZone } from './Screens/TestZone'
 
 export const DebugContext = createContext(false);
 
@@ -75,6 +76,7 @@ export default function App(){
             {screen === 'title' && <Title onPresent={handlePresentScreen}/>}
             {screen === 'selectDifficulty' && <SelectDifficulty onPresent={handlePresentScreen}/>}
             {screen === 'game' && <LevelBasePitch  onPresent={handlePresentScreen}/>}
+            {screen === 'testzone' && <TestZone  onPresent={handlePresentScreen}/>}
         </DebugContext.Provider>
     </div>)
 }

@@ -52,14 +52,18 @@ export function Title({onPresent}){
                     <button disabled={true}> Story </button>
                     <button disabled={true}> Learn </button>
                     <div>  {submenu === 'options' ? 
-                        <div className={'submenu'}>
+                        <div className={'submenu selected'}>
                             <div>
                                 <h2 className='title'>Options:</h2>
                                 <button disabled={true}> Music Volume </button>
                                 <button disabled={true}> Input Volume </button>
                             </div>
+                            <div>
+                                <h2 className='title'>Development:</h2>
+                                <button onClick={()=>{onPresent('testzone')}}> Test Zone </button>
+                            </div>
                         </div>
-                        :<button disabled={true} onClick={()=>{setSubmenu('options')}}> Options </button>
+                        :<button disabled={false} onClick={()=>{setSubmenu('options')}}> Options </button>
                     }</div>
                     <button disabled={true}> About </button>
                 
