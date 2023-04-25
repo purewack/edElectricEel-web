@@ -56,22 +56,26 @@ export default function LevelBasePitch ({settings}) {
     setIsHorizontal(levelData.startDirection === 'left' || levelData.startDirection === 'right')
     setGameTick(-1);
     generateNewGuess();
+    setGameSongPitch('C4',true);
+    setCurrentKey('C4');
     startPitchGameSong(levelData, ()=>{ 
       setGameTick(t => t+1) 
       setActionPending(false);
     }).then(()=>{
       setGameActive(true)
+      console.log("new pitch game begin");
     })
     setIsStarted(true)
     console.log("New pitch game", guessData, isStarted, gameTick)
   }
 
   const endGame = ()=>{
-    setIsStarted(false);
     setGameActive(false);
     setScore(null)
     setStreak(0)
-    endGameSong()
+    endGameSong().then(()=>{
+      setIsStarted(false);
+    })
   }
 
   const addScore =(add,streak)=>{

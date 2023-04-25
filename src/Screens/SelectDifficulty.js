@@ -257,9 +257,8 @@ export function SelectDifficulty({onPresent}){
             </button>
             <button className='alt btnGo GalleryFlex'
             onClick={()=>{
-                midiPlayer.stop(2)
-                    onPresent('game')
-                
+                midiPlayer.stop(1)
+                onPresent('game',1000)
             }}>
                 <span>Lets Go!</span> 
                 <img alt="arrow" src={arrowSVG} />

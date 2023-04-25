@@ -9,6 +9,7 @@
     "gameTickInterval":"8n",
     "ticksPerMove":"4",
     "tempo" : 100,
+    "song": "pitch_game.mid",
     "canOverlapSelf" : false,
     "guessData":{
         "type" : "range",

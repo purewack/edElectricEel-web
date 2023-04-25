@@ -20,21 +20,19 @@ export default function App(){
         console.log(midiPlayer)
         window.toggleDebug = ()=>{setShowDebug(d=>!d)}
         const loadSound = async ()=>{
-            const songList = ['jazzy.mp3','classy.mp3']
+            // const songList = ['jazzy.mp3','classy.mp3']
             const midiList = ['classy.mid', "jazzy.mid","pitch_game.mid","threefour.mid"]
-            const songsLoader = (loadedItem, progressArray)=>{
-                const str = `Song:${loadedItem} [${progressArray[0]}/${progressArray[1]}]`
-                setLoading(str)
-                console.log(str)
-            }
-            const midiLoader = (loadedItem, progressArray)=>{
+        
+            // await songPlayer.load(songList, (loadedItem, progressArray)=>{
+            //     const str = `Song:${loadedItem} [${progressArray[0]}/${progressArray[1]}]`
+            //     setLoading(str)
+            //     console.log(str)
+            // })
+            await midiPlayer.load(midiList, (loadedItem, progressArray)=>{
                 const str = `MIDI:${loadedItem} [${progressArray[0]}/${progressArray[1]}]`
                 setLoading(str)
                 console.log(str)
-            }
-            
-            await songPlayer.load(songList, songsLoader)
-            await midiPlayer.load(midiList, midiLoader)
+            })
             setLoaded(true)
         }
         loadSound()
@@ -43,7 +41,7 @@ export default function App(){
     const [screen, setScreen] = useState('info');
     const [isPresenting, setIsPresenting] = useState(false);
 
-    const handlePresentScreen = (toPresent, bypass=false, data)=>{
+    const handlePresentScreen = (toPresent, inTime = 400, bypass=false, data)=>{
         const go = ()=>{
             setScreen(toPresent)
             setIsPresenting(false)
@@ -51,7 +49,7 @@ export default function App(){
         if(bypass) go()
         else{
             setIsPresenting(true)
-            setTimeout(go,400)
+            setTimeout(go,inTime)
         }
     }
 
@@ -63,7 +61,7 @@ export default function App(){
             Lets Go!
             <img alt="ok" src={arrow} onClick={()=>{
                 Tone.start().then(()=>{
-                    handlePresentScreen('title',true)
+                    handlePresentScreen('title',400,true)
                 })
             }}/>
             </div>
