@@ -1,4 +1,4 @@
-<REAPER_PROJECT 0.1 "6.78/OSX64-clang" 1682246681
+<REAPER_PROJECT 0.1 "6.78/OSX64-clang" 1682464754
   <NOTES 0 2
   >
   RIPPLE 0
@@ -16,7 +16,7 @@
   TIMEMODE 1 5 -1 30 0 0 -1
   VIDEO_CONFIG 0 0 256
   PANMODE 3
-  CURSOR 139.2
+  CURSOR 0
   ZOOM 3.2792459307697 0 0
   VZOOMEX 4.78423166 0
   USE_REC_CFG 0
@@ -116,7 +116,7 @@
     ISBUS 0 0
     BUSCOMP 0 0 0 0 0
     SHOWINMIX 1 0.6667 0.5 1 0.5 0 0 0
-    SEL 1
+    SEL 0
     REC 0 0 1 0 0 0 0 0
     VU 2
     TRACKHEIGHT 0 0 0 0 0 0
@@ -335,7 +335,7 @@
       FADEIN 1 0 0 1 0 0 0
       FADEOUT 1 0 0 1 0 0 0
       MUTE 0 0
-      SEL 1
+      SEL 0
       IGUID {7EFFD031-C6FC-EB46-881C-EA8EB006323C}
       IID 45
       NAME drums
@@ -518,9 +518,6 @@
         HASDATA 1 96 QN
         CCINTERP 32
         POOLEDEVTS {4B58049C-EB70-3843-97AA-84846901FBAC}
-        <X 0 0 0 0 3 "Violin 1"
-          /wNWaW9saW4gMQ==
-        >
         E 0 c0 30 00
         E 0 b0 40 00
         E 0 b0 5b 25
@@ -2647,6 +2644,12 @@
         GUID {843D3B34-A0EA-594C-89B8-FD7CD2953BE5}
         IGNTEMPO 0 120 4 4
         SRCCOLOR 493
+        VELLANE -1 100 0
+        CFGEDITVIEW 0 0.023912 38 12 0 -1 0 0 0 0.5
+        KEYSNAP 0
+        TRACKSEL 252
+        EVTFILTER 0 -1 -1 -1 -1 0 0 0 0 -1 -1 -1 -1 0 -1 0 -1 -1
+        CFGEDIT 1 1 0 1 0 4 1 1 1 1 1 0.5 352 91 1353 855 0 0 0 0 0 0 0 0 0 0.5 0 0 1 64
       >
     >
   >
@@ -2710,9 +2713,6 @@
         HASDATA 1 96 QN
         CCINTERP 32
         POOLEDEVTS {A552F566-1C66-1943-993D-A8CE4792B9F0}
-        <X 0 0 0 0 3 Viola
-          /wNWaW9sYQ==
-        >
         E 0 c1 30 00
         E 0 b1 40 00
         E 0 b1 5b 2f
@@ -5049,6 +5049,12 @@
         GUID {74DF044E-6047-F947-A61E-FA33AE99A0C8}
         IGNTEMPO 0 120 4 4
         SRCCOLOR 494
+        VELLANE -1 100 0
+        CFGEDITVIEW 0 0.01243 53 12 0 -1 0 0 0 0.5
+        KEYSNAP 0
+        TRACKSEL 252
+        EVTFILTER 0 -1 -1 -1 -1 0 0 0 0 -1 -1 -1 -1 0 -1 0 -1 -1
+        CFGEDIT 1 1 0 1 0 4 1 1 1 1 1 0.5 352 91 1353 855 0 0 0 0 0 0 0 0 0 0.5 0 0 1 64
       >
     >
   >
@@ -5064,7 +5070,7 @@
     ISBUS 0 0
     BUSCOMP 0 0 0 0 0
     SHOWINMIX 1 0.6667 0.5 1 0.5 0 0 0
-    SEL 0
+    SEL 1
     REC 0 0 1 0 0 0 0 0
     VU 2
     TRACKHEIGHT 0 0 0 0 0 0
@@ -5099,7 +5105,7 @@
       FADEIN 1 0 0 1 0 0 0
       FADEOUT 1 0 0 1 0 0 0
       MUTE 0 0
-      SEL 0
+      SEL 1
       IGUID {FC977E57-57F1-E748-AAC1-0C0113CE847C}
       IID 64
       NAME "Violoncello - String Trio Better-2.mid"
@@ -5112,9 +5118,6 @@
         HASDATA 1 96 QN
         CCINTERP 32
         POOLEDEVTS {305902D7-29D7-4943-8CE2-88B4CE2FA20E}
-        <X 0 0 0 0 3 Violoncello
-          /wNWaW9sb25jZWxsbw==
-        >
         E 0 c2 30 00
         E 0 b2 40 00
         E 0 b2 5b 2f
@@ -6509,6 +6512,12 @@
         GUID {0B926429-F39F-1245-ABB5-E4BCF6E1BE55}
         IGNTEMPO 0 120 4 4
         SRCCOLOR 495
+        VELLANE -1 100 0
+        CFGEDITVIEW 0 0.01243 67 12 0 -1 0 0 0 0.5
+        KEYSNAP 0
+        TRACKSEL 252
+        EVTFILTER 0 -1 -1 -1 -1 0 0 0 0 -1 -1 -1 -1 0 -1 0 -1 -1
+        CFGEDIT 1 1 0 1 0 4 1 1 1 1 1 0.5 352 91 1353 855 0 0 0 0 0 0 0 0 0 0.5 0 0 1 64
       >
     >
   >

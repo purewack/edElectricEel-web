@@ -15,6 +15,8 @@ export class MidiFilePlayer {
             piano:  new Tone.PolySynth(),
             lead:  new Tone.DuoSynth(),
             lead2:  new Tone.DuoSynth(),
+            harmo1:  new Tone.PolySynth(),
+            harmo2:  new Tone.PolySynth(),
             melody: new Tone.PolySynth(),
             bass:   new Tone.Synth(),
             drums:  new Tone.Sampler(),
@@ -38,11 +40,15 @@ export class MidiFilePlayer {
         this.players.melody.connect(q)
         this.players.bass.connect(q)
         this.players.drums.connect(q)
+        this.players.harmo1.connect(q)
+        this.players.harmo2.connect(q)
 
         this.players.bass.set(midiPresets.bass)
         this.players.melody.set(midiPresets.melody)
         this.players.lead.set(midiPresets.lead)
         this.players.lead2.set(midiPresets.lead2)
+        this.players.harmo1.set(midiPresets.harmo1)
+        this.players.harmo2.set(midiPresets.harmo2)
         this.players.piano.set(midiPresets.piano)
         this.players.input.set(midiPresets.input)
         

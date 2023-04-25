@@ -21,7 +21,7 @@ export default function App(){
         window.toggleDebug = ()=>{setShowDebug(d=>!d)}
         const loadSound = async ()=>{
             // const songList = ['jazzy.mp3','classy.mp3']
-            const midiList = ['classy.mid', "jazzy.mid","pitch_game.mid","threefour.mid"]
+            const midiList = ['classy.mid', "jazzy.mid", "threefour.mid", 'trio.mid', 'dreamy.mid']
         
             // await songPlayer.load(songList, (loadedItem, progressArray)=>{
             //     const str = `Song:${loadedItem} [${progressArray[0]}/${progressArray[1]}]`

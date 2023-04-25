@@ -79,6 +79,30 @@
             "type": "sawtooth"
         }
     },
+    "harmo1":
+    {
+        "volume": -2,
+        "detune": 0,
+        "envelope": {
+            "attack": 0.003,
+            "release": 0.145
+        },
+        "oscillator": {
+            "type": "triangle"
+        }
+    },
+    "harmo2":
+    {
+        "volume": -2,
+        "detune": 0,
+        "envelope": {
+            "attack": 0.003,
+            "release": 0.145
+        },
+        "oscillator": {
+            "type": "triangle"
+        }
+    },
     "piano":
     {
         "volume": -6,
