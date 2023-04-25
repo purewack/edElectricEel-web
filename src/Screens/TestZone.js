@@ -48,7 +48,7 @@ export function TestZone({onPresent}){
 
             <ul>
             {(Object.keys(midiPlayer.songs)).map(s => {
-                return <li>
+                return <li className={playing === s ? 'selected' : ''}>
                     <span>{s}</span>
                     <button onClick={async ()=>{
                         if(playing === s) return
