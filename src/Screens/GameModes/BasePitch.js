@@ -3,7 +3,7 @@ import arrowSVG from '../../AssetsImport/icons/arrow.svg'
 
 import * as Tone from "tone";
 import { useCallback, useEffect, useState, useContext, useRef} from "react";
-import { startPitchGameSong, newBassLine, endGameSong, playSound, playGameInput, midiPlayer, setGameSongPitch, playSoundEffect } from "../../Components/Sound";
+import { startPitchGameSong, newBassLine, endGameSong, playSound, playGameInput, midiPlayer, setGameSongPitch, playSoundEffect, setGameSongParts } from "../../Components/Sound";
 import { newNote, guessRange } from "../../Components/NoteGuess";
 
 import NoteInput from "../../Components/NoteInput/index.js";
@@ -13,6 +13,8 @@ import Item from "../../Components/SnakeView/Item";
 import { DebugContext } from '../../App';
 
 
+const multipliers = {low: 5, mid: 15, high: 30}
+
 export default function LevelBasePitch ({settings}) {
   const showDebug = useContext(DebugContext)
  
@@ -21,8 +23,7 @@ export default function LevelBasePitch ({settings}) {
 
   const [guessData, setGuessData] = useState()
   const [currentKey, setCurrentKey] = useState('C4')
-  const [score, setScore] = useState(null)
-  const [streak, setStreak] = useState()
+  const [score, setScore] = useState({value: null, multiplier: 1, streak: 0})
   const [health, setHealth] = useState();
   const [direction, setDirection] = useState();
   const [actionPending, setActionPending] = useState();
@@ -48,8 +49,7 @@ export default function LevelBasePitch ({settings}) {
 
 
   const newGame = ()=>{
-    setScore(0);
-    setStreak(0);
+    setScore({value: 0, multiplier: 1, streak: 0});
     setHealth(levelData.startHealth);
     setDirection(levelData.startDirection);
     setLength(levelData.startLength);
@@ -71,21 +71,35 @@ export default function LevelBasePitch ({settings}) {
 
   const endGame = ()=>{
     setGameActive(false);
-    setScore(null)
-    setStreak(0)
+    setScore({value: null, multiplier: 1, streak: 0})
     endGameSong().then(()=>{
       setIsStarted(false);
     })
   }
 
-  const addScore =(add,streak)=>{
-    const mult = (
-      streak >= 30 ? 4
-      : streak >= 20 ? 3
-      : streak >= 10 ? 2
-    : 1)
-    setScore(s => s+(add*mult))
+  const addScore =(add)=>{
+    setScore(s => {
+      const mult = (
+        s.streak >= multipliers.high ? 4
+        : s.streak >= multipliers.mid ? 3
+        : s.streak >= multipliers.low ? 2
+      : 1)
+
+      return{
+      ...s,
+      value:s.value+(add*mult),
+      streak:s.streak + 1,
+      multiplier: mult
+      }
+    })
   }
+
+  useEffect(()=>{
+    console.log('new multiplier ',score.multiplier)
+    if(score.multiplier === 2) setGameSongParts(['drums','bass','melody'])
+    else if(score.multiplier >= 3) setGameSongParts(['drums','bass','melody','lead'])
+    else setGameSongParts(['drums','bass'])
+  },[score.multiplier])
 
   const onSelectNote = useCallback((n)=>{
     //check chosen directon
@@ -103,13 +117,18 @@ export default function LevelBasePitch ({settings}) {
       setGameSongPitch(n)
       setActionPending(true);
       playGameInput(n)
-      addScore(50,streak)
-      setStreak(s => s+1)
+      addScore(50)
     }
     else{
       playSoundEffect('wrong');
       setHealth(h => h-1)
-      setStreak(0);
+      setScore(s => {
+        return {
+          ...s,
+          streak:0,
+          multiplier:0
+        }
+      })
     }
   },[guessData, levelData])
 
@@ -124,7 +143,7 @@ export default function LevelBasePitch ({settings}) {
     const head = pos[0]
     if(head.x === item[0] && head.y === item[1]){
       playSoundEffect('item');
-      addScore(100,streak)
+      addScore(100)
       setHealth(h => (h<5 ? h+1 : 5))
       setLength(l=>l+1)
       newItem(levelData.levelSize)
@@ -187,7 +206,7 @@ export default function LevelBasePitch ({settings}) {
     <div className='GameBasePitch'>
       
       <section>
-        <StatusBar score={score} currentKey={currentKey?.slice(0,-1)} streak={streak} health={health} direction={direction} pending={actionPending}/>
+        <StatusBar score={score.value} currentKey={currentKey?.slice(0,-1)} streak={score.streak} health={health} direction={direction} pending={actionPending}/>
       </section>
       
       <section className="Frame Snake" style={{ marginBottom:0, position: "relative" }}>
@@ -271,9 +290,9 @@ export default function LevelBasePitch ({settings}) {
 
 function StatusBar({score = 0, health, pending, streak, currentKey}){
   const _streak =  (
-    streak >= 30 ? 'streak high' 
-    : streak >= 20 ? 'streak mid' 
-    : streak >= 10 ? 'streak low' 
+    streak >= multipliers.high ? 'streak high' 
+    : streak >= multipliers.mid ? 'streak mid' 
+    : streak >= multipliers.low ? 'streak low' 
   : '')
   const leadingZeros = (num, size)=>{
       var s = num+"";

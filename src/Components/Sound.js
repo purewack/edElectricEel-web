@@ -395,6 +395,12 @@ export function setGameSongPitch(root, force = false){
         midiPlayer.transpose(newRoot)
 }
 
+export function setGameSongParts(instrumentSelection){
+    midiPlayer.mute(null,2);
+    midiPlayer.unmute(instrumentSelection,2);
+    console.log('new game parts', instrumentSelection)
+}
+
 export function playSoundEffect(name){
     // sampler.triggerAttackRelease(sound[0], sound[1]);
 }
