@@ -1,6 +1,7 @@
 import * as Tone from "tone";
 import { Midi } from '@tonejs/midi'
 import midiPresets from './midiset.json'
+import effectsSet from './effectset.json'
 
 // Tone.setContext(new Tone.Context({ latencyHint : "playback", lookAhead: 0.5 }))
 
@@ -9,7 +10,7 @@ export class MidiFilePlayer {
     #onbar;
     #onbeat;
 
-    constructor(){
+    constructor(autoload = true){
         this.players = {
             piano:  new Tone.PolySynth(),
             lead:  new Tone.DuoSynth(),
@@ -26,6 +27,7 @@ export class MidiFilePlayer {
             filter: new Tone.Filter(8000,undefined,-24),
             input: new Tone.Synth().toDestination(),
             output: new Tone.Volume(-3).toDestination(),
+            effects: new Tone.Sampler()
         }
         const q = this.nodes.quality
         const f = this.nodes.filter
@@ -34,6 +36,8 @@ export class MidiFilePlayer {
         f.connect(o)  
         q.connect(f)
         q.set({wet:1});
+        this.nodes.effects.toDestination()
+        this.nodes.effects.volume.value = -6
         this.players.piano.connect(q)
         this.players.lead.connect(q)
         this.players.lead2.connect(q)
@@ -52,7 +56,10 @@ export class MidiFilePlayer {
         this.players.piano.set(midiPresets.piano)
         this.nodes.input.set(midiPresets.input)
 
-        this.loadSampler()
+        if(autoload){
+            this.loadSampler()
+            this.loadEffects()
+        }
         this.loaded = null
         this.state = 'clear'
         console.log('new MidiFilePlayer');
@@ -85,6 +92,26 @@ export class MidiFilePlayer {
                 console.log('loading MIDI drum sample: ',midiPresets.drums.samples[k].sample)
                 this.players.drums.add(k,'Sounds/' + midiPresets.drums.samples[k].sample,check)
             })
+        })
+    }
+    loadEffects(onProgress){
+        return new Promise((resolve)=>{
+            this.effectsList = {}
+            const keys = effectsSet
+            let loaded = 0;
+            let note = Tone.Frequency('C1').toMidi()
+            const check = ()=>{
+                loaded++
+                onProgress(keys[loaded],[loaded,keys.length])
+                if(loaded === keys.length) resolve(loaded)    
+            }
+            keys.forEach((k,i) => {
+                const n = note + i
+                console.log('loading effect sample: ',k.sample)
+                this.nodes.effects.add(Tone.Midi(n).toNote(),'Sounds/' + k.sample, check)
+                this.effectsList[k.sample] = n
+            })
+            console.log(this.effectsList)
         })
     }
 
@@ -477,7 +504,11 @@ export function setGameSongParts(instrumentSelection){
 }
 
 export function playSoundEffect(name){
-    // sampler.triggerAttackRelease(sound[0], sound[1]);
+    const n = midiPlayer.effectsList[name]
+    if(n){
+        midiPlayer.nodes.effects.triggerAttackRelease(Tone.Midi(n).toNote(),'1n')
+    }
+    else console.log("Effect sound not found ", name)
 }
 
 export function playGameInput(note){

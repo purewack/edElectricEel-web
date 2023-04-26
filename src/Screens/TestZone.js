@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { midiPlayer, songPlayer } from '../Components/Sound'
+import { midiPlayer, playSoundEffect, songPlayer } from '../Components/Sound'
 
 export function TestZone({onPresent}){
 
@@ -56,6 +56,21 @@ export function TestZone({onPresent}){
                         midiPlayer.play(s,undefined,undefined,undefined,false).then(()=>{
                             setPlaying(s)
                         });
+                    }}>Play</button>
+                </li>
+            })}
+            </ul>
+        </section>
+
+        <section className='EffectsPlayer'>
+            <h2>Sound Effects Player</h2>
+            <ul>
+            {(Object.keys(midiPlayer.effectsList)).map(e => {
+                const name = e
+                return <li key={`li_effect_${name}`}>
+                    <span>{name}</span>
+                    <button onClick={()=>{
+                        playSoundEffect(name)
                     }}>Play</button>
                 </li>
             })}

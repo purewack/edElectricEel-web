@@ -1,0 +1,22 @@
+[
+    {
+        "sample":"movement.wav",
+        "volume":0
+    },
+    {
+        "sample":"movement2.wav",
+        "volume":0
+    },
+    {
+        "sample":"movement3.wav",
+        "volume":0
+    },
+    {
+        "sample":"ok.wav",
+        "volume":0
+    },
+    {
+        "sample":"explode.wav",
+        "volume":0
+    }
+]

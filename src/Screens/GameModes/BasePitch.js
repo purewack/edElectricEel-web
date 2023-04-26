@@ -70,6 +70,7 @@ export default function LevelBasePitch ({settings}) {
   }
 
   const endGame = ()=>{
+    playSoundEffect('explode.wav');
     setGameActive(false);
     setScore({value: null, multiplier: 1, streak: 0})
     endGameSong().then(()=>{
@@ -142,7 +143,7 @@ export default function LevelBasePitch ({settings}) {
   const onSnakeMove = (pos)=>{
     const head = pos[0]
     if(head.x === item[0] && head.y === item[1]){
-      playSoundEffect('item');
+      playSoundEffect('ok.wav');
       addScore(100)
       setHealth(h => (h<5 ? h+1 : 5))
       setLength(l=>l+1)
