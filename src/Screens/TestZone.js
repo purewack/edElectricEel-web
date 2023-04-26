@@ -29,20 +29,21 @@ export function TestZone({onPresent}){
                 midiPlayer.stop()
                 setPlaying(null)
             }}>Stop</button>
-            {playing && <div className='controls'>
+            {playing && midiPlayer.loaded && <div className='controls'>
                 {   
                     midiPlayer.songs[midiPlayer.loaded].tracks
                     .map(t=> { 
-                    const id = `track_slider_${playing}`
-                    return <>
-                        <label htmlFor={id}>{t.name}</label>
+                    const id = `track_slider_${t.name}`
+                    return <div key={id}>
+                        <label htmlFor={id}> {t.name} </label>
                         <input type='range' id={id} max={0} min={-48} 
-                        defaultValue={0}
-                        onChange={ev=>{
-                            midiPlayer.players[t.name].volume.value = ev.target.value
-                        }}/>
+                            defaultValue={0}
+                            onChange={ev=>{
+                                midiPlayer.players[t.name].volume.value = ev.target.value
+                            }}
+                        />
                         <br/>
-                    </>})
+                    </div>})
                 }
             </div>}
 
@@ -52,10 +53,9 @@ export function TestZone({onPresent}){
                     <span>{s}</span>
                     <button onClick={async ()=>{
                         if(playing === s) return
-                        await midiPlayer.stop()
-                        await midiPlayer.prepare(s)
-                        midiPlayer.begin()
-                        setPlaying(s)
+                        midiPlayer.play(s,undefined,undefined,undefined,false).then(()=>{
+                            setPlaying(s)
+                        });
                     }}>Play</button>
                 </li>
             })}

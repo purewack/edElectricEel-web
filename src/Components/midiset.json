@@ -1,7 +1,7 @@
 {
     "bass":
     {
-        "volume":-9,
+        "volume":-10,
         "envelope": {
             "attack": 0.003,
             "release": 0.045
@@ -13,7 +13,7 @@
     },
     "lead":
     {
-        "volume": -12,
+        "volume": -11,
         "detune": 6,
         "portamento":0.013,
         "vibratoAmount": 0.3,
@@ -41,7 +41,7 @@
     },
     "lead2":
     {
-        "volume": -13,
+        "volume": -12,
         "detune": -6,
         "portamento":0.013,
         "vibratoAmount": 0.3,
@@ -118,7 +118,7 @@
     
 
     "drums":{
-        "volume":-2,
+        "volume":-3,
         "samples":{
             "C2":{
                 "sample":"kick8bit.wav",

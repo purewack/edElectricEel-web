@@ -33,9 +33,15 @@ export function SelectDifficulty({onPresent}){
     const [movePerBeat, setMovePerBeat] = useState(4);
     const [hearts, setHearts] = useState(5)
     const [length, setLength] = useState(3)
+    const [ready, setReady] = useState(false)
     
     useEffect(()=>{
-        midiPlayer.play('classy.mid');
+        midiPlayer.play('classy.mid').then(()=>{
+            setReady(true)
+        });
+        return ()=>{
+            setReady(false)
+        }
     },[])
     
 
@@ -249,6 +255,7 @@ export function SelectDifficulty({onPresent}){
         }
         <section className='Navigation GalleryFlex'>
             <button className='btnBack GalleryFlex'
+            disabled={!ready}
             onClick={()=>{
                 onPresent('title')
             }}>
@@ -256,6 +263,7 @@ export function SelectDifficulty({onPresent}){
                 <span>Back</span> 
             </button>
             <button className='alt btnGo GalleryFlex'
+            disabled={!ready}
             onClick={()=>{
                 midiPlayer.stop(1)
                 onPresent('game',1000)

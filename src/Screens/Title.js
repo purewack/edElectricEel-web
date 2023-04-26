@@ -8,15 +8,6 @@ import { midiPlayer, songPlayer } from '../Components/Sound'
 
 export function Title({onPresent}){
 
-    // useEffect(()=>{
-    //     const s = new Tone.Synth().toDestination();
-    //     s.volume.value = -12;
-    //     s.triggerAttackRelease('c2','2n');
-    //     return ()=>{
-    //         s.dispose()
-    //     }
-    // })
-
     const [submenu, setSubmenu] = useState()
 
     useEffect(()=>{
