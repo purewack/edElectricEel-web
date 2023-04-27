@@ -133,21 +133,33 @@ export default function LevelBasePitch ({settings}) {
     }
   },[guessData, levelData])
 
-  const [item, setItem] = useState([6,4])
-  const newItem = (g)=>{
-    setItem([
-      Math.floor(Math.random()*g[0]),
-      Math.floor(Math.random()*g[1])
-    ]) 
+  const [item, setItem] = useState({pos:[6,4],type:'pizza'})
+  const newItem = (field, snake)=>{
+    let freeSlots = [] 
+    for(let y=0; y<field[1]; y++){
+      for(let x=0; x<field[0]; x++){
+        let free = true
+        snake.forEach(s => {
+          if(y === s.y && x === s.x) free = false
+        })
+        if(free) freeSlots.push([x,y])
+      }
+    }
+    const types = ['pizza','sushi','apple']
+    // console.log('New item', freeSlots)
+    setItem({
+      pos:freeSlots[Math.floor(Math.random()*freeSlots.length)], 
+      type: types[Math.floor(Math.random()*types.length)]
+    }) 
   }
   const onSnakeMove = (pos)=>{
     const head = pos[0]
-    if(head.x === item[0] && head.y === item[1]){
+    if(head.x === item.pos[0] && head.y === item.pos[1]){
       playSoundEffect('ok.wav');
       addScore(100)
       setHealth(h => (h<5 ? h+1 : 5))
       setLength(l=>l+1)
-      newItem(levelData.levelSize)
+      newItem(levelData.levelSize, pos)
     }
     else if(head.x < 0 || head.y < 0 || head.x >= levelData.levelSize[0] || head.y >= levelData.levelSize[1]){
       setHealth(null)
@@ -229,7 +241,7 @@ export default function LevelBasePitch ({settings}) {
               tick={{value:gameTick, speed:levelData.ticksPerMove}} 
               onAdvance={onSnakeMove}
             />}
-          {isStarted && <Item where={item} type='pizza'/>}
+          {isStarted && <Item where={item.pos} type={item.type}/>}
         </SnakeView>
 
         {guessData && <>
