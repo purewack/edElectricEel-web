@@ -292,7 +292,8 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
 
   //spawn
   useEffect(() => {
-    if (path && path.length) return;
+    // if (path && path.length) return;
+    if(!where) return
     const spawn = where;
     const dd = direction;
     const px = dd === "right" ? -1 : dd === "left" ? 1 : 0;
@@ -306,7 +307,9 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
       });
     console.log("new spawn", poss, where, {direction,length});
     setPath(poss);
-  }, [where, length, direction]);
+  }, [where]);
+
+  
 
   // //turn
   // useEffect(() => {
@@ -488,7 +491,7 @@ export function SnakeLoadbar ({type='circle', tick = null, autoTickSpeed = 200, 
 
   const [_tick, setTick] = useState(0)
   const [dir, setDir] = useState('right');
-  const [spawn, setSpawn] = useState([0,0])
+  const [spawn, setSpawn] = useState(null)
 
   const intervalId = useRef(null)
   const [onAdvance,setOnAdvance] = useState()

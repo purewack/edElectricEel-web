@@ -296,7 +296,7 @@ export class MidiFilePlayer {
         const tr = tracks ? tracks : Object.keys(this.players)
         tr.forEach(k => {
             console.log('Mute ',k)
-            this.players[k].volume.linearRampTo(-180, inTime);
+            this.players[k].volume.linearRampTo(-300, inTime);
         })
     }
 
