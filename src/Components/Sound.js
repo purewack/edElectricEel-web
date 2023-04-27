@@ -147,7 +147,7 @@ export class MidiFilePlayer {
     }
 
     // schedule + play immidiate
-    play(song, onBar = null, offset = 0, append = false, fade=0.4){
+    play(song, handlers, offset = 0, append = false, fade=0.4){
         return new Promise((resolve,reject)=>{
         
         if(!song) {
@@ -162,7 +162,7 @@ export class MidiFilePlayer {
             },offset,append).then(()=>{
                 console.log('Play->prepare: ', this)
                 this.unmute()
-                this.begin(onBar)
+                this.begin(handlers)
                 resolve()
             })   
         });
@@ -180,8 +180,10 @@ export class MidiFilePlayer {
             this.state = 'stopping'
 
             setTimeout(()=>{
+                if(this.#onbar) Tone.Transport.clear(this.#onbar);
+                if(this.#onbeat) Tone.Transport.clear(this.#onbeat);
+                this.pause()
                 console.log('Stop->Midi stop', Tone.now())
-                this.#silenceAll()
                 Tone.Transport.cancel()
                 this.state = 'stopped'
                 this.loaded = null;
@@ -191,19 +193,27 @@ export class MidiFilePlayer {
     }
 
     //being playing previously prepared midi
-    begin(){
+    begin(handlers){
+        if(handlers){
+            console.log(handlers)
+            if(handlers.onBar) this.#onbar = Tone.Transport.scheduleRepeat((t)=>{Tone.Draw.schedule(handlers.onBar,t)},'1m')
+            if(handlers.onBeat) this.#onbeat = Tone.Transport.scheduleRepeat((t)=>{Tone.Draw.schedule(handlers.onBeat,t)},'4n')
+        }
         this.nodes.output.volume.value = -3;
         Tone.Transport.start("+0.5","0:0:0");
         this.state = 'playing'
-        // console.log('begin')
     }
 
     pause(){
-        if(this.#onbar) Tone.Transport.clear(this.#onbar);
-        if(this.#onbeat) Tone.Transport.clear(this.#onbeat);
         this.nodes.output.volume.value = -180;
+        this.#silenceAll()
         Tone.Transport.stop();
         this.state = 'paused';
+    }
+    resume(){
+        this.nodes.output.volume.value = -3;
+        Tone.Transport.toggle()
+        this.state = 'playing';
     }
 
     //pre schedule events before playing
@@ -213,7 +223,7 @@ export class MidiFilePlayer {
         console.log('Prepare midi: ',song,this.songs)
         
         return new Promise((resolve, reject)=>{
-            if(this.loaded === song) {
+            if(this.loaded?.name === song) {
                 console.log('Prepare midi bail')
                 resolve(midiJson)
                 return
@@ -233,7 +243,11 @@ export class MidiFilePlayer {
                 console.log('Prepare check ', loaded, failed, {...midiJson})
                 if(failed === count) reject()
                 if(loaded + failed === count) {
-                    this.loaded = song
+                    let duration = 0
+                    midiJson.tracks.forEach(t => {
+                        if(t.duration > duration) duration = t.duration
+                    })
+                    this.loaded = {name: song, duration}
                     this.state = 'perpared'
                     console.log('Prepare Midi loaded')
                     resolve(midiJson, loaded,failed)
@@ -284,6 +298,18 @@ export class MidiFilePlayer {
             console.log('Mute ',k)
             this.players[k].volume.linearRampTo(-180, inTime);
         })
+    }
+
+    getProgress(){
+        if(!this.loaded) return 0
+        if(this.state !== 'playing') return 0
+        return Tone.Time(Tone.Transport.position).toSeconds() /  this.loaded.duration 
+    }
+
+    seek(where){
+        if(!this.loaded) return 
+        if(this.state !== 'playing') return 
+        Tone.Transport.position = Tone.Time(where * this.loaded.duration).toBarsBeatsSixteenths() 
     }
 
     #silenceAll(){
