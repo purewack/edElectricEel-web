@@ -89,8 +89,9 @@ export class MidiFilePlayer {
                 if(loaded === keys.length) resolve(loaded)    
             }
             keys.forEach(k => {
-                console.log('loading MIDI drum sample: ',midiPresets.drums.samples[k].sample)
-                this.players.drums.add(k,'Sounds/' + midiPresets.drums.samples[k].sample,check)
+                const url = window.location.origin + "/Sounds/" + midiPresets.drums.samples[k].sample;
+                console.log('loading MIDI drum sample: ', url)
+                this.players.drums.add(k,url,check)
             })
         })
     }
@@ -107,8 +108,9 @@ export class MidiFilePlayer {
             }
             keys.forEach((k,i) => {
                 const n = note + i
-                console.log('loading effect sample: ',k.sample)
-                this.nodes.effects.add(Tone.Midi(n).toNote(),'Sounds/' + k.sample, check)
+                const url = window.location.origin + "/Sounds/" + k.sample
+                console.log('loading effect sample: ',url)
+                this.nodes.effects.add(Tone.Midi(n).toNote(),url, check)
                 this.effectsList[k.sample] = n
             })
             console.log(this.effectsList)
@@ -133,7 +135,8 @@ export class MidiFilePlayer {
                 }
             }
             songList.forEach((s,i,a)=>{
-                Midi.fromUrl("Songs/" + s).then((json)=>{
+                const url = window.location.origin + "/Songs/" + s;
+                Midi.fromUrl(url).then((json)=>{
                     this.songs[s] = json
                     loaded++
                     check()

@@ -257,7 +257,7 @@ export function SelectDifficulty({onPresent}){
             <button className='btnBack GalleryFlex'
             disabled={!ready}
             onClick={()=>{
-                onPresent('title')
+                onPresent('/')
             }}>
                 <img alt="arrow" src={arrowSVG} />
                 <span>Back</span> 
@@ -266,7 +266,7 @@ export function SelectDifficulty({onPresent}){
             disabled={!ready}
             onClick={()=>{
                 midiPlayer.stop(1)
-                onPresent('game',1000)
+                onPresent('/pitch/game',1000)
             }}>
                 <span>Lets Go!</span> 
                 <img alt="arrow" src={arrowSVG} />

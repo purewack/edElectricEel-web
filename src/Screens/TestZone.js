@@ -17,7 +17,7 @@ export function TestZone({onPresent}){
     return <div className='TestZone'>
         <button className='btnBack GalleryFlex'
             onClick={()=>{
-                    onPresent('title')
+                    onPresent('/')
             }}>
             <img alt="arrow"/>
             <span>Back</span> 

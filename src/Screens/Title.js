@@ -15,7 +15,7 @@ export function Title({onPresent}){
     },[])
 
     const newGamePitch = ()=>{
-        onPresent('selectDifficulty')
+        onPresent('/pitch')
     }
 
     return <div className='TitleScreen Background'>
@@ -51,7 +51,7 @@ export function Title({onPresent}){
                             </div>
                             <div>
                                 <h2 className='title'>Development:</h2>
-                                <button onClick={()=>{onPresent('testzone')}}> Test Zone </button>
+                                <button onClick={()=>{onPresent('/testzone')}}> Test Zone </button>
                             </div>
                         </div>
                         :<button disabled={false} onClick={()=>{setSubmenu('options')}}> Options </button>
