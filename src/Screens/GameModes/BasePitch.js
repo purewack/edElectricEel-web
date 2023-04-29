@@ -1,14 +1,16 @@
-import levelData from './BasePitch.json'
+import defaultData from './BasePitch.json'
 import arrowSVG from '../../AssetsImport/icons/arrow.svg'
 
 import * as Tone from "tone";
 import { useCallback, useEffect, useState, useContext, useRef} from "react";
+import { useSearchParams } from 'react-router-dom';
+import { Base64 } from 'js-base64';
+
 import { startPitchGameSong, newBassLine, endGameSong, playSound, playGameInput, midiPlayer, setGameSongPitch, playSoundEffect, setGameSongParts } from "../../Components/Sound";
 import { newNote, guessRange } from "../../Components/NoteGuess";
-
+import {Snake, SnakeView, dirToIdx} from "../../Components/SnakeView/index.js";
 import NoteInput from "../../Components/NoteInput/index.js";
 import NoteView from "../../Components/NoteView/index.js";
-import {Snake, SnakeView, dirToIdx} from "../../Components/SnakeView/index.js";
 import Item from "../../Components/SnakeView/Item";
 import { DebugContext } from '../../App';
 
@@ -31,6 +33,14 @@ export default function LevelBasePitch ({settings}) {
   const [gameTick, setGameTick] = useState(0);
   const [isHorizontal, setIsHorizontal] = useState()
 
+  const level = useRef(defaultData)
+  const levelData = level.current
+  const [search] = useSearchParams()
+  useState(()=>{
+    const data = JSON.parse(Base64.decode(search.get('level')))
+    console.log('Game options data: ', data)
+    if(data) level.current = data
+  },[search])
 
   const generateNewGuess = (n)=>{
     const range = guessRange(levelData.guessData, (n)=>Tone.Frequency(n).toMidi())

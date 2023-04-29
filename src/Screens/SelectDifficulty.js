@@ -265,8 +265,29 @@ export function SelectDifficulty({onPresent}){
             <button className='alt btnGo GalleryFlex'
             disabled={!ready}
             onClick={()=>{
+                const gameStats = {
+                    type:'pitch',
+                    startHealth:hearts,
+                    startLength:length,
+                    startDirection:"right",
+                    startPoint:[10,7],
+                    levelSize:[20,15],
+                    levelMarginTop:3,
+                    levelMarginBot:3,
+                    gameTickInterval:"8n",
+                    ticksPerMove:4,
+                    tempo : 100,
+                    song: "pitch_game.mid",
+                    canOverlapSelf : false,
+                    guessData:{
+                        type : "selection",
+                        notes: showRange,
+                        clefs : clefs
+                    },
+                    enemies:[]
+                }
+                onPresent('/pitch/game',1000, undefined, gameStats)
                 midiPlayer.stop(1)
-                onPresent('/pitch/game',1000)
             }}>
                 <span>Lets Go!</span> 
                 <img alt="arrow" src={arrowSVG} />

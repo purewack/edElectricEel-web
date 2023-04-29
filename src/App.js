@@ -2,7 +2,8 @@ import './Styles/BasePitch.css'
 
 import * as Tone from 'tone'
 import { createContext, useEffect, useState } from 'react'
-import { Routes, Route, useNavigate} from 'react-router-dom';
+import { Routes, Route, useNavigate, useSearchParams, createSearchParams} from 'react-router-dom';
+import { Base64 } from 'js-base64';
 
 import LevelBasePitch  from './Screens/GameModes/BasePitch'
 import { SelectDifficulty } from './Screens/SelectDifficulty'
@@ -22,6 +23,7 @@ export default function App(){
         currentAssetLoadingString: '',
     })
     const navigate = useNavigate()
+    const [search, setSearch] = useSearchParams()
 
     useEffect(()=>{
         if(loading.assetLoadingState) return
@@ -47,9 +49,21 @@ export default function App(){
     
     const [isPresenting, setIsPresenting] = useState(false);
 
-    const handlePresentScreen = (toPresent, inTime = 400, bypass=false, data)=>{
+    const handlePresentScreen = (toPresent, inTime = 400, bypass=false, data = null)=>{
         const go = ()=>{
-            navigate(toPresent)
+            if(data) {
+                const enc = Base64.encode(JSON.stringify(data))
+                const dec = Base64.decode(enc)
+                const search = '?' + createSearchParams({level:enc})
+                console.log(enc,dec)
+                navigate({
+                    pathname: toPresent, 
+                    search
+                })
+            } 
+            else 
+                navigate(toPresent)
+
             setIsPresenting(false)
         }
         if(bypass) go()
