@@ -1,18 +1,18 @@
-import { useEffect, useState, useRef} from 'react'
+import { useEffect, useState, useRef, useContext} from 'react'
 import '../Styles/TitleScreen.css'
 import '../Styles/Background.css'
 import { SnakeLoadbar } from '../Components/SnakeView'
 import VersionTag, {versionText,PatchNotes} from '../Components/Version'
-import { midiPlayer, songPlayer } from '../Components/Sound'
+import { MidiContext } from '../App'
 
 
-export function Title({onPresent}){
-
+export function Title({onPresent, theme}){
+    const midiPlayer = useContext(MidiContext)
     const [submenu, setSubmenu] = useState()
 
     useEffect(()=>{
-        midiPlayer.play('threefour.mid');
-    },[])
+        midiPlayer.play(theme);
+    },[theme])
 
     const newGamePitch = ()=>{
         onPresent('/pitch')
@@ -61,17 +61,7 @@ export function Title({onPresent}){
             </section>
 
 
-        <section className='WhatsNew Bubble Stem'>
-            <div>
-            <span>Check out the <a href="https://github.com/purewack/sneel-web">GitHub page</a></span>
-            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"></img>
-            </div>
-            <details>
-                <summary>Patch notes: </summary>
-                <PatchNotes/>
-            </details>
-        </section>
-
+        
         <VersionTag />
     </div>
 }

@@ -1,6 +1,6 @@
 import anime from "animejs";
 import { Clef, Meter, Key, Note } from "./NoteViewElements.js";
-import useOnResizeComponent from "../Hooks.js";
+import useOnResizeComponent from "../../Helpers/Hooks";
 import { useContext } from "react";
 
 import { DebugContext } from "../../App";
@@ -10,7 +10,8 @@ export default function NoteView({
   slide,
   stavesExtra,
   noBarStart,
-  className
+  className,
+  ...restProps
 }) {
   const showDebug = useContext(DebugContext)
   const [sizeRef, size] = useOnResizeComponent();
@@ -23,12 +24,10 @@ export default function NoteView({
   let lastKey = 0;
 
   return (
-  <div className={'View NoteView ' + className}>
+  <div className={'View NoteView ' + className} {...restProps}>
     <svg ref={sizeRef} >
       <g
-        transform={`
-            translate(0 ${size.height / 2})
-          `}
+        transform={`translate(0 ${size.height / 2})`}
       >
         {/* stave lines */}
         <Staves u={u} />
@@ -41,11 +40,13 @@ export default function NoteView({
             const keyU = bar.key ? Math.abs(bar.key) / 2 : 0;
 
             const symbolU = clefU + meterU + keyU;
-            const noteU = bar.notes.length * 2.5;
+            const noteU = bar.notes ? bar.notes.length * 2.5 : 0;
             const barU = symbolU + noteU;
             const barStartX = lastBarU * u;
             const noteStartX = barStartX + symbolU * u;
-            lastBarU += barU;
+            
+            lastBarU += bar.fillU ? bar.fillU : barU;
+            if(bar.fillU) return null
 
             const pos = {
               u,
@@ -88,7 +89,7 @@ export default function NoteView({
                 )}
 
                 {/* notes / rests */}
-                {bar.notes.map((note, note_i) => {
+                {bar.notes && bar.notes.map((note, note_i) => {
                   return (
                     <Note
                       key={`note_${bar_i}_${note_i}`}
@@ -111,7 +112,19 @@ export default function NoteView({
                   x1={barStartX}
                   x2={barStartX}
                 />}
+
+                {bar.extraText && 
+                <text 
+                  fill={(bar.extraText.color ? bar.extraText.color : "gray")} 
+                  x={barStartX + u*(bar.extraText.ux ? bar.extraText.ux : 0)} 
+                  y={u*2 + u*(bar.extraText.uy ? bar.extraText.uy : 0)} 
+                  fontSize={u * (bar.extraText.fontSize ? bar.extraText.fontSize : 1.5)}
+                >
+                  {bar.extraText.text}
+                </text>}
+
               </g>
+
             );
           })}
 
@@ -130,6 +143,7 @@ export default function NoteView({
           height={"100%"}
           fill="url(#0)"
         /> */}
+
       </g>
     </svg>
     {showDebug &&<div className="debugInfo">

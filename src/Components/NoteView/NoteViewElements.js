@@ -50,9 +50,10 @@ export function Note({ pos, bar, n, noteString, clef, debug }) {
   const clefOffset = clefOffsets[clef ? clef : "treble"];
 
   const ns = noteString.split("-");
-  const note = ns[0];
-  const len = ns[1];
+  const note = ns[0]; 
+  const len = ns.length > 1 ? ns[1] : '8n';
 
+  const extraText = ns[ns.length-1].includes("'") ? ns[ns.length-1].slice(1) : '';
   const isRest = note === "r";
   const isGuess = ns[2] === "?";
   const isOk = ns[2] === "ok";
@@ -190,6 +191,10 @@ export function Note({ pos, bar, n, noteString, clef, debug }) {
             )}
           </>
         )}
+
+        {extraText && <text fill="gray" x={xx} y={u*2} fontSize={u * 1.5}>
+          {extraText}
+        </text>}
       </g>
       {debug && (
         <>

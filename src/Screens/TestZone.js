@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
-import { midiPlayer, playSoundEffect, songPlayer } from '../Components/Sound'
-import midiset from '../Components/midiset.json'
+import { useEffect, useState, useContext } from 'react'
+import { playSoundEffect } from '../Helpers/Sound'
+import { MidiContext } from '../App'
+import midiset from '../Helpers/midiset.json'
 
 export function TestZone({onPresent}){
 
+    const midiPlayer = useContext(MidiContext)
     useEffect(()=>{
         console.log(midiPlayer.songs)
         midiPlayer.stop(1);
@@ -11,7 +13,6 @@ export function TestZone({onPresent}){
     },[])
 
     const [playing,setPlaying] = useState()
-    const [levels,setLevels] = useState()
     const [seekHead, setSeekHead] = useState(0)
 
     return <div className='TestZone'>
@@ -19,7 +20,6 @@ export function TestZone({onPresent}){
             onClick={()=>{
                     onPresent('/')
             }}>
-            <img alt="arrow"/>
             <span>Back</span> 
         </button>
 

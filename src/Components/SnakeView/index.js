@@ -24,7 +24,7 @@ import {
   Graphics,
   Container,
 } from "@pixi/react";
-import useOnResizeComponent from "../Hooks.js";
+import useOnResizeComponent from "../../Helpers/Hooks";
 
 import { DebugContext } from "../../App.js";
 

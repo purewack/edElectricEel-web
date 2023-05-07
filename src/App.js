@@ -3,20 +3,27 @@ import './Styles/BasePitch.css'
 import * as Tone from 'tone'
 import { createContext, useEffect, useState } from 'react'
 import { Routes, Route, useNavigate, useSearchParams, createSearchParams} from 'react-router-dom';
-import { Base64 } from 'js-base64';
+import BGMPlayer from './Helpers/BGMPlayer'
+import MidiFilePlayer from './Helpers/MidiPlayer'
 
 import LevelBasePitch  from './Screens/GameModes/BasePitch'
 import { SelectDifficulty } from './Screens/SelectDifficulty'
-import {Title} from './Screens/Title'
-import { midiPlayer, songPlayer } from './Components/Sound'
+import { Title } from './Screens/Title'
 import { TestZone } from './Screens/TestZone'
 import arrow from './AssetsImport/icons/arrow.png'
 import midiList from './midiList.json'
 
 export const DebugContext = createContext(false);
+export const MidiContext = createContext(false);
+
+const themes = {
+    title: 'trio.mid',
+    selectDifficulty: 'classy.mid'
+}
 
 export default function App(){
     const [showDebug, setShowDebug] = useState(false)
+    const [midiPlayer, setMidiPlayer] = useState()
     const [loading, setLoading] = useState({
         audioContextState: false,
         assetLoadingState: false,
@@ -27,39 +34,50 @@ export default function App(){
 
     useEffect(()=>{
         if(loading.assetLoadingState) return
-        console.log(midiPlayer,midiList,window.location.origin)
         window.toggleDebug = ()=>{setShowDebug(d=>!d)}
+        
         const loadSound = async ()=>{
+            // songPlayer = new BGMPlayer();
             // const songList = ['jazzy.mp3','classy.mp3']
             // await songPlayer.load(songList, (loadedItem, progressArray)=>{
             //     const str = `Song:${loadedItem} [${progressArray[0]}/${progressArray[1]}]`
             //     setLoading(str)
             //     console.log(str)
             // })
-            await midiPlayer.load(midiList, (loadedItem, progressArray)=>{
+            const midi = new MidiFilePlayer();
+            // console.log(midi,midiList,window.location.origin)
+
+            await midi.load(midiList, (loadedItem, progressArray)=>{
                 const str = `MIDI:${loadedItem} [${progressArray[0]}/${progressArray[1]}]`
                 setLoading(s => {return {...s, currentAssetLoadingString: str}})
             }).then().catch(()=>{
                 console.log('reject midi loading')
             })
-            setLoading(s => {return {...s, assetLoadingState: true}})
+            setMidiPlayer(midi)
         }
         loadSound()
     },[])
+
+    useEffect(()=>{
+        if(midiPlayer) {
+            console.log(midiPlayer)
+            setLoading(s => {return {...s, assetLoadingState: true}})
+        }
+        return ()=>{
+            setLoading(s => {return {...s, assetLoadingState: false}})
+        }
+    },[midiPlayer])
     
     const [isPresenting, setIsPresenting] = useState(false);
 
     const handlePresentScreen = (toPresent, inTime = 400, bypass=false, data = null)=>{
         const go = ()=>{
             if(data) {
-                const enc = Base64.encode(JSON.stringify(data))
-                const dec = Base64.decode(enc)
-                const search = '?' + createSearchParams({level:enc})
-                console.log(enc,dec)
-                navigate({
-                    pathname: toPresent, 
-                    search
-                })
+                // const enc = Base64.encode(JSON.stringify(data))
+                // const dec = Base64.decode(enc)
+                // console.log(enc,dec)
+                // const search = '?' + createSearchParams({level:JSON.stringify(data)})
+                navigate(toPresent,{state:data})
             } 
             else 
                 navigate(toPresent)
@@ -93,12 +111,14 @@ export default function App(){
         :
         
         <DebugContext.Provider value={showDebug}>
+        <MidiContext.Provider value={midiPlayer}>
         <Routes>
-            <Route path="/" element={<Title onPresent={handlePresentScreen}/>} />
-            <Route path="/pitch" element={<SelectDifficulty onPresent={handlePresentScreen}/>}/>
-            <Route path="/pitch/game" element={<LevelBasePitch onPresent={handlePresentScreen}/>}/>
-            <Route path="/testzone" element={<TestZone onPresent={handlePresentScreen}/>}/>
-        </Routes> 
+            <Route path="/"             element={<Title theme={themes.title} onPresent={handlePresentScreen}/>} />
+            <Route path="/pitch"        element={<SelectDifficulty theme={themes.selectDifficulty} onPresent={handlePresentScreen}/>}/>
+            <Route path="/pitch/single" element={<LevelBasePitch onPresent={handlePresentScreen}/>}/>
+            <Route path="/testzone"     element={<TestZone onPresent={handlePresentScreen}/>}/>
+        </Routes>
+        </MidiContext.Provider>
         </DebugContext.Provider>
         }
     </div>)

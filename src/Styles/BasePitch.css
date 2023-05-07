@@ -1,6 +1,31 @@
 .GameBasePitch {
   background-color: black;
 }
+.GameBasePitch::after{
+  content: unset;
+}
+.GameBasePitch.Fade::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+}
+
+.GameOverlayMenu {
+  position: absolute;
+  left: 50%;
+  top:  50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.GameOverlayMenu.Pause{
+  background-color: aliceblue;
+  border-image-outset: 16px;
+}
 
 .GameBasePitch  .NoteView {
   position: absolute;
@@ -15,25 +40,25 @@
 .GameBasePitch  .SnakeView {
   position: relative;
 }
-.GuessA.GuessHorizontal {
+.GameBasePitch .GuessA.GuessHorizontal {
   top: 6vh;
   left: 50%;
   right: unset;
   bottom: unset;
 }
-.GuessB.GuessHorizontal {
+.GameBasePitch .GuessB.GuessHorizontal {
   top: unset;
   left: 50%;
   right: unset;
   bottom: -6vh;
 }
-.GuessA {
+.GameBasePitch  .GuessA {
   top: 50%;
   left: 6vh;
   right: unset;
   bottom: unset;
 }
-.GuessB {
+.GameBasePitch  .GuessB {
   top: 50%;
   left: unset;
   right: -6vh;
@@ -43,7 +68,11 @@
 .GameBasePitch  .Frame.Snake {
   height: 65vh;
 }
-.GameBasePitch  .Input {
+
+.GameBasePitch .InputControls button {
+  position: absolute;
+}
+.GameBasePitch  .InputMethod {
   height: 25vh;
 }
 .GameBasePitch  .Status {
@@ -98,7 +127,7 @@
   filter: hue-rotate(-90deg);
 }
 .GameBasePitch .HealthBar {
-  width: calc(7vh * 5);
+  image-rendering: pixelated;
   height: 10vh;
   display: flex;
   gap: 0.9rem;

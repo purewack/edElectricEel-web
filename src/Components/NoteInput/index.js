@@ -2,30 +2,33 @@ import piano_white from "./svg/piano_white.svg";
 import piano_black from "./svg/piano_black.svg";
 import piano_body from "./svg/piano_body.svg";
 
-import { useState, useEffect, useContext } from "react";
-import useOnResizeComponent from "../Hooks.js";
+import { useState, useEffect, useContext, useCallback } from "react";
+import useOnResizeComponent, { respellPitch } from "../../Helpers/Hooks";
 import anime from "animejs";
 
 import { DebugContext } from "../../App";
 
 export default function NoteInput({
-  root = 48,
+  root = 60,
   count = 12,
   showRange = null,
   showOctave = true,
   showName = true,
   onNoteOn = null,
   onNoteOff = null,
-  allowDragging = true,
-  viewStyle,
-  noSpawnAnimation = undefined
+  allowNoteDragging = true,
+  scrollPx = 0,
+  noSpawnAnimation = undefined,
+  className
 }) {
   const showDebug = useContext(DebugContext);
   const [sizeRef, size] = useOnResizeComponent();
+  const [scrollOffset, setScrollOffset] = useState(0)
+  const [scrolling, setScrolling] = useState({willScroll: false, dx: 0})
   const hh = Math.floor(size.height / 2) * 2;
   const ww = hh / 4;
 
-  const rootMIDI = root;
+  const rootMIDI = root-12;
   const naturals = ["C", "D", "E", "F", "G", "A", "B", "C"];
   const sharpsIndex = [-1, 1, 2, -1, 4, 5, 6, -1];
   const naturalRoot = (rootMIDI % 12);
@@ -38,8 +41,8 @@ export default function NoteInput({
 
   const middleWhere = naturalRoot + (rangeWhite / 2)
   const middleNow = ww * middleWhere;
-  const middleOffset = size.width / 2 - middleNow;
-  const middleTransform = `translate(${middleOffset} 0)`;
+  const middleOffset = (size.width / 2 - middleNow);
+  const middleTransform = `translate(${middleOffset + scrollOffset + scrollPx} 0)`;
 
   const midiNaturals = [
     0,
@@ -77,7 +80,7 @@ export default function NoteInput({
   const shouldHighlight = (nm) => {
     let state = true;
     showRange.forEach(e => {
-      if(e === nm) {
+      if(respellPitch(e,'sharp') === nm) {
         state = false
         return
       }
@@ -92,14 +95,35 @@ export default function NoteInput({
       : null;
 
   const handleNoteSignal = (name, state) => {
-    if (state && onNoteOn) onNoteOn(name);
-    else if (!state && onNoteOff) onNoteOff(name);
+    if (state && onNoteOn) {
+      onNoteOn(name);
+    }
+    else if (!state && onNoteOff) {
+      onNoteOff(name, scrolling?.shouldScroll);
+    }
+    if(state) setScrolling({willScroll: true, dx:0})
   };
 
+  const handleScroll = (ev)=>{
+    if(!scrolling.willScroll) return
+    if(!allowNoteDragging){
+      let dx = ev.movementX
+      setScrolling(s=>{
+        let ss = {...s}
+        ss.dx += dx
+        if(Math.abs(ss.dx) > 3) ss.shouldScroll = true
+        if(ss.shouldScroll) setScrollOffset(o => {return o+ev.movementX})
+        return ss
+      })
+    }
+  }
+  const cancelScroll = (ev)=>{
+    setScrolling({willScroll:false, dx:0, shouldScroll:false})
+  }
+  
   return (
-    <div className="View NoteInput" 
+    <div className={"View NoteInput " + className} 
       ref={sizeRef} 
-      style={viewStyle}
     >
     <svg>
       <filter id='pianoKeyFilter_disabled'>
@@ -129,7 +153,12 @@ export default function NoteInput({
                       0.1 0.1 0.1 0 0.1
                       0 0 0 1 0" /> 
       </filter>
-      <g transform={middleTransform}>
+      <g transform={middleTransform} 
+        onPointerMove={handleScroll} 
+        onPointerCancel={cancelScroll}
+        onPointerLeave={cancelScroll}
+        onPointerUp={cancelScroll}
+      >
         <image height={hh} x={-ww} href={piano_body} />
         <rect
           x={-size.width - ww / 2}
@@ -159,7 +188,7 @@ export default function NoteInput({
               size={size}
               whiteKey={true}
               noteSignal={handleNoteSignal}
-              allowDragging={allowDragging}
+              allowNoteDragging={allowNoteDragging}
               showOctave={showOctave}
               showName={showName}
               noSpawnAnimation
@@ -181,7 +210,7 @@ export default function NoteInput({
               size={size}
               whiteKey={false}
               noteSignal={handleNoteSignal}
-              allowDragging={allowDragging}
+              allowNoteDragging={allowNoteDragging}
               noSpawnAnimation
             />
           ) : null;
@@ -209,7 +238,7 @@ export default function NoteInput({
   </div>);
 }
 
-function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragging, showOctave, showName=true, noSpawnAnimation=undefined }) {
+function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowNoteDragging, showOctave, showName=true, noSpawnAnimation=undefined }) {
   const [active, setActive] = useState(false);
   const [hover, setHover] = useState(false);
 
@@ -255,6 +284,14 @@ function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragg
     noteSignal && noteSignal(name, false, disabled);
     setActive(false);
   };
+
+  const endPointer = (ev) => {
+    setHover(false);
+    if (active) {
+      onNoteOff(ev);
+    }
+  }
+
   return (
     <g className={cName}>
       <image
@@ -268,17 +305,15 @@ function PianoKey({ index, name, whiteKey, disabled, size, noteSignal,allowDragg
         onPointerUp={onNoteOff}
         onPointerEnter={(ev) => {
           setHover(true);
-          if(!allowDragging) return
+          if(!allowNoteDragging) return
           if (ev.buttons === 1 && !active) {
             onNoteOn(ev);
           }
         }}
-        onPointerLeave={(ev) => {
-          setHover(false);
-          if (ev.buttons === 1 && active) {
-            onNoteOff(ev);
-          }
-        }}
+        onPointerLeave={endPointer}
+        onPointerCancel={endPointer}
+        onPointerOut={endPointer}
+        onLostPointerCapture={endPointer}
       />
       {whiteKey && (
         <text style={styleText} fontSize={ww / 2} y={hh - ww} x={xx + ww / 4 + (!showOctave && ww/8)}>
