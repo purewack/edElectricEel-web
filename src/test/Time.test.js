@@ -2,6 +2,7 @@ import {
     QuanTime
 } from "../Helpers/Hooks";
 
+
 test('quantize time to nearest bar',()=>{
     expect(QuanTime('0:0:2',[4,4])).toBe('1:0:0')
     expect(QuanTime('0:1:2',[4,4])).toBe('1:0:0')

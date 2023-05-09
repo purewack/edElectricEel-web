@@ -1,13 +1,15 @@
 import { 
     getMidi,
     getNote,
-    makeSelectionFromRangeMidi,
-    makeSelectionFromRangeNotes,
-    probability,
-    respellPitch,
-    respellPitches,
     toMidiArray,
     toNotesArray,
+    respellPitch,
+    respellPitches,
+    makeSelectionFromRangeMidi,
+    makeSelectionFromRangeNotes,
+    enumerateRangePerClef,
+    pickNoteFromPoolAvoid,
+    getClefFromProbability
 } from "../Helpers/Hooks";
 
 
@@ -25,10 +27,10 @@ test('convert note to midi 61 as flat',()=>{
 })
 
 
-test('toMidiArray [C4,C#4,E4]',()=>{
+test('to midi array [C4,C#4,E4]',()=>{
     expect(toMidiArray(['C4','C#4','E4'])).toEqual([60,61,64])
 })
-test('toNotesArray [64,61,60]',()=>{
+test('to notes array [64,61,60]',()=>{
     expect(toNotesArray([64,61,60])).toEqual(['E4','C#4','C4'])
 })
 
@@ -66,53 +68,38 @@ test('make array from range notes C4 - F4',()=>{
     expect(makeSelectionFromRangeNotes('C4','F4',true)).toEqual( ['C4','C#4','D4','D#4','E4','F4'])
 })
 
-
-test('probability 0 false',()=>{
-    expect(probability(0)).toBeFalsy()
-})
-test('probability 1 true',()=>{
-    expect(probability(1)).toBeTruthy()
+test('enumerate for treble clefs range',()=>{
+    expect(enumerateRangePerClef(['D5','E5','F5'])).toEqual({treble:3, alto:0, bass:0})
+    expect(enumerateRangePerClef(['D5','D#5','E5','F5','F#5'])).toEqual({treble:5, alto:0, bass:0})
+    expect(enumerateRangePerClef(['D5','Eb5','E5','F5','Gb5'])).toEqual({treble:5, alto:0, bass:0})
 })
 
-describe('randomness constraint to Math.random() === 0.5',()=>{
-    beforeEach(() => {
-        jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
-    });
-    
-    afterEach(() => {
-        jest.spyOn(global.Math, 'random').mockRestore();
-    })
-
-    test('probability 0.6 true, 0.4 false',()=>{
-        expect(probability(0.6)).toBeTruthy()
-        expect(probability(0.4)).toBeFalsy()
-    })
+test('enumerate for bass clefs range',()=>{
+    expect(enumerateRangePerClef(['D2','E2','F2'])).toEqual({treble:0, alto:0, bass:3})
+    expect(enumerateRangePerClef(['D2','D#2','E2','F2','F#2'])).toEqual({treble:0, alto:0, bass:5})
+    expect(enumerateRangePerClef(['D2','Eb2','E2','F2','Gb2'])).toEqual({treble:0, alto:0, bass:5})
 })
-describe('randomness constraint to Math.random() === 0.25',()=>{
-    beforeEach(() => {
-        jest.spyOn(global.Math, 'random').mockReturnValue(0.25);
-    });
-    
-    afterEach(() => {
-        jest.spyOn(global.Math, 'random').mockRestore();
-    })
 
-    test('probability 0.6 true, 0.4 true',()=>{
-        expect(probability(0.6)).toBeTruthy()
-        expect(probability(0.4)).toBeTruthy()
-    })
+test('enumerate for treble-alto clefs range',()=>{
+    expect(enumerateRangePerClef(['G4','A4','B4','C5','D5'])).toEqual({treble:5, alto:4, bass:0})
+    expect(enumerateRangePerClef(['C5','C#5','D5'])).toEqual({treble:3, alto:1, bass:0})
+    expect(enumerateRangePerClef(['C5','Db5','D5'])).toEqual({treble:3, alto:1, bass:0})
 })
-describe('randomness constraint to Math.random() === 0.75',()=>{
-    beforeEach(() => {
-        jest.spyOn(global.Math, 'random').mockReturnValue(0.75);
-    });
-    
-    afterEach(() => {
-        jest.spyOn(global.Math, 'random').mockRestore();
-    })
 
-    test('probability 0.6 false, 0.4 false',()=>{
-        expect(probability(0.6)).toBeFalsy()
-        expect(probability(0.4)).toBeFalsy()
-    })
+test('enumerate for bass-alto clefs range',()=>{
+    expect(enumerateRangePerClef(['B2','C3','D3'])).toEqual({treble:0, alto:2, bass:3})
+    expect(enumerateRangePerClef(['B2','C3','C#3','D3'])).toEqual({treble:0, alto:3, bass:4})
+    expect(enumerateRangePerClef(['B2','C3','Db3','D3'])).toEqual({treble:0, alto:3, bass:4})
+})
+
+test('enumerate for all clefs',()=>{
+    expect(enumerateRangePerClef(makeSelectionFromRangeNotes('A2','E5'))).toEqual({treble:10, alto:15, bass:9})
+})
+
+test('enumerate scattered all clefs', ()=>{
+    expect(enumerateRangePerClef(['D2','A3','F4','A5'])).toEqual({treble:2, alto:2, bass:2})
+})
+
+test('enumerate middle C', ()=>{
+    expect(enumerateRangePerClef(['C4'])).toEqual({treble:1, alto:1, bass:0})
 })

@@ -14,8 +14,11 @@
   gap:1rem;
 }
 .letsGoClick img{
-  image-rendering: pixelated;
+  -webkit-perspective: 1000;
+  image-rendering:pixelated;
   height: 10vh;
+}
+.letsGoClick div {
   animation: kf-float 1s ease-in-out infinite alternate;
 }
 @keyframes kf-float{

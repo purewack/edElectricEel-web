@@ -102,7 +102,7 @@ export function TestZone({onPresent}){
                 return <li key={`li_effect_${name}`}>
                     <span>{name}</span>
                     <button onClick={()=>{
-                        playSoundEffect(name)
+                        playSoundEffect(midiPlayer, name)
                     }}>Play</button>
                 </li>
             })}

@@ -22,29 +22,29 @@ export default class MidiFilePlayer {
 
         }
         this.nodes = {
-            quality: new Tone.BitCrusher(8),
-            filter: new Tone.Filter(8000,undefined,-24),
+            // quality: new Tone.BitCrusher(8),
+            // filter: new Tone.Filter(8000,undefined,-24),
             input: new Tone.Synth().toDestination(),
             output: new Tone.Volume(-3).toDestination(),
             effects: new Tone.Sampler()
         }
-        const q = this.nodes.quality
-        const f = this.nodes.filter
+        // const q = this.nodes.quality
+        // const f = this.nodes.filter
         const o = this.nodes.output
         o.toDestination()
-        f.connect(o)  
-        q.connect(f)
-        q.set({wet:1});
+        // f.connect(o)  
+        // q.connect(f)
+        // q.set({wet:1});
         this.nodes.effects.toDestination()
         this.nodes.effects.volume.value = -6
-        this.players.piano.connect(q)
-        this.players.lead.connect(q)
-        this.players.lead2.connect(q)
-        this.players.melody.connect(q)
-        this.players.bass.connect(q)
-        this.players.drums.connect(q)
-        this.players.harmo1.connect(q)
-        this.players.harmo2.connect(q)
+        this.players.piano.connect(o)
+        this.players.lead.connect(o)
+        this.players.lead2.connect(o)
+        this.players.melody.connect(o)
+        this.players.bass.connect(o)
+        this.players.drums.connect(o)
+        this.players.harmo1.connect(o)
+        this.players.harmo2.connect(o)
 
         this.players.bass.set(midiPresets.bass)
         this.players.melody.set(midiPresets.melody)
@@ -151,7 +151,7 @@ export default class MidiFilePlayer {
     // schedule + play immidiate
     play(song, handlers, offset = 0, append = false, fade=0.4){
         return new Promise((resolve,reject)=>{
-        
+
         if(!song) {
             reject(); 
             return

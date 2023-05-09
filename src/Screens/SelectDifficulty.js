@@ -20,360 +20,20 @@ import NoteView from "../Components/NoteView/index"
 import {SnakeLoadbar} from "../Components/SnakeView"
 import HintedDiv from '../Components/Hint'
 import { MidiContext } from '../App'
+import { rangeReducer, rangeInit } from '../Reducers/pitchRange'
 import { 
-    getNote, 
     getMidi, 
-    toMidiArray, 
-    makeSelectionFromRangeMidi,
-    noAccidentals, 
-    respellPitch, 
-    respellPitches, 
     limit, 
-    rand 
+    rand, 
+    makeSelectionFromRangeNotes
 } from "../Helpers/Hooks";
 import { useLocation } from 'react-router-dom'
 
 const humanBoolean = bool=>bool ? 'Yes' : 'No'
-const rangeEasy = ['C4','D4','E4']
-const rangeMed = ['C4','D4','E4','F4','G4','A4','B4']
-const rangeHard = ['C4','D4','E4','F4','G4','A4','B4','C#4','D#4','F#4','G#4','A#4']
+ const exampleRangeTreble = makeSelectionFromRangeNotes('C4','C6').map(n => n === 'C4' ? 'C4-8n-ok' : n)
+const exampleRangeAlto = makeSelectionFromRangeNotes('C3','C5').map(n => n === 'C4' ? 'C4-8n-ok' : n)
+const exampleRangeBass = makeSelectionFromRangeNotes('C2','C4').map(n => n === 'C4' ? 'C4-8n-ok' : n)
 
-const rangeInit = {
-    range:rangeEasy,
-    rangeChromatic: false,
-    rangeHint:false,
-
-    adjustingRange: false, 
-    adjustingClef: false, 
-    hoverClef: false,
-    hoverRange: false,
-    fine:false, 
-
-    start: getMidi('C4'), 
-    end: getMidi('E4'), 
-    _low: getMidi('C4'),
-    _high: getMidi('E4'),
-    noteLow: 'C4',
-    noteHigh: 'E4',
-
-    accidentals: {
-        use: false,
-        prefer: 'sharp'
-    },
-
-    clefs:{
-        treble:1,
-        alto:0,
-        bass:0
-    }
-}
-const rangeReducer = (state, action)=>{
-    let r = {...state}
-
-    const bassTresh = getMidi('B3')
-    const recalcRange = (range)=>{
-        const newRangeMidi = toMidiArray(range)
-        r.start = Math.min(...newRangeMidi)
-        r.end = Math.max(...newRangeMidi)
-        r.noteLow = getNote(r.start, r.accidentals.prefer === 'flat' ? 'flat' : undefined)
-        r.noteHigh = getNote(r.end, r.accidentals.prefer === 'flat' ? 'flat' : undefined)
-        
-        const chancesBass = {treble: 0, bass:1, alto: 0}
-        const chancesTreble = {treble: 1, bass:0, alto: 0}
-        const chancesEqual = {treble: 0.5, bass:0.5, alto:0}
-        if(r.start < bassTresh && r.end < bassTresh) r.clefs = {...r.clefs, ...chancesBass}
-        else if(r.start < bassTresh && r.end >= bassTresh) r.clefs = {...r.clefs, ...chancesEqual}
-        else r.clefs = {...r.clefs, ...chancesTreble}
-
-        const bassNotes = range.filter(n => getMidi(n)<bassTresh)
-        const trebNotes = range.filter(n => getMidi(n)>=bassTresh)
-        let data = []
-        if(bassNotes.length)
-            data.push({clef:'bass', notes: [...bassNotes]})
-        if(trebNotes)
-            data.push({clef:'treble', notes: [...trebNotes]})
-        r.previewNoteViewData = data
-    }
-
-
-    switch(action.type){
-        case 'set':
-            r.range = [...action.data.notes]
-            r.clefs = {...action.data.clefs}
-            r.accidentals = {
-                use: action.data.accidentalPreference !== undefined,
-                prefer: action.data.accidentalPreference
-            }
-            recalcRange(r.range)
-            return r
-        
-        case 'startRangeAdjust': 
-            r.adjustingRange = true 
-            return r
-        case 'stopRangeAdjust':
-            r.adjustingRange = false
-            return r
-        case 'startFine':
-            r.fine = true
-            return r
-        case 'endFine':
-            r.fine = false
-            return r
-    
-        case 'changeRangeMax':
-        case 'changeRangeMin':{
-            const dy = limit(action.movement,-1,1)
-            if(r.range.length === 3 && dy < 0 && action.type === 'changeRangeMax') return r
-            if(r.range.length === 3 && dy > 0 && action.type === 'changeRangeMin') return r
-
-            if(action.type === 'changeRangeMin')
-                r._low =  limit(r._low+dy,  getMidi('C2'), r._high-3)
-            else
-                r._high = limit(r._high+dy, r._low+3, getMidi('B6'))
-
-            const newRange = makeSelectionFromRangeMidi(r._low,r._high)
-            r.range = state.accidentals.use ? newRange : noAccidentals(newRange)
-            r.rangeChromatic = state.accidentals.use
-            recalcRange(r.range)
-            return r
-        }
-        case 'keypress':{
-            const n = action.key
-            
-            if(r.range.includes(n)) {
-                if(r.range.length <= 4) return r
-                r.range= r.range.filter(e => respellPitch(e,'sharp') !== n)
-                r.rangeChromatic = undefined
-                recalcRange(r.range)
-                return r
-            }
-            else {
-                let newRange = [...r.range]
-                newRange.push(n)
-                recalcRange(newRange)
-                r.range = newRange
-                r.rangeChromatic = undefined
-                return r
-            }
-        }
-
-        case 'noAccidentals':{
-            let newRange = noAccidentals(makeSelectionFromRangeMidi(r.start,r.end))
-            if(newRange.length < 3){
-                if(newRange.at(-1) === 'B6') {
-                    newRange = noAccidentals(makeSelectionFromRangeMidi(r.start-1,r.end))
-                }
-                else {
-                    newRange = noAccidentals(makeSelectionFromRangeMidi(r.start,r.end+1))
-                }
-            }
-            recalcRange(newRange)
-            return {...r, range: newRange, rangeChromatic:false, accidentals: {...r.accidentals, use:false}}
-        }
-        case 'useAccidentals':{
-            const newRange = makeSelectionFromRangeMidi(r.start,r.end)
-            recalcRange(newRange)
-            return {...r, range: newRange, rangeChromatic: true, accidentals: {...r.accidentals, use:true}}
-        }
-        case 'nextAccidentalPref': 
-            let next
-            if(r.accidentals.prefer === 'both') next = 'sharp'
-            else if(r.accidentals.prefer === 'sharp') next = 'flat'
-            else if(r.accidentals.prefer === 'flat') next = 'both'
-            r.accidentals.prefer = next
-            
-            const rrange = respellPitches(r.range, (next === 'flat' ? 'flat' : 'sharp'))
-            r.range = rrange
-
-            recalcRange(r.range)
-            return r
-
-        
-        case 'startClefChance':
-            r.adjustingClef = true
-            return r
-    
-        case 'stopClefChance':
-            r.adjustingClef = false
-            return r
-
-        case 'adjustClefChance':{
-            const c = action.clef
-            const m = (action.movement/200)
-            const hasBass = (r.start < bassTresh || r.end < bassTresh)
-            const hasTreble = (r.start >= bassTresh || r.end >= bassTresh)
-            const pureTreble = (r.start >= bassTresh && r.end >= bassTresh)
-            const pureBass = (r.start < bassTresh && r.end < bassTresh)
-            const alto = r.clefs.alto
-            
-            const balanceTrebleAlto = (pure) => {
-                if(c === 'bass' && !pure && m > 0) {
-                    r.clefs.bass = 0.01
-                    return
-                } 
-                else if(c === 'bass' && m < 0 && !r.clefs.bass)
-                    return
-                else
-                    r.clefs.bass = 0
-
-                if(c === 'treble'){
-                    r.clefs.treble += m
-                    r.clefs.alto = 1-r.clefs.treble
-                }
-                else{
-                    r.clefs.alto += m
-                    r.clefs.treble = 1-r.clefs.alto
-                }
-                r.clefs.treble = limit(r.clefs.treble,0,1)
-                r.clefs.alto = limit(r.clefs.alto,0,1)
-            }
-            const balanceBassAlto = (pure) => {
-                if(c === 'treble' && !pure && m > 0) {
-                    r.clefs.treble = 0.01
-                    return
-                } 
-                else if(c === 'treble' && m < 0 && !r.clefs.treble)
-                    return
-                else
-                    r.clefs.treble = 0
-
-                if(c === 'bass'){
-                    r.clefs.bass += m
-                    r.clefs.alto = 1-r.clefs.bass
-                }
-                else{
-                    r.clefs.alto += m
-                    r.clefs.bass = 1-r.clefs.alto
-                }
-                r.clefs.bass = limit(r.clefs.bass,0,1)
-                r.clefs.alto = limit(r.clefs.alto,0,1)
-            }
-            const balanceTrebleBass = () => {
-                if(c === 'alto' && m > 0) {
-                    r.clefs.alto = 0.01
-                    return
-                } 
-                else if(c === 'alto' && m < 0 && !r.clefs.alto)
-                    return
-                else
-                    r.clefs.alto = 0
-
-                if(c === 'treble'){
-                    r.clefs.treble += m
-                    r.clefs.bass = 1-r.clefs.treble
-                }
-                else{
-                    r.clefs.bass += m
-                    r.clefs.treble = 1-r.clefs.bass
-                }
-                r.clefs.treble = limit(r.clefs.treble,0,1)
-                r.clefs.bass = limit(r.clefs.bass,0,1)
-            }
-            const balanceAll = () => {
-                if(c === 'treble'){
-                    r.clefs.treble += m
-                    r.clefs.bass -= m/2
-                    r.clefs.alto -= m/2
-                }
-                else if(c === 'bass'){
-                    r.clefs.treble -= m/2
-                    r.clefs.bass += m
-                    r.clefs.alto -= m/2
-                }
-                else if(c === 'alto'){
-                    r.clefs.treble -= m/2
-                    r.clefs.bass -= m/2
-                    r.clefs.alto += m
-                }
-                r.clefs.treble = limit(r.clefs.treble,0,1)
-                r.clefs.alto = limit(r.clefs.alto,0,1)
-                r.clefs.bass = limit(r.clefs.bass,0,1)
-            }
-
-            if(pureBass){
-                if((c === 'bass' || c === 'alto') && !r.clefs.treble){
-                    // console.log('purebass - bassalto')
-                    balanceBassAlto(true)
-                }
-            }
-            else if(pureTreble){
-                if((c === 'treble' || c === 'alto') && !r.clefs.bass){
-                    // console.log('puretreb - trebalto')
-                    balanceTrebleAlto(true)
-                }
-            }
-            else {
-                if(r.clefs.treble && r.clefs.bass && !r.clefs.alto){
-                    // console.log('else - trebbass')
-                    balanceTrebleBass()
-                }
-                else if(r.clefs.treble && !r.clefs.bass && r.clefs.alto){
-                    // console.log('else - trebalto')
-                    balanceTrebleAlto()
-                }
-                else if(!r.clefs.treble && r.clefs.bass && r.clefs.alto){
-                    // console.log('else - bassalto')
-                    balanceBassAlto()
-                }
-                else{
-                    // console.log('else - all')
-                    balanceAll()
-                }
-            }
-            // else if(c === 'bass' && pureBass){
-            //     r.movedClef.rangeHint = true
-            //     return r
-            // }
-            // else if(c === 'treble' && pureTreble) {
-            //     r.movedClef.rangeHint = true
-            //     return r
-            // }
-
-            return r
-        }
-
-        case 'random':{
-            r.clefs = {
-                treble: 1.0,
-                alto: 0.0,
-                bass: 0.0
-            }
-            
-            r.accidentals = {use: true, prefer: 'both'}
-
-            r.range = makeSelectionFromRangeMidi(getMidi('C4'),getMidi('B4'))
-            r.rangeChromatic = undefined
-            r.range = r.range.map(n => {
-                if(Math.random() > 0.5) return n
-                return null
-            })
-            r.range = r.range.filter(e => e!==null)
-            if(r.length < 3 ) r.range = [...rangeEasy]
-            recalcRange(r.range)
-            return r
-        }
-
-        case 'preset':
-            r.clefs = {treble:1, bass:0, alto:0}
-            r.rangeChromatic = false
-            r.accidentals = {use:false,prefer:'sharp'}
-            if(action.difficulty === 'hard'){
-                r.range = [...rangeHard]
-                r.rangeChromatic = true
-                r.accidentals = {use:true, prefer:'sharp'}
-            }
-            else if(action.difficulty === 'medium')
-                r.range = [...rangeMed]
-            else 
-                r.range = [...rangeEasy]
-            
-            recalcRange(r.range)
-            return r
-
-        default:
-            return r
-    }
-}
 
 export function SelectDifficulty({onPresent, theme}){
     const midiPlayer = useContext(MidiContext)
@@ -398,6 +58,7 @@ export function SelectDifficulty({onPresent, theme}){
             }})
         }
     },[rangeState,previewNotesSlide.adjusting])
+    const [clefInfo, setClefInfo] = useState(false)
 
     const playGame = ()=>{
         onPresent('/pitch/single',1000, undefined, {level:gameStats})
@@ -425,7 +86,9 @@ export function SelectDifficulty({onPresent, theme}){
                 type : "selection",
                 notes: [...rangeState.range],
                 clefs : {...rangeState.clefs},
-                accidentalPreference: rangeState.accidentals.use ? rangeState.accidentals.prefer : null
+                accidentalPreference: rangeState.accidentals.use ? rangeState.accidentals.prefer : null,
+                wasRangeChromatic: rangeState.rangeChromatic,
+                difficulty: {...difficulty}
             },
             gameTickInterval:"8n",
             startDirection:"right",
@@ -437,7 +100,7 @@ export function SelectDifficulty({onPresent, theme}){
             canOverlapSelf : false,
             enemies:[]
         })
-    },[hearts,length,bpm,rangeState,showName,ticksPerMove])
+    },[hearts,length,bpm,rangeState,showName,ticksPerMove,difficulty])
     
     const preset = (p)=>{
         rangeDispatch({type:'preset',difficulty:p})
@@ -463,8 +126,7 @@ export function SelectDifficulty({onPresent, theme}){
         }
     }
 
-    const chromaticString = `Using ${rangeState.rangeChromatic === undefined ? 'arbitrary' : (rangeState.rangeChromatic ? 'chromatic' : 'natural')} notes`
-
+  
     useEffect(()=>{
         midiPlayer.play(theme).then(()=>{
             setReady(true)
@@ -475,22 +137,35 @@ export function SelectDifficulty({onPresent, theme}){
         }
     },[])
 
-  const loc = useLocation()
-  useState(()=>{
-    const options = loc.state
-    console.log('Game options data: ', options)
-    if(options?.level) {
-        setDifficulty(d => {return {...d, custom:true}})
-        setHearts(options.level.startHealth)
-        setLength(options.level.startLength)
-        setBPM(options.level.tempo,true)
-        setTicksPerMove(options.level.ticksPerMove)
-        setShowName(options.level.showInputNoteNames)
-        rangeDispatch({type:'set',data: options.level.guessData})
-    }
-  },[loc])
+    useEffect(()=>{
+        if(difficulty.custom){
+            midiPlayer.mute(null,1)
+            midiPlayer.unmute(['drums'],1)
+        }
+        else
+            midiPlayer.unmute(null,1)
+    },[difficulty.custom])
+
+    const loc = useLocation()
+    useState(()=>{
+        const options = loc.state
+        console.log('Game options data: ', options)
+        if(options?.level) {
+            setDifficulty(d => {return {...d, custom:true}})
+            setHearts(options.level.startHealth)
+            setLength(options.level.startLength)
+            setBPM(options.level.tempo,true)
+            setTicksPerMove(options.level.ticksPerMove)
+            setShowName(options.level.showInputNoteNames)
+            rangeDispatch({type:'set',data: options.level.guessData})
+        }
+    },[loc])
 
 
+    const chromaticString = `Using ${
+        rangeState.rangeChromatic === undefined ? 'arbitrary' 
+        : (rangeState.rangeChromatic ? 'chromatic' : 'natural')
+    } notes`
     const isTweaking = difficulty?.custom
     const custom = isTweaking ? ' foreground' : '';
 
@@ -564,7 +239,7 @@ export function SelectDifficulty({onPresent, theme}){
                 > 
                         <NoteButton label={'Lowest: ' + rangeState.noteLow}
                             note={rangeState.noteLow}
-                            clef={(rangeState.start < getMidi('B3') ? 'bass' : 'treble')}
+                            clef={(rangeState.start < getMidi('C4') ? 'bass' : 'treble')}
                             onPointerUp={(ev)=>{
                                 ev.preventDefault()
                                 rangeDispatch({type:'stopRangeAdjust'})
@@ -598,7 +273,7 @@ export function SelectDifficulty({onPresent, theme}){
                         
                         <NoteButton label={'Highest: ' + rangeState.noteHigh}
                             note={rangeState.noteHigh}
-                            clef={(rangeState.end < getMidi('B3') ? 'bass' : 'treble')}
+                            clef={(rangeState.end < getMidi('C4') ? 'bass' : 'treble')}
                             stavesExtra={rangeState.end > getMidi('B5') ? 4 : undefined }
                             onPointerUp={(ev)=>{
                                 ev.preventDefault()
@@ -676,14 +351,35 @@ export function SelectDifficulty({onPresent, theme}){
                 
             </div>
 
-            <h1>Clefs:</h1>
+            <h1 className='ClefTitle'>Clefs: 
+                <Bubble stemDirection='up' className={clefInfo ? 'ClefInfoHelp' : 'ClefInfoHelp Hide'}>
+                    <p>A minimum of 3 notes across all clefs is required to adjust the spawn chances</p>
+                    <br/>
+                    <p>Treble range: C4 onwards</p>
+                    <NoteView noBarStart stavesExtra={2.5} data={[{clef:'treble', notes: exampleRangeTreble}]}/>
+                    <p>Alto range: C3 - C5</p>
+                    <NoteView noBarStart stavesExtra={2.5} data={[{clef:'alto', notes: exampleRangeAlto}]}/>
+                    <p>Bass range: less than C4</p>
+                    <NoteView noBarStart stavesExtra={2.5} data={[{clef:'bass', notes: exampleRangeBass}]}/>
+                    <button onClick={()=>{setClefInfo(false)}}>Ok</button>
+                </Bubble>
+            </h1>
+            
+            <div className='ClefSummaryContainer Leftright'>
             <HintedDiv className='ClefSummary'
                 hide={rangeState.adjustingClef}
-                hintComponent={<Bubble stemDirection='up' className='AdjustClefHelp'>
-                    <p>Drag up or down to adjust range</p>
+                hintComponent={<Bubble stemDirection='down' className='AdjustClefHelp'>
+                    {!rangeState.clefLock.treble ? 
+                        <p>Drag up or down to adjust chances</p>
+                    :
+                        <p>Please change note range to adjust this clef chances</p>
+                    }
                 </Bubble>}
             >
-                <ClefButton className={!rangeState.clefs.treble ? 'inactive' : ''} type='treble' chance={Math.trunc(rangeState.clefs.treble*100)}
+                <ClefButton className={
+                    (!rangeState.clefs.treble ? 'inactive ' : '') 
+                    + (rangeState.clefLock.treble ? 'locked ' : '') 
+                } type='treble' chance={Math.trunc(rangeState.clefs.treble*100)}
                     onPointerDown={(ev)=>{
                         ev.preventDefault()
                         rangeDispatch({type:'startClefChance', clef:'treble'})
@@ -703,7 +399,22 @@ export function SelectDifficulty({onPresent, theme}){
                     onPointerCancel={(ev)=>{
                         rangeDispatch({type:'stopClefChance', clef:'treble'})
                     }}/>
-                <ClefButton className={!rangeState.clefs.alto ? 'inactive' : ''} type='alto' chance={Math.trunc(rangeState.clefs.alto*100)}
+            </HintedDiv>
+            <HintedDiv className='ClefSummary'
+                hide={rangeState.adjustingClef}
+                hintComponent={<Bubble stemDirection='down' className='AdjustClefHelp'>
+                    {!rangeState.clefLock.alto  ? 
+                        <p>Drag up or down to adjust chances</p>
+                    :
+                        <p>Please change note range to adjust this clef chances</p>
+                    }
+                </Bubble>}
+            >
+                <ClefButton className={
+                    (!rangeState.clefs.alto ? 'inactive ' : '') 
+                    + (rangeState.clefLock.alto ? 'locked ' : '')  
+                }
+                type='alto' chance={Math.trunc(rangeState.clefs.alto*100)}
                     onPointerDown={(ev)=>{
                         ev.preventDefault()
                         rangeDispatch({type:'startClefChance', clef:'alto'})
@@ -723,7 +434,22 @@ export function SelectDifficulty({onPresent, theme}){
                     onPointerCancel={(ev)=>{
                         rangeDispatch({type:'stopClefChance', clef:'alto'})
                     }}/>
-                <ClefButton className={!rangeState.clefs.bass ? 'inactive' : ''} type='bass' chance={Math.trunc(rangeState.clefs.bass*100)}
+            </HintedDiv>
+            
+            <HintedDiv className='ClefSummary'
+                hide={rangeState.adjustingClef}
+                hintComponent={<Bubble stemDirection='down' className='AdjustClefHelp'>
+                    {!rangeState.clefLock.bass ? 
+                        <p>Drag up or down to adjust chances</p>
+                    :
+                        <p>Please change note range to adjust this clef chances</p>
+                    }
+                </Bubble>}
+            >
+                <ClefButton className={
+                    (!rangeState.clefs.bass ? 'inactive ' : '') 
+                    + (rangeState.clefLock.bass ? 'locked ' : '') 
+                } type='bass' chance={Math.trunc(rangeState.clefs.bass*100)}
                     onPointerDown={(ev)=>{
                         ev.preventDefault()
                         rangeDispatch({type:'startClefChance', clef:'bass'})
@@ -745,7 +471,8 @@ export function SelectDifficulty({onPresent, theme}){
                     }}
                     />
             </HintedDiv>
-              
+            </div>
+            <button onClick={()=>{setClefInfo(true)}}>?</button>
 
             <h1>Game:</h1>
             <button className='btnHealth Topdown'
@@ -816,8 +543,6 @@ export function SelectDifficulty({onPresent, theme}){
                 setDifficulty(d => {
                     return {...d, custom: true}
                 })
-                midiPlayer.mute(null,1)
-                midiPlayer.unmute(['drums'],1)
             }}
         >
             <img alt="note" src={flatSVG} />
@@ -914,9 +639,10 @@ function ClefButton(props){
         <span>{type}</span>
         <NoteView 
         noBarStart 
-        slide={-1}
-        stavesExtra={1}
-        data={[{clef:type, extraText: chance !==undefined ? {text:'%'+chance, uy:1} : undefined},]}/>
+        slide={-0.5}
+        stavesExtra={0}
+        data={[{clef:type}]}/>
+        <span>{chance !== undefined ? '%'+chance : ''}</span>
     </button>
 }
 

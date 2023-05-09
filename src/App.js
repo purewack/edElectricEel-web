@@ -16,6 +16,9 @@ import midiList from './midiList.json'
 export const DebugContext = createContext(false);
 export const MidiContext = createContext(false);
 
+window.TONE_SILENCE_VERSION_LOGGING = false
+// Tone.setContext(new Tone.Context({ latencyHint : 'playback'}))
+
 const themes = {
     title: 'trio.mid',
     selectDifficulty: 'classy.mid'
@@ -68,7 +71,7 @@ export default function App(){
         }
     },[midiPlayer])
     
-    const [isPresenting, setIsPresenting] = useState(false);
+    const [isPresenting, setIsPresenting] = useState('');
 
     const handlePresentScreen = (toPresent, inTime = 400, bypass=false, data = null)=>{
         const go = ()=>{
@@ -82,26 +85,32 @@ export default function App(){
             else 
                 navigate(toPresent)
 
-            setIsPresenting(false)
+            setIsPresenting('')
         }
         if(bypass) go()
         else{
-            setIsPresenting(true)
+            setIsPresenting('PresentFade')
             setTimeout(go,inTime)
         }
     }
 
-    return (<div className={'App ' + (isPresenting ? 'PresentFade' : '')}>
-        {!loading.audioContextState ? <div className='FlexDown'>
+    return (<div className={'App ' + isPresenting}>
+        {!loading.audioContextState ? 
+        
+        <div className='FlexDown'>
             <h1>Disclaimer</h1>
             <h2>This app will make sound, please adjust your volume to hear it</h2>
-            {loading.assetLoadingState ? <div className='letsGoClick'> 
-            Lets Go!
-            <img alt="ok" src={arrow} onClick={()=>{
+            {loading.assetLoadingState ? 
+            <div className='letsGoClick' onClick={()=>{
                 Tone.start().then(()=>{
                     setLoading(s=> { return {...s, audioContextState:true}})
                 })
-            }}/>
+                Tone.context.resume()
+            }}> 
+                Lets Go!
+                <div>
+                    <img alt="ok" src={arrow}/>
+                </div>
             </div>
             :
             <p>Loading... {loading.currentAssetLoadingString}</p>

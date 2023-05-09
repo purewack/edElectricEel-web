@@ -151,7 +151,34 @@ body {
   .CustomOptions .Exclusions .ExclusionsFineButtons{
     gap:0.5rem;
   }
+  
 
+  .CustomOptions .ClefTitle{
+    width: 100%;
+    position:relative;
+    text-align: center;
+  }
+  .CustomOptions .ClefInfoHelp {
+    position: absolute;
+    top:100%;
+    left:2rem;
+    right:2rem;
+    display:unset;
+    z-index: 13;
+    padding: 0.5rem;
+  }
+  .CustomOptions .ClefInfoHelp .NoteView{
+    display: inline-block;
+    /* width: 80%; */
+    margin: 0;
+  }
+  .CustomOptions .ClefInfoHelp.Hide {
+    display:none;
+  }
+
+  .CustomOptions .ClefSummaryContainer{
+    margin-inline: auto;
+  }
   .CustomOptions .ClefSummary {
     position: relative;
   }
@@ -161,13 +188,15 @@ body {
   } 
   .CustomOptions .AdjustClefHelp{
     position: absolute;
-    top: 95%;
-    left: 50%;
-
-    transform: translateX(-50%);
+    bottom: 60%;
+    left: -2rem;
+    right: -2rem;
     z-index: 10;
   }
 
+  .ClefButton {
+    position: relative;
+  }
   .ClefButton.inactive {
     filter: sepia(1) grayscale(1) brightness(0.3);
   }
@@ -176,6 +205,19 @@ body {
   }
   .ClefButton.btnSelected {
     filter: none;
+  }
+  .ClefButton.locked::after{
+    content: '';
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index: 2;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('../AssetsImport/icons/lock0.png');
   }
 
 

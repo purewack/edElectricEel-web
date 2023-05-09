@@ -1,0 +1,61 @@
+import { generateNewGuessPitch2 } from '../Helpers/NoteGuess.js';
+import {makeSelectionFromRangeNotes} from '../Helpers/Hooks.js'
+import * as Generators from '../Helpers/Generators.js'
+
+
+describe('mocked probabilities for: generateNewGuessPitch2',()=>{
+
+    beforeEach(() => {
+        jest.spyOn(Generators, 'getClefFromProbability').mockReturnValue('treble')
+    });
+    
+    afterEach(() => {
+        jest.spyOn(Generators, 'getClefFromProbability').mockRestore();
+    })
+
+    test('avoid D4 from [C4 -> E4] 1% treble ',()=>{
+        const result = generateNewGuessPitch2('D4',{
+            type: 'selection',
+            notes: makeSelectionFromRangeNotes('C4','E4'),
+            clefs: {treble: 0.01, alto: 0.99}
+        })
+        expect(result.avoidNote).toBe('D4')
+        expect(result.notes[0]).not.toBe('D4')
+        expect(result.notes[1]).not.toBe('D4')
+        expect(result.clef).toBe('treble')
+    })
+
+    test('[C3 -> E4] 1% treble, avoid alto range',()=>{
+        const result = generateNewGuessPitch2('A3',{
+            type: 'selection',
+            notes: makeSelectionFromRangeNotes('C3','E4'),
+            clefs: {treble: 0.01, alto: 0.99}
+        })
+        expect(result.avoidNote).toBe('A3')
+        expect(result.notes[0]).toContain('4')
+        expect(result.notes[1]).toContain('4')
+        expect(result.clef).toBe('treble')
+    })
+    
+    test('[C2 -> C4] treble under-range emergency fallback to [C4,D4,E4]',()=>{
+        const result = generateNewGuessPitch2('C3',{
+            type: 'selection',
+            notes: makeSelectionFromRangeNotes('C2','C4'),
+            clefs: {treble: 0.01, alto: 0.99}
+        })
+        expect(result.notes[0]).toContain('4')
+        expect(result.notes[1]).toContain('4')
+        expect(result.clef).toBe('treble')
+    })   
+    
+    test('[C2 -> C4] treble only available C4 note',()=>{
+        const result = generateNewGuessPitch2('C3',{
+            type: 'selection',
+            notes: makeSelectionFromRangeNotes('C3','C4'),
+            clefs: {treble: 0.01, alto: 0.99}
+        })
+        expect(result.notes[0].includes('C4') || result.notes[1].includes('C4') )
+        .toBeTruthy()
+        expect(result.clef).toBe('treble')
+    })
+})

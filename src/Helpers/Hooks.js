@@ -20,6 +20,7 @@ export function getRandomFrom(array){
   return array[r % array.length]
 }
 
+export const isWithinLimits = (x, l,h) => x <= h && x >= l
 export const limit = (m,l,h)=> Math.min(h, Math.max(l,m))
 export const rand = (min,max) => min + Math.trunc(Math.random() * (max-min)) 
 export const probability = (chance) => {
@@ -29,6 +30,7 @@ export const probability = (chance) => {
     return Math.random() <= chance
   }
 }
+
 
 export function QuanTime(nowTime, meter = [4,4], gridAlignStart = undefined){
   const [atBeats, barBeats] = meter
@@ -134,4 +136,60 @@ export function findSelectionLimits(selection){
 
 export function noAccidentals(range){
   return range.filter(e=>(!(e.includes('#') || e.includes('b'))))
+}
+
+export function enumerateRangePerClef(range){
+  let counts = {
+    treble: 0,
+    alto: 0,
+    bass: 0
+  }
+
+  const altoStart = getMidi('C3')
+  const trebleBassPivot = getMidi('C4')
+  const altoEnd = getMidi('C5')
+
+  range.forEach(note=>{
+    const midi = getMidi(note)
+    if(midi < trebleBassPivot){
+      counts.bass += 1
+    }
+    if(midi >= trebleBassPivot){
+      counts.treble += 1
+    }
+    if(midi >= altoStart && midi <= altoEnd){
+      counts.alto += 1
+    }
+  })
+
+  return counts
+}
+
+
+export function enumerateRangePerClefExtended(range){
+  let counts = {
+    treble: 0,
+    alto: 0,
+    bass: 0
+  }
+
+  const altoStart = getMidi('C3')
+  const treblEnd = getMidi('A3')
+  const bassStart = getMidi('D4')
+  const altoEnd = getMidi('C5')
+
+  range.forEach(note=>{
+    const midi = getMidi(note)
+    if(midi <= bassStart){
+      counts.bass += 1
+    }
+    if(midi >= treblEnd){
+      counts.treble += 1
+    }
+    if(midi >= altoStart && midi <= altoEnd){
+      counts.alto += 1
+    }
+  })
+
+  return counts
 }
