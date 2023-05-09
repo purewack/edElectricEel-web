@@ -146,20 +146,20 @@ export function SelectDifficulty({onPresent, theme}){
             midiPlayer.unmute(null,1)
     },[difficulty.custom])
 
-    const loc = useLocation()
-    useState(()=>{
-        const options = loc.state
-        console.log('Game options data: ', options)
-        if(options?.level) {
-            setDifficulty(d => {return {...d, custom:true}})
-            setHearts(options.level.startHealth)
-            setLength(options.level.startLength)
-            setBPM(options.level.tempo,true)
-            setTicksPerMove(options.level.ticksPerMove)
-            setShowName(options.level.showInputNoteNames)
-            rangeDispatch({type:'set',data: options.level.guessData})
-        }
-    },[loc])
+    // const loc = useLocation()
+    // useState(()=>{
+    //     const options = loc.state
+    //     console.log('Game options data: ', options)
+    //     if(options?.level) {
+    //         setDifficulty(d => {return {...d, custom:true}})
+    //         setHearts(options.level.startHealth)
+    //         setLength(options.level.startLength)
+    //         setBPM(options.level.tempo,true)
+    //         setTicksPerMove(options.level.ticksPerMove)
+    //         setShowName(options.level.showInputNoteNames)
+    //         rangeDispatch({type:'set',data: options.level.guessData})
+    //     }
+    // },[loc])
 
 
     const chromaticString = `Using ${

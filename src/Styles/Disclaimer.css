@@ -5,6 +5,7 @@
     align-items: center;  
     height: 100vh;  
     height: 100mvh;  
+    text-align: center;
 }
 .Disclaimer .letsGoArrow img{
     image-rendering:pixelated;

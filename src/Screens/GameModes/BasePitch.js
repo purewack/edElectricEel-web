@@ -2,7 +2,7 @@ import '../../Styles/index.css'
 import { useCallback, useEffect, useState, useContext, useRef} from "react";
 import { useLocation } from 'react-router-dom';
 
-import { startPitchGameSong, endGameSong, playGameInput, setGameSongPitch, playSoundEffect, setGameSongParts } from "../../Helpers/Sound";
+import { startPitchGameSong, endGameSong, playGameInput, setGameSongPitch, playSoundEffect, setGameSongParts, toggleGameTick } from "../../Helpers/Sound";
 import {Snake, SnakeView} from "../../Components/SnakeView/index.js";
 import NoteInput from "../../Components/NoteInput/index.js";
 import NoteView from "../../Components/NoteView/index.js";
@@ -10,6 +10,8 @@ import Item from "../../Components/SnakeView/Item";
 import { DebugContext, MidiContext } from '../../App';
 import { getMidi, getRandomFrom, leadingZeros, respellPitch } from "../../Helpers/Hooks";
 import { generateNewGuessPitch2 } from "../../Helpers/NoteGuess";
+import HintedDiv from '../../Components/Hint';
+import Bubble from '../../Components/Bubble';
 
 
 export const defaultData = {
@@ -40,7 +42,8 @@ const multipliers = {low: 5, mid: 15, high: 30}
 export default function LevelBasePitch ({onPresent}) {
   const midiPlayer = useContext(MidiContext)
   const showDebug = useContext(DebugContext)
- 
+  
+  const [info, setInfo] = useState(null)
   const [isStarted, setIsStarted] = useState(false)
   const [gameActive, setGameActive] = useState(false)
   const [paused, setPaused] = useState(false)
@@ -147,10 +150,10 @@ export default function LevelBasePitch ({onPresent}) {
       newGuess(n)
       playGameInput(midiPlayer, n)
       addScore(50)
-      if(score.streak === multipliers.mid){
+      if(score.streak+1 === multipliers.mid){
         setGameSongParts(midiPlayer, ['drums','bass','melody','lead'])
       }
-      else if(score.streak === multipliers.low){
+      else if(score.streak+1 === multipliers.low){
         setGameSongParts(midiPlayer, ['drums','bass','melody'])
       }    
     }
@@ -188,8 +191,7 @@ export default function LevelBasePitch ({onPresent}) {
   }
 
   const onSnakeMove = useCallback((pos)=>{
-    if(debugFreeze) return
-
+ 
     const head = pos[0]
     if(head.x === item.pos[0] && head.y === item.pos[1]){
       playSoundEffect(midiPlayer,'ok.wav');
@@ -211,7 +213,7 @@ export default function LevelBasePitch ({onPresent}) {
         }        
       })
     }
-  },[debugFreeze])
+  },[debugFreeze,item])
 
   useEffect(()=>{
     if(isStarted){
@@ -238,8 +240,10 @@ export default function LevelBasePitch ({onPresent}) {
       if (ev.key === "+") setLength((l) => l + 1);
       if (ev.key === ",")
         setGameTick(t => t + 1)
-      if (ev.key === ".")
+      if (ev.key === "."){
         setDebugFreeze(d => !d)
+        toggleGameTick()
+      }
       if(ev.key === '?') 
         newGuess()
     };
@@ -249,12 +253,43 @@ export default function LevelBasePitch ({onPresent}) {
 
   return (<>
   
-    {!isStarted && <div className="GameOverlayMenu Ready">
-      <button onClick={newGame}>Ready</button>
+    {!isStarted && !info && <div className="GameOverlayMenu Ready">
+      <div className='Topdown'>
+        <button onClick={newGame}>Ready</button>
+        <button onClick={()=>{setInfo('info_game')}}>How to play?</button>
+      </div>
     </div>}
+
+    {info === 'info_game' && <div className={'HowToPlayInfo'}><Bubble className={'Topdown'}>
+      <h1>How to play</h1>
+      <br/>
+      <ul>
+        <li>You will be shown 2 notes, the notes point in which way Sneel can turn.</li>
+        <li>Press the correct piano note to guide the snake to food.</li>
+        <li>You will loose a life when you press a wrong note.</li>
+      </ul>
+      <i>Hint: dont worry about octaves, i.e. you can press any C key for any C note you see </i>
+      <br/>
+      <button  onClick={()=>{setInfo(null)}}>OK</button>
+    </Bubble></div>}
+
+    {/* {info === 'info_notes' && <div className={'HowToNotesInfo'}><Bubble className={'Topdown'}>
+      <h1>Note Identification help</h1>
+      <br/>
+      <ul>
+        <li>You will be shown 2 notes, the notes point in which way Sneel can turn.</li>
+        <li>Press the correct piano note to guide the snake to food.</li>
+        <li>You will loose a life when you press a wrong note.</li>
+      </ul>
+      <i>Hint: dont worry about octaves, i.e. you can press any C key for any C note you see </i>
+      <br/>
+      <button  onClick={()=>{setInfo(null)}}>OK</button>
+    </Bubble></div>} */}
+
 
     {paused && <div className="GameOverlayMenu Pause Topdown Frame">
       <h1>Paused</h1>
+      <button onClick={()=>{setInfo('info_game')}}>How to play?</button>
       <button className='btn Config' disabled={true} onClick={()=>{setPaused(true)}}>Input Config</button>
       <button onClick={()=>{setPaused(false)}}>Resume</button>
       <button onClick={()=>{onPresent('/pitch',undefined,undefined,{level: {...levelData}})}}>Edit Game Settings</button>    
@@ -264,7 +299,7 @@ export default function LevelBasePitch ({onPresent}) {
     <div className={'GameBasePitch ' + (paused || !isStarted ? 'Fade' : '')}>
       
       <section>
-        <StatusBar onPause={()=>{setPaused(true)}} score={score.value} currentKey={currentKey?.slice(0,-1)} streak={score.streak} health={health} direction={direction}/>
+        <StatusBar ready={gameActive} onPause={()=>{setPaused(true)}} score={score.value} currentKey={currentKey?.slice(0,-1)} streak={score.streak} health={health} direction={direction}/>
       </section>
       
       <section className="Frame Snake" style={{ marginBottom:0, position: "relative" }}>
@@ -312,8 +347,6 @@ export default function LevelBasePitch ({onPresent}) {
             root={getMidi('C4')}
             count={12}
             onNoteOff={(n)=>{
-            }}
-            onNoteOn={(n)=>{
               gameActive && onSelectNote(n)
             }}
             showOctave={false}
@@ -327,7 +360,7 @@ export default function LevelBasePitch ({onPresent}) {
 }
 
 
-function StatusBar({score = 0, health, streak, currentKey, onPause, ...restProps}){
+function StatusBar({score = 0, health, streak, currentKey, onPause, ready, ...restProps}){
   const _streak =  (
     streak >= multipliers.high ? 'streak high' 
     : streak >= multipliers.mid ? 'streak mid' 
@@ -336,7 +369,7 @@ function StatusBar({score = 0, health, streak, currentKey, onPause, ...restProps
   const _score = score === null ? '-----' : leadingZeros(score,5); 
   return (
   <div className=" Status" >
-    <button className='btn Back' onClick={onPause}></button>
+    <button className='btn Back' onClick={onPause} disabled={!ready}></button>
    
     <div className='HealthBar'>
       {[...Array(5)].map((e,i)=>{

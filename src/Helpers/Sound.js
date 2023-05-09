@@ -85,3 +85,7 @@ export function playSoundEffect(midiPlayer, name){
 export function playGameInput(midiPlayer, note){
     midiPlayer.nodes.input.triggerAttackRelease(note,'8n','@8n');
 }
+
+export function toggleGameTick(){
+    Tone.Transport.toggle()
+}

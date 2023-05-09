@@ -217,6 +217,9 @@ export function Note({ pos, bar, n, noteString, clef, debug }) {
             stroke="yellow"
             fill="none"
           />
+          <text x={xx-u/3} y={-u*3} fill={"gray"} fontSize={u*1.5}>
+            {note}
+          </text>
         </>
       )}
     </>
