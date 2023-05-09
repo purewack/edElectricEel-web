@@ -8,25 +8,7 @@
     /* overflow: hidden; */
 }
 
-.letsGoClick {
-  display: flex;
-  align-items: center;
-  gap:1rem;
-}
-.letsGoClick img{
-  -webkit-perspective: 1000;
-  image-rendering:pixelated;
-  height: 10vh;
-}
-.letsGoClick div {
-  animation: kf-float 1s ease-in-out infinite alternate;
-}
-@keyframes kf-float{
-  from{transform:translateX(-0.5rem) }
-  to{transform: translateX(0.5rem) }
-}
-
-section.MainTitle {
+.MainTitle {
     display: block;
     position: relative;
     overflow: hidden;

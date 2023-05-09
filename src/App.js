@@ -12,12 +12,10 @@ import { Title } from './Screens/Title'
 import { TestZone } from './Screens/TestZone'
 import arrow from './AssetsImport/icons/arrow.png'
 import midiList from './midiList.json'
+import { Disclaimer } from './Screens/Disclaimer';
 
 export const DebugContext = createContext(false);
 export const MidiContext = createContext(false);
-
-window.TONE_SILENCE_VERSION_LOGGING = false
-// Tone.setContext(new Tone.Context({ latencyHint : 'playback'}))
 
 const themes = {
     title: 'trio.mid',
@@ -97,36 +95,18 @@ export default function App(){
     return (<div className={'App ' + isPresenting}>
         {!loading.audioContextState ? 
         
-        <div className='FlexDown'>
-            <h1>Disclaimer</h1>
-            <h2>This app will make sound, please adjust your volume to hear it</h2>
-            {loading.assetLoadingState ? 
-            <div className='letsGoClick' onClick={()=>{
-                Tone.start().then(()=>{
-                    setLoading(s=> { return {...s, audioContextState:true}})
-                })
-                Tone.context.resume()
-            }}> 
-                Lets Go!
-                <div>
-                    <img alt="ok" src={arrow}/>
-                </div>
-            </div>
-            :
-            <p>Loading... {loading.currentAssetLoadingString}</p>
-            }   
-        </div> 
+        <Disclaimer loading={loading} setLoading={setLoading}/>
         
         :
         
         <DebugContext.Provider value={showDebug}>
         <MidiContext.Provider value={midiPlayer}>
-        <Routes>
-            <Route path="/"             element={<Title theme={themes.title} onPresent={handlePresentScreen}/>} />
-            <Route path="/pitch"        element={<SelectDifficulty theme={themes.selectDifficulty} onPresent={handlePresentScreen}/>}/>
-            <Route path="/pitch/single" element={<LevelBasePitch onPresent={handlePresentScreen}/>}/>
-            <Route path="/testzone"     element={<TestZone onPresent={handlePresentScreen}/>}/>
-        </Routes>
+            <Routes>
+                <Route path="/"             element={<Title theme={themes.title} onPresent={handlePresentScreen}/>} />
+                <Route path="/pitch"        element={<SelectDifficulty theme={themes.selectDifficulty} onPresent={handlePresentScreen}/>}/>
+                <Route path="/pitch/single" element={<LevelBasePitch onPresent={handlePresentScreen}/>}/>
+                <Route path="/testzone"     element={<TestZone onPresent={handlePresentScreen}/>}/>
+            </Routes>
         </MidiContext.Provider>
         </DebugContext.Provider>
         }

@@ -8,7 +8,7 @@ import NoteInput from "../../Components/NoteInput/index.js";
 import NoteView from "../../Components/NoteView/index.js";
 import Item from "../../Components/SnakeView/Item";
 import { DebugContext, MidiContext } from '../../App';
-import { getMidi, getRandomFrom, respellPitch } from "../../Helpers/Hooks";
+import { getMidi, getRandomFrom, leadingZeros, respellPitch } from "../../Helpers/Hooks";
 import { generateNewGuessPitch2 } from "../../Helpers/NoteGuess";
 
 
@@ -44,6 +44,7 @@ export default function LevelBasePitch ({onPresent}) {
   const [isStarted, setIsStarted] = useState(false)
   const [gameActive, setGameActive] = useState(false)
   const [paused, setPaused] = useState(false)
+  const [debugFreeze, setDebugFreeze] = useState(false)
 
   const [guessData, setGuessData] = useState()
   const [currentKey, setCurrentKey] = useState('C4')
@@ -186,7 +187,9 @@ export default function LevelBasePitch ({onPresent}) {
     }) 
   }
 
-  const onSnakeMove = (pos)=>{
+  const onSnakeMove = useCallback((pos)=>{
+    if(debugFreeze) return
+
     const head = pos[0]
     if(head.x === item.pos[0] && head.y === item.pos[1]){
       playSoundEffect(midiPlayer,'ok.wav');
@@ -208,8 +211,7 @@ export default function LevelBasePitch ({onPresent}) {
         }        
       })
     }
-
-  }
+  },[debugFreeze])
 
   useEffect(()=>{
     if(isStarted){
@@ -234,10 +236,10 @@ export default function LevelBasePitch ({onPresent}) {
       if (ev.key === "ArrowLeft") setDirection("left");
       if (ev.key === "ArrowRight") setDirection("right");
       if (ev.key === "+") setLength((l) => l + 1);
+      if (ev.key === ",")
+        setGameTick(t => t + 1)
       if (ev.key === ".")
-        setGameTick((t) => {
-          return t + 1;
-        });
+        setDebugFreeze(d => !d)
       if(ev.key === '?') 
         newGuess()
     };
@@ -325,17 +327,12 @@ export default function LevelBasePitch ({onPresent}) {
 }
 
 
-function StatusBar({score = 0, health, streak, currentKey, onPause}){
+function StatusBar({score = 0, health, streak, currentKey, onPause, ...restProps}){
   const _streak =  (
     streak >= multipliers.high ? 'streak high' 
     : streak >= multipliers.mid ? 'streak mid' 
     : streak >= multipliers.low ? 'streak low' 
   : '')
-  const leadingZeros = (num, size)=>{
-      var s = num+"";
-      while (s.length < size) s = "0" + s;
-      return s;
-  }
   const _score = score === null ? '-----' : leadingZeros(score,5); 
   return (
   <div className=" Status" >

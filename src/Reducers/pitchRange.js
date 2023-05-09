@@ -131,8 +131,7 @@ export const rangeReducer = (state, action)=>{
             else
                 r._high = limit(r._high+dy, r._low+3, getMidi('B6'))
 
-            const newRange = makeSelectionFromRangeMidi(r._low,r._high)
-            r.range = state.accidentals.use ? newRange : noAccidentals(newRange)
+            r.range = makeSelectionFromRangeMidi(r._low,r._high,state.accidentals.use)
             r.rangeChromatic = state.accidentals.use
             recalcRange(r.range)
             return r
@@ -158,20 +157,20 @@ export const rangeReducer = (state, action)=>{
         }
 
         case 'noAccidentals':{
-            let newRange = noAccidentals(makeSelectionFromRangeMidi(r.start,r.end))
+            let newRange = makeSelectionFromRangeMidi(r.start,r.end,false)
             if(newRange.length < 3){
                 if(newRange.at(-1) === 'B6') {
-                    newRange = noAccidentals(makeSelectionFromRangeMidi(r.start-1,r.end))
+                    newRange = makeSelectionFromRangeMidi(r.start-1,r.end,false)
                 }
                 else {
-                    newRange = noAccidentals(makeSelectionFromRangeMidi(r.start,r.end+1))
+                    newRange = makeSelectionFromRangeMidi(r.start,r.end+1,false)
                 }
             }
             recalcRange(newRange)
             return {...r, range: newRange, rangeChromatic:false, accidentals: {...r.accidentals, use:false}}
         }
         case 'useAccidentals':{
-            const newRange = makeSelectionFromRangeMidi(r.start,r.end)
+            const newRange = makeSelectionFromRangeMidi(r.start,r.end,true)
             recalcRange(newRange)
             return {...r, range: newRange, rangeChromatic: true, accidentals: {...r.accidentals, use:true}}
         }

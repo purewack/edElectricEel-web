@@ -111,12 +111,12 @@ export function SelectDifficulty({onPresent, theme}){
             case 'easy':
             default:
                 setHearts(5)
-                setBPM(80,true)
+                setBPM(100,true)
                 break;
 
             case 'medium':
                 setHearts(5)
-                setBPM(100,true)
+                setBPM(110,true)
                 break;
 
             case 'hard':
@@ -354,6 +354,7 @@ export function SelectDifficulty({onPresent, theme}){
             <h1 className='ClefTitle'>Clefs: 
                 <Bubble stemDirection='up' className={clefInfo ? 'ClefInfoHelp' : 'ClefInfoHelp Hide'}>
                     <p>A minimum of 3 notes across all clefs is required to adjust the spawn chances</p>
+                    <p className='MiddleC'>Green = C4</p>
                     <br/>
                     <p>Treble range: C4 onwards</p>
                     <NoteView noBarStart stavesExtra={2.5} data={[{clef:'treble', notes: exampleRangeTreble}]}/>
@@ -368,12 +369,13 @@ export function SelectDifficulty({onPresent, theme}){
             <div className='ClefSummaryContainer Leftright'>
             <HintedDiv className='ClefSummary'
                 hide={rangeState.adjustingClef}
-                hintComponent={<Bubble stemDirection='down' className='AdjustClefHelp'>
+                hintComponent={<Bubble stemDirection='down' className='AdjustClefHelp Topdown'>
                     {!rangeState.clefLock.treble ? 
                         <p>Drag up or down to adjust chances</p>
-                    :
+                    :<>
                         <p>Please change note range to adjust this clef chances</p>
-                    }
+                        <button onClick={()=>{setClefInfo(true)}}>?</button>
+                    </>}
                 </Bubble>}
             >
                 <ClefButton className={
@@ -402,12 +404,13 @@ export function SelectDifficulty({onPresent, theme}){
             </HintedDiv>
             <HintedDiv className='ClefSummary'
                 hide={rangeState.adjustingClef}
-                hintComponent={<Bubble stemDirection='down' className='AdjustClefHelp'>
+                hintComponent={<Bubble stemDirection='down' className='AdjustClefHelp Topdown'>
                     {!rangeState.clefLock.alto  ? 
                         <p>Drag up or down to adjust chances</p>
-                    :
+                    :<>
                         <p>Please change note range to adjust this clef chances</p>
-                    }
+                        <button onClick={()=>{setClefInfo(true)}}>?</button>
+                    </>}
                 </Bubble>}
             >
                 <ClefButton className={
@@ -438,12 +441,13 @@ export function SelectDifficulty({onPresent, theme}){
             
             <HintedDiv className='ClefSummary'
                 hide={rangeState.adjustingClef}
-                hintComponent={<Bubble stemDirection='down' className='AdjustClefHelp'>
+                hintComponent={<Bubble stemDirection='down' className='AdjustClefHelp Topdown'>
                     {!rangeState.clefLock.bass ? 
                         <p>Drag up or down to adjust chances</p>
-                    :
+                    :<>
                         <p>Please change note range to adjust this clef chances</p>
-                    }
+                        <button onClick={()=>{setClefInfo(true)}}>?</button>
+                    </>}
                 </Bubble>}
             >
                 <ClefButton className={
@@ -472,8 +476,7 @@ export function SelectDifficulty({onPresent, theme}){
                     />
             </HintedDiv>
             </div>
-            <button onClick={()=>{setClefInfo(true)}}>?</button>
-
+           
             <h1>Game:</h1>
             <button className='btnHealth Topdown'
                 onClick={()=>{

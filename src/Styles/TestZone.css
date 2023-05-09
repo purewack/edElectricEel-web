@@ -1,0 +1,102 @@
+.TestZone nav {
+    background-color:rgb(12, 1, 58);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: 1rem;
+}
+.TestZone h1 {
+    padding: 0;
+}
+
+.TestZone h2 {
+    z-index: 10;
+    width: 100%;
+    top: 0;
+    position: sticky;
+    border-radius: 1rem;
+    padding: 0.5rem;
+    color:white;
+    background-color:rgb(56, 1, 54);
+    filter: drop-shadow(1px 1px 10px black);
+}
+
+.TestZone section {
+    position: relative;
+    margin: 1rem;
+    padding:1rem;
+    background-color:lavender;
+    border: double gold 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.TestZone .Juke {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    background-color: ivory;
+    border-radius: 1rem;
+    padding: 1rem;
+}
+.TestZone .Juke .SeekHead {
+    margin-block: 1rem;
+}
+.TestZone .Juke input {
+    width: 100%;
+}
+
+.TestZone .BGMPlayer .PlayDisc{
+    display: inline-block;
+}
+
+.TestZone .BGMPlayer .PlayDisc img {
+    content: url('../AssetsImport/icons/disc.png');
+    width:4rem;
+    height: 4rem;
+    display: inline-block;
+    image-rendering: pixelated;
+}
+
+.TestZone .BGMPlayer .PlayDisc.Spin {
+    animation: kf-spin 4s linear infinite;
+}
+
+@keyframes kf-spin {
+    from {transform: rotate(0deg);}
+    to {transform: rotate(360deg);}
+}
+
+
+.TestZone .BGMPlayer .Controls {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: max-content;
+    margin-inline: auto;
+}
+
+.TestZone ul {
+    background-color:azure;
+    border-radius: 1rem;
+    border: double black 8px;
+    padding-block: 1rem;
+    padding-right: 0.5rem;
+}
+
+.TestZone .ListAudio {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.TestZone .ListAudio button{
+    margin-left: 3rem;
+}
+
+.TestZone .NoteGuessPitch2 .NoteView {
+    background-color: ivory;
+    width: 50%;
+}

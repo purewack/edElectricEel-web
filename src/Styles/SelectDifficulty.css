@@ -38,7 +38,7 @@ body {
   border: none;
 }
 .SelectDifficulty span {
-  filter: drop-shadow(1px 1px 2px gray);
+  /* filter: drop-shadow(1px 1px 2px gray); */
 }
 
 .SelectDifficulty h1 {
@@ -172,6 +172,9 @@ body {
     /* width: 80%; */
     margin: 0;
   }
+  .CustomOptions .ClefInfoHelp .MiddleC{
+    color: green;
+  }
   .CustomOptions .ClefInfoHelp.Hide {
     display:none;
   }
@@ -192,6 +195,10 @@ body {
     left: -2rem;
     right: -2rem;
     z-index: 10;
+  }
+  .CustomOptions .AdjustClefHelp button {
+    padding-inline : 0.5rem;
+    width: min-content;
   }
 
   .ClefButton {

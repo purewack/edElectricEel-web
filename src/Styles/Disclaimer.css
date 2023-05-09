@@ -1,0 +1,41 @@
+.Disclaimer {
+    padding-inline: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;  
+    height: 100vh;  
+    height: 100mvh;  
+}
+.Disclaimer .letsGoArrow img{
+    image-rendering:pixelated;
+    content: url('../AssetsImport/icons/arrow.png');
+    height:100%;
+    width:100%;
+    display: inline-block;
+}
+.Disclaimer .letsGoArrow {
+    height: 4rem;
+    width: 4rem;
+    animation: kf-float 1s ease-in-out infinite alternate;
+}
+@keyframes kf-float{
+    from{transform:translateX(-0.5rem) }
+    to{transform: translateX(0.5rem) }
+}
+
+.Disclaimer .PoweredBy {
+    margin-top: auto;
+    filter: opacity(0.25);
+    transition: filter 1s;
+} 
+.PoweredBy:hover{
+    filter: opacity(1);
+}
+.Disclaimer .PoweredBy .Logos {
+    justify-content: space-around;
+    gap: 3rem;
+}
+.Disclaimer .PoweredBy .Logos img {
+    height: 10vh;
+    width: 10vh;
+}

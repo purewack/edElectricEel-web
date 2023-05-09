@@ -30,6 +30,11 @@ export const probability = (chance) => {
     return Math.random() <= chance
   }
 }
+export const leadingZeros = (num, size)=>{
+  var s = num+"";
+  while (s.length < size) s = "0" + s;
+  return s;
+}
 
 
 export function QuanTime(nowTime, meter = [4,4], gridAlignStart = undefined){
