@@ -11,6 +11,7 @@ export default function NoteView({
   stavesExtra,
   noBarStart,
   className,
+  noteNames,
   ...restProps
 }) {
   const showDebug = useContext(DebugContext)
@@ -99,6 +100,7 @@ export default function NoteView({
                       noteString={note}
                       clef={bar.clef ? bar.clef : "treble"}
                       debug={showDebug}
+                      noteNames={noteNames}
                     />
                   );
                 })}

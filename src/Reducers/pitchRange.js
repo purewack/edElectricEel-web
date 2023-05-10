@@ -79,12 +79,12 @@ export const rangeReducer = (state, action)=>{
         rl.alto = (rc.alto < 3)
         rl.treble = (rc.treble < 3 || rl.alto)
         rl.bass = (rc.bass < 3 || rl.alto)
+        r.clefLock = rl
 
         if(ml < bassTresh && mh < bassTresh) r.clefs = {...r.clefs, ...chancesBass}
         else if(ml >= bassTresh && mh >= bassTresh) r.clefs = {...r.clefs, ...chancesTreble}
         else r.clefs = {...r.clefs, ...chancesEqual}
-        r.clefLock = rl
-
+        
         const bassNotes = range.filter(n => getMidi(n)<bassTresh)
         const trebNotes = range.filter(n => getMidi(n)>=bassTresh)
         let data = []

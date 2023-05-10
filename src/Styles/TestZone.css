@@ -100,3 +100,10 @@
     background-color: ivory;
     width: 50%;
 }
+
+.TestZone .NoteGuessPitch2 form {
+    width: 80%;
+}
+.TestZone .NoteGuessPitch2 form input {
+    width: 100%;
+}

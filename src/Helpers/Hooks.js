@@ -179,7 +179,7 @@ export function enumerateRangePerClefExtended(range){
   }
 
   const altoStart = getMidi('C3')
-  const treblEnd = getMidi('A3')
+  const treblEnd = getMidi('B3')
   const bassStart = getMidi('D4')
   const altoEnd = getMidi('C5')
 

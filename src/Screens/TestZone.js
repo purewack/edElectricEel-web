@@ -33,7 +33,7 @@ export function TestZone({onPresent}){
 
 
     const [guessNotes, setGuessNotes] = useState()
-    const [clef, setClef] = useState('treble')
+    const [guessData, setGuessData] = useState({value: '{"type":"range", "notes":["C2","C5"]}'})
 
     return <div className='TestZone'>
         <nav>
@@ -145,26 +145,41 @@ export function TestZone({onPresent}){
 
         <section className='NoteGuessPitch2'>
             <h2>Note Guess: Pitch2</h2>
-            <p>Clef:</p>
-            <div>
-                <button onClick={()=>{setClef('treble')}}>Treble</button>
-                <button onClick={()=>{setClef('alto')}}>Alto</button>
-                <button onClick={()=>{setClef('bass')}}>Bass</button>
-            </div>
+            <i>generateNewGuessPitch2(guessData)</i>
+            <form onSubmit={(ev)=>{
+                ev.preventDefault()
+                const data = JSON.parse(guessData.value)
+                // console.log(data)
+                setGuessData(r => {return {...r, data}});
+            }}>
+            <label>guessData<br/>
+                <input onChange={(event)=>{
+                    setGuessData(r => {return {...r, value: event.target.value}});
+                }} 
+                value={guessData.value}
+                type={'text'}/>
+            </label>
+            </form>
 
             <p>Guess Results:</p>
-            <NoteView noBarStart stavesExtra={2} data={[{clef, notes:guessNotes?.notes}]}/>
+            <NoteView noteNames noBarStart stavesExtra={2} data={[{clef:guessNotes?.clef, notes:guessNotes?.notes}]}/>
             
             <p>Status: {}</p>
-            <button onClick={()=>{
-                setGuessNotes(generateNewGuessPitch2(undefined, {
-                    type: 'range',
-                    notes: ['C2','C6'],
-                    clefs: (clef === 'treble' ? {treble:1} : clef === 'alto' ? {alto:1} : {bass:1})
+            <button onClick={(ev)=>{
+                setGuessNotes(generateNewGuessPitch2(guessData?.data?.avoidNote, {
+                    ...guessData.data,
+                    clefs: guessData.data.clefs ? guessData.data.clefs : {treble:1}
                 }))
-            }}>Generate Next</button>
+            }}
+                disabled={!guessData.data}
+            >Generate Next</button>
 
-            <p>Debug: {JSON.stringify(guessNotes)}</p>
+            <p>Debug: 
+                <br/>
+                Input: <i>{JSON.stringify(guessData.data)}</i>
+                <br/>
+                Output: <i>{JSON.stringify(guessNotes)}</i>
+            </p>
         </section>
     </div>
 }

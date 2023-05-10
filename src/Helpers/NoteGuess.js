@@ -3,7 +3,8 @@ import {
   respellPitch,
   respellPitches,
   enumerateRangePerClef,
-  makeSelectionFromRangeNotes
+  makeSelectionFromRangeNotes,
+  enumerateRangePerClefExtended
 } from "./Hooks";
 
 import {
@@ -14,15 +15,16 @@ import {
 export const generateNewGuessPitch2 = (currentNote, guessData)=>{
 
   let pool = guessData.notes
+  let fallback = undefined
   
   if(guessData.type === 'range')
     pool = makeSelectionFromRangeNotes(pool[0],pool[1],guessData.accidentalPreference)
 
   let clef = getClefFromProbability(guessData.clefs)
   {
-    const clefRanges = enumerateRangePerClef(pool)
+    const clefRanges = enumerateRangePerClefExtended(pool)
     if(clef === 'bass' && clefRanges.bass >= 3){
-      pool = pool.filter(n => getMidi(n) <= getMidi('C4'))
+      pool = pool.filter(n => getMidi(n) < getMidi('C4'))
     }
     else if(clef === 'alto' && clefRanges.alto >= 3){
       pool = pool.filter(n => getMidi(n) >= getMidi('C3') && getMidi(n) <= getMidi('C5'))
@@ -34,6 +36,7 @@ export const generateNewGuessPitch2 = (currentNote, guessData)=>{
     else {
       pool = makeSelectionFromRangeNotes('C4','E4')
       clef = 'treble'
+      fallback = true
     }
   }
 
@@ -56,6 +59,7 @@ export const generateNewGuessPitch2 = (currentNote, guessData)=>{
   return {
     notes:[note1,note2],
     clef,
-    avoidNote
+    avoidNote,
+    fallback
   }
 }

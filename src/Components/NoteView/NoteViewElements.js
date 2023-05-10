@@ -37,7 +37,7 @@ const tile_rests = [rest_1, rest_2, rest_4, rest_8, rest_16];
 const tile_ups = [note_1, note_2, note_4, note_8, note_16];
 const tile_downs = [note_1i, note_2i, note_4i, note_8i, note_16i];
 
-export function Note({ pos, bar, n, noteString, clef, debug }) {
+export function Note({ pos, bar, n, noteString, clef, noteNames = undefined, debug}) {
   const u = pos.u;
   const uu = u * 2;
 
@@ -196,6 +196,10 @@ export function Note({ pos, bar, n, noteString, clef, debug }) {
           {extraText}
         </text>}
       </g>
+      {debug || noteNames ? 
+          <text x={xx} y={isFilp ? u*2 : -u*3} fill={"gray"} fontSize={u*1.5}>
+            {note}
+          </text> : null}
       {debug && (
         <>
           <text x={xx} y={0} fill={"red"} fontSize={u}>
@@ -217,9 +221,6 @@ export function Note({ pos, bar, n, noteString, clef, debug }) {
             stroke="yellow"
             fill="none"
           />
-          <text x={xx-u/3} y={-u*3} fill={"gray"} fontSize={u*1.5}>
-            {note}
-          </text>
         </>
       )}
     </>
