@@ -36,7 +36,6 @@ describe('mocked probabilities for: generateNewGuessPitch2',()=>{
         expect(result.notes[1]).toContain('4')
         expect(result.clef).toBe('treble')
     })
-    
     test('[C2 -> C4] treble under-range emergency fallback to [C4,D4,E4]',()=>{
         const result = generateNewGuessPitch2('C3',{
             type: 'selection',
@@ -47,7 +46,6 @@ describe('mocked probabilities for: generateNewGuessPitch2',()=>{
         expect(result.notes[1]).toContain('4')
         expect(result.clef).toBe('treble')
     })   
-    
     test('[C2 -> C4] treble only available C4 note',()=>{
         const result = generateNewGuessPitch2('C3',{
             type: 'selection',

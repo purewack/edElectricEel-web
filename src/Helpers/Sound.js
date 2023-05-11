@@ -1,10 +1,9 @@
 import * as Tone from "tone";
 import { QuanTime } from "./Hooks";
-// Tone.setContext(new Tone.Context({ latencyHint : "playback", lookAhead: 0.5 }))
 
 let gameTickId = null
 
-export async function startPitchGameSong (midiPlayer,levelData,onGametick, onGameBar){
+export async function startPitchGameSong (midiPlayer,levelData,onGametick,onGameBar,onCountDown){
     if(gameTickId) await endGameSong()
 
     return new Promise(async (resolve)=>{
@@ -17,25 +16,28 @@ export async function startPitchGameSong (midiPlayer,levelData,onGametick, onGam
         
         const countdown = new Tone.Pattern((t,n)=>{
             midiPlayer.players.drums.triggerAttackRelease(n,'8n',t)
+            if(onCountDown) Tone.Draw.schedule(onCountDown,t)
         },['F#2','F#2','F#2','D#3']).start('0:0:0').stop('1:0:0')
-        gameTickId = Tone.Transport.scheduleRepeat((t)=>{
-            Tone.Draw.schedule(()=>{
-                onGametick()
-            },t)
-        }, levelData.gameTickInterval, '1:0:0')
+        
+        if(onGametick){
+            gameTickId = Tone.Transport.scheduleRepeat((t)=>{
+                Tone.Draw.schedule(onGametick,t)
+            }, levelData.gameTickInterval, '1:0:0')
+        }
+
+        if(onGameBar){
+            Tone.Transport.scheduleRepeat(()=>{
+                Tone.Draw(onGameBar)
+            },'1m','1:0:0');
+        }
+        
         Tone.Transport.scheduleOnce((t)=>{
             Tone.Draw.schedule(resolve,t)
         },'1:0:0')
-        if(onGameBar){
-            Tone.Transport.scheduleRepeat(()=>{
-                Tone.Draw(()=>{onGameBar()})
-            },'1m','0:0:0');
-        }
-        ////console.log('startPitchGameSong prepare countdown')
+        
         midiPlayer.begin()
         midiPlayer.mute();
         midiPlayer.unmute(['bass','drums'])  
-
     })
 }
 

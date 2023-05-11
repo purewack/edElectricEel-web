@@ -25,8 +25,11 @@ import {
     getMidi, 
     limit, 
     rand, 
-    makeSelectionFromRangeNotes
 } from "../Helpers/Hooks";
+import {
+    makeSelectionFromRangeNotes
+} from "../Helpers/Generators"
+
 import { useLocation } from 'react-router-dom'
 
 const humanBoolean = bool=>bool ? 'Yes' : 'No'

@@ -1,12 +1,13 @@
 import '../Styles/TestZone.css'
 import { useEffect, useState, useContext } from 'react'
 import { playSoundEffect } from '../Helpers/Sound'
+import { leadingZeros } from '../Helpers/Hooks'
+import {enumerateRangePerClef, enumerateRangePerClefOverlap} from '../Helpers/Generators'
+import { generateNewGuessPitch2 } from '../Helpers/NoteGuess'
 import { MidiContext } from '../App'
 import midiset from '../Helpers/midiset.json'
-import { leadingZeros } from '../Helpers/Hooks'
 import Bubble from '../Components/Bubble'
 import NoteView from '../Components/NoteView'
-import { generateNewGuessPitch2 } from '../Helpers/NoteGuess'
 
 export function TestZone({onPresent}){
 
@@ -31,9 +32,7 @@ export function TestZone({onPresent}){
         tt[1]
     }` : '0:00 / 0:00'
 
-
-    const [guessNotes, setGuessNotes] = useState()
-    const [guessData, setGuessData] = useState({value: '{"type":"range", "notes":["C2","C5"]}'})
+    const [results, setResults] = useState({})
 
     return <div className='TestZone'>
         <nav>
@@ -143,43 +142,100 @@ export function TestZone({onPresent}){
             </ul>
         </section>
 
-        <section className='NoteGuessPitch2'>
-            <h2>Note Guess: Pitch2</h2>
-            <i>generateNewGuessPitch2(guessData)</i>
-            <form onSubmit={(ev)=>{
-                ev.preventDefault()
-                const data = JSON.parse(guessData.value)
-                // console.log(data)
-                setGuessData(r => {return {...r, data}});
-            }}>
-            <label>guessData<br/>
-                <input onChange={(event)=>{
-                    setGuessData(r => {return {...r, value: event.target.value}});
-                }} 
-                value={guessData.value}
-                type={'text'}/>
-            </label>
-            </form>
+        <section className='Generators'>
+            <h2>Generators</h2>
+            <i>enumerateRangePerClef</i>
+            <TestFunctionWithParams 
+                fn={enumerateRangePerClef} 
+                defInput={'["B3","C4","D4","E4","F4"]'}
+                onResult={(r)=>{
+                    setResults(res => {
+                        return {...res,
+                            enumerateRangePerClef: r
+                        }
+                    }) 
+                }}/>
+            <hr />
 
+            <i>enumerateRangePerClefOverlap</i>
+            <TestFunctionWithParams 
+                fn={enumerateRangePerClefOverlap} 
+                defInput={'["B3","C4","D4","E4","F4"]'}
+                onResult={(r)=>{
+                    setResults(res => {
+                        return {...res,
+                            enumerateRangePerClefOverlap: r
+                        }
+                    })
+                }}/>
+            <hr /> 
+
+            <i>{'generateNewGuessPitch2({ notes[],clefs:{% % %},avoidNote:string })'}</i>
+            <TestFunctionWithParams 
+                fn={generateNewGuessPitch2} 
+                defInput={'{"type":"range","notes":["C4","C5"], "clefs":{"treble":1}}'} 
+                onResult={(r)=>{
+                    setResults(res => {
+                        return {...res,
+                            generateNewGuessPitch2: r
+                        }
+                    }) 
+                }}/>
             <p>Guess Results:</p>
-            <NoteView noteNames noBarStart stavesExtra={2} data={[{clef:guessNotes?.clef, notes:guessNotes?.notes}]}/>
-            
-            <p>Status: {}</p>
-            <button onClick={(ev)=>{
-                setGuessNotes(generateNewGuessPitch2(guessData?.data?.avoidNote, {
-                    ...guessData.data,
-                    clefs: guessData.data.clefs ? guessData.data.clefs : {treble:1}
-                }))
-            }}
-                disabled={!guessData.data}
-            >Generate Next</button>
-
-            <p>Debug: 
-                <br/>
-                Input: <i>{JSON.stringify(guessData.data)}</i>
-                <br/>
-                Output: <i>{JSON.stringify(guessNotes)}</i>
-            </p>
+            <NoteView 
+                style={{width:200}} 
+                noteNames noBarStart stavesExtra={1} 
+                data={results.generateNewGuessPitch2 
+                    ? [
+                        {clef: results.generateNewGuessPitch2.clef[0], notes: [results.generateNewGuessPitch2.notes[0]]},
+                        {clef: results.generateNewGuessPitch2.clef[1], notes: [results.generateNewGuessPitch2.notes[1]]}
+                    ] 
+                    : [{clef:'treble'}]}
+                />
+            <hr /> 
         </section>
     </div>
+}
+
+function TestFunctionWithParams ({fn, label, onResult, defInput = undefined}){
+    const [object, setObject] = useState({input: defInput})
+
+    return (<><form className="TestBlock" onSubmit={(ev)=>{
+        ev.preventDefault()
+        setObject(r => {
+            let parse
+            try{ 
+                parse = JSON.parse(object.input)
+            }
+            catch{
+                return {...r, error: 'JSON parse'}
+            }
+
+            try{
+                const result = fn(parse)
+                onResult(result)
+                return {input: object.input, output: JSON.stringify(result)}
+            }
+            catch (er){
+                console.log(er)
+                return {...r, error: 'function call '}
+            }
+        });
+    }}>
+        <label>{label}<br/>
+        <input onChange={(event)=>{
+            setObject(o => {return {...o, input: event.target.value}});
+        }} 
+        value={object?.input}
+        type={'text'}/>
+    </label>
+    {object?.error ? 
+        <p>Error: {object.error}</p>
+    : <p>  
+        Input: <i>{object?.input}</i>
+        <br/>
+        Output: <i>{object?.output}</i>
+    </p>}
+    </form>
+    </>)
 }

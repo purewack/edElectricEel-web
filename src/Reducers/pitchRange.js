@@ -4,15 +4,14 @@ import {
     toMidiArray, 
     respellPitch, 
     respellPitches, 
-    makeSelectionFromRangeNotes,
-    makeSelectionFromRangeMidi,
-    noAccidentals, 
-    limit, 
-    rand,
-    enumerateRangePerClef,
-    enumerateRangePerClefExtended,
-    isWithinLimits
+    limit
 } from "../Helpers/Hooks"
+
+import {
+    makeSelectionFromRangeMidi,
+    enumerateRangePerClef,
+    enumerateRangePerClefOverlap
+} from '../Helpers/Generators'
 
 const rangeEasy = ['C4','D4','E4']
 const rangeMed = ['C4','D4','E4','F4','G4','A4','B4']
@@ -67,23 +66,23 @@ export const rangeReducer = (state, action)=>{
         r.end = Math.max(...newRangeMidi)
         r.noteLow = getNote(r.start, r.accidentals.prefer === 'flat' ? 'flat' : undefined)
         r.noteHigh = getNote(r.end, r.accidentals.prefer === 'flat' ? 'flat' : undefined)
-        const mh = getMidi(r.noteHigh)
-        const ml = getMidi(r.noteLow)
         const chancesBass = {treble: 0, bass:1, alto: 0}
         const chancesTreble = {treble: 1, bass:0, alto: 0}
         const chancesEqual = {treble: 0.5, bass:0.5, alto:0}
       
-        r.rangeClefs = enumerateRangePerClefExtended(range)
+        r.rangeClefs = enumerateRangePerClef(range)
         const rc = r.rangeClefs
         const rl = r.clefLock
-        rl.alto = (rc.alto < 3)
-        rl.treble = (rc.treble < 3 || rl.alto)
-        rl.bass = (rc.bass < 3 || rl.alto)
+        rl.alto = (rc.alto < 1)
+        rl.treble = (rc.treble < 1 || rl.alto)
+        rl.bass = (rc.bass < 1 || rl.alto)
         r.clefLock = rl
 
-        if(ml < bassTresh && mh < bassTresh) r.clefs = {...r.clefs, ...chancesBass}
-        else if(ml >= bassTresh && mh >= bassTresh) r.clefs = {...r.clefs, ...chancesTreble}
-        else r.clefs = {...r.clefs, ...chancesEqual}
+        // if(ml < bassTresh && mh < bassTresh) r.clefs = {...r.clefs, ...chancesBass}
+        // else if(ml >= bassTresh && mh >= bassTresh) r.clefs = {...r.clefs, ...chancesTreble}
+        if(rl.treble && !rl.bass) r.clefs = {...r.clefs, ...chancesBass}
+        else if(rl.bass && !rl.treble) r.clefs = {...r.clefs, ...chancesTreble}
+        else if(!rl.treble && !rl.alto && !rl.bass) r.clefs = {...r.clefs, ...chancesEqual}
         
         const bassNotes = range.filter(n => getMidi(n)<bassTresh)
         const trebNotes = range.filter(n => getMidi(n)>=bassTresh)
@@ -295,10 +294,10 @@ export const rangeReducer = (state, action)=>{
                 r.clefs.bass = limit(r.clefs.bass,0,1)
             }
 
-            const cr = enumerateRangePerClefExtended(r.range)
+            const cr = enumerateRangePerClefOverlap(r.range)
             const cc = r.clefs
-            console.log(JSON.stringify({cr,cc}))
-            if(cr.treble >= 3 && cr.bass >= 3 && cr.alto >= 3){
+            const rl = r.clefLock
+            if(cr.treble >= 1 && cr.bass >= 1 && cr.alto >= 1){
                 if(!cc.alto)
                     balanceTrebleBass()
                 else if(!cc.treble)
@@ -308,11 +307,11 @@ export const rangeReducer = (state, action)=>{
                 else
                     balanceAll()
             }
-            else if(cr.treble >= 3 && cr.alto >= 3 && cr.bass < 3)
+            else if(rl.bass)
                 balanceTrebleAlto()
-            else if(cr.bass >= 3 && cr.alto >= 3 && cr.treble < 3)
+            else if(rl.treble)
                 balanceBassAlto()
-            else if(cr.bass >= 3 && cr.treble >= 3 && cr.alto < 3)
+            else 
                 balanceTrebleBass()
 
             return r

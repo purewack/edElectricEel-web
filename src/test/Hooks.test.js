@@ -8,8 +8,7 @@ import {
     makeSelectionFromRangeMidi,
     makeSelectionFromRangeNotes,
     enumerateRangePerClef,
-    pickNoteFromPoolAvoid,
-    getClefFromProbability
+    getRandomFrom
 } from "../Helpers/Hooks";
 
 
@@ -102,4 +101,8 @@ test('enumerate scattered all clefs', ()=>{
 
 test('enumerate middle C', ()=>{
     expect(enumerateRangePerClef(['C4'])).toEqual({treble:1, alto:1, bass:0})
+})
+
+test('getrandom from only one available', ()=>{
+    expect(getRandomFrom(['a'])).toBe('a')
 })

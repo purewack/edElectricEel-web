@@ -20,6 +20,29 @@ export function getRandomFrom(array){
   return array[r % array.length]
 }
 
+export function getRandomFromWithAvoid(pool,avoid){
+  if(!pool.length || !pool) throw new Error('Nothing to pick from')
+  
+  let note;
+  let dupe;
+  let _pool = [...pool]
+  do{
+    dupe = false
+    note = getRandomFrom(_pool)
+    for(let i=0; i<avoid.length; i++){
+        if(avoid[i] === note) {
+          dupe = true
+          _pool = _pool.filter(p=>p!==note)
+          break
+        }
+    }
+    if(!dupe) return note
+    if(_pool.length === 1) return _pool[0]
+  }while(dupe)
+  return note
+}
+
+
 export const isWithinLimits = (x, l,h) => x <= h && x >= l
 export const limit = (m,l,h)=> Math.min(h, Math.max(l,m))
 export const rand = (min,max) => min + Math.trunc(Math.random() * (max-min)) 
@@ -110,91 +133,6 @@ export function getNote(midi, target){
   return Tone.Midi(midi).toNote()
 }
 
-export function makeSelectionFromRangeMidi(minMidi, maxMidi, accidental){
-  const len = Math.trunc(maxMidi-minMidi+1)
-  const range = [...Array(len)].map((e,i) => {
-      return getNote(minMidi + i)
-  })
-  return accidental ? range : noAccidentals(range)
-}
-
-export function makeSelectionFromRangeNotes(minNote, maxNote, accidental){
-    const lowMidi = getMidi(minNote);
-    const highMidi = getMidi(maxNote);
-    const count = highMidi - lowMidi + 1
-    const root = lowMidi
-    const guessRange = [...Array(count)].map((e,i)=> getNote(i+root))
-    return accidental ? guessRange : noAccidentals(guessRange)
-}
-
-export function findSelectionLimits(selection){
-  let low = getMidi(selection[0])
-  let high = low;
-  selection.forEach((n)=>{
-    const note = getMidi(n)
-    if(note < low) low = note
-    else if(note > high) high = note
-  })
-  const count = high-low+1
-  return{low,high,count}
-}
-
 export function noAccidentals(range){
   return range.filter(e=>(!(e.includes('#') || e.includes('b'))))
-}
-
-export function enumerateRangePerClef(range){
-  let counts = {
-    treble: 0,
-    alto: 0,
-    bass: 0
-  }
-
-  const altoStart = getMidi('C3')
-  const trebleBassPivot = getMidi('C4')
-  const altoEnd = getMidi('C5')
-
-  range.forEach(note=>{
-    const midi = getMidi(note)
-    if(midi < trebleBassPivot){
-      counts.bass += 1
-    }
-    if(midi >= trebleBassPivot){
-      counts.treble += 1
-    }
-    if(midi >= altoStart && midi <= altoEnd){
-      counts.alto += 1
-    }
-  })
-
-  return counts
-}
-
-
-export function enumerateRangePerClefExtended(range){
-  let counts = {
-    treble: 0,
-    alto: 0,
-    bass: 0
-  }
-
-  const altoStart = getMidi('C3')
-  const treblEnd = getMidi('B3')
-  const bassStart = getMidi('D4')
-  const altoEnd = getMidi('C5')
-
-  range.forEach(note=>{
-    const midi = getMidi(note)
-    if(midi <= bassStart){
-      counts.bass += 1
-    }
-    if(midi >= treblEnd){
-      counts.treble += 1
-    }
-    if(midi >= altoStart && midi <= altoEnd){
-      counts.alto += 1
-    }
-  })
-
-  return counts
 }
