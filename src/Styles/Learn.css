@@ -1,0 +1,34 @@
+.Learn .Content{
+    display: flex;
+    flex-direction: column;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.Learn .NoteInput {
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.Learn .NavScreen {
+    position: sticky;
+    top:0;
+}
+
+.Learn .Content {
+    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 32%, rgba(184,251,255,1) 89%, rgba(0,240,255,1) 100%);
+}
+
+.Learn .Content p {
+    margin-left: 1rem;
+}
+
+.Learn .Content h1 {
+    background-color: antiquewhite;
+    border-radius: 1rem;
+    padding: 0.5rem;
+}
+
+.Learn .Content h2, h3 {
+    text-decoration: underline;
+}

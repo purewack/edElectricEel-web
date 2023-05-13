@@ -1,0 +1,22 @@
+.MetronomeIndicator {
+    position: relative;
+}
+.MetronomeIndicator img{
+    height: 3rem;
+    width: 3rem;
+}
+.MetronomeIndicator .needle{
+    position: absolute;
+    left: 0;
+    transform-origin: 50% 70%;
+    animation-name: kf-needle;
+    animation-iteration-count: infinite;
+}
+
+@keyframes kf-needle {
+    from{transform: rotate(0deg);}
+    25%{transform: rotate(40deg);}
+    50%{transform: rotate(0deg);}
+    75%{transform: rotate(-40deg);}
+    to{transform: rotate(0deg);}
+}

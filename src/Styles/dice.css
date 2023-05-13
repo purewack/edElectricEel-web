@@ -1,0 +1,76 @@
+:root{
+--face-size:2em;
+--face-trz:calc(var(--face-size)*0.50)
+}
+
+.t3d{
+transform-style:preserve-3d;
+}
+
+.scene{
+perspective:300px;
+margin: 0.5em;
+filter: drop-shadow(3px 3px 10px black);
+}
+
+.cube{
+position:relative;
+transform:translateY(-50%) translateX(-50%) rotateX(-30deg);
+left:50%;
+top:50%;
+width:max-content;
+height:max-content;
+}
+
+.cube-obj{
+position:relative;
+width:var(--face-size);
+height:calc(var(--face-size)*1.25);
+animation: kf-rotate 4s linear infinite;
+}
+
+@keyframes kf-rotate {
+to{transform:rotateY(360deg) rotateX(720deg);}
+}
+
+.cube-face {
+position:absolute;
+height:var(--face-size);
+width:var(--face-size);
+font-size:3em;
+border:solid black 3px;
+background-size: cover;
+background-repeat: no-repeat;
+background-color: ivory;
+/*   border-radius:20px; */
+}
+
+.cube-face:nth-child(1){
+transform:translateZ(var(--face-trz));
+background-image: url('../AssetsImport/dice/1.png');
+}
+
+.cube-face:nth-child(2){
+transform:rotateY(90deg) translateZ(var(--face-trz));
+background-image: url('../AssetsImport/dice/2.png');
+}
+
+.cube-face:nth-child(3){
+transform:rotateY(180deg) translateZ(var(--face-trz));
+background-image: url('../AssetsImport/dice/3.png');
+}
+
+.cube-face:nth-child(4){
+transform:rotateY(-90deg) translateZ(var(--face-trz));
+background-image: url('../AssetsImport/dice/4.png');
+}
+
+.cube-face:nth-child(5){
+transform:rotateX(90deg) translateZ(var(--face-trz));
+background-image: url('../AssetsImport/dice/5.png');
+}
+.cube-face:nth-child(6){
+transform:rotateX(-90deg) translateZ(var(--face-trz));
+background-image: url('../AssetsImport/dice/6.png');
+}
+  

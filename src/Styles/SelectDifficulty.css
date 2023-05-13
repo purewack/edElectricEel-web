@@ -1,0 +1,342 @@
+body {
+  background-color: mintcream;
+  color: black;
+}
+
+.SelectDifficulty {
+  min-height: 100vh;
+  min-height: 100mvh;
+  display: flex;
+  flex-direction: column;
+}
+.SelectDifficulty .Navigation {
+  margin-top: auto;
+  /* justify-self: end; */
+}
+
+.SelectDifficulty p,
+.SelectDifficulty span {
+  font-size: 1.5rem;
+  padding: 0;
+  margin: 0;
+}
+.SelectDifficulty .arrowLeft{
+  width: 1rem;
+  height: 1rem;
+  content: url('../AssetsImport/icons/arrowBack.png');
+}
+.SelectDifficulty .arrowRight{
+  width: 1rem;
+  height: 1rem;
+  content: url('../AssetsImport/icons/arrow.png');
+}
+.SelectDifficulty .arrowRight.Alt {
+  filter: hue-rotate(-90deg);
+}
+
+.SelectDifficulty .View {
+  border: none;
+}
+.SelectDifficulty span {
+  /* filter: drop-shadow(1px 1px 2px gray); */
+}
+
+.SelectDifficulty h1 {
+  color:black;
+  font-size: 2rem;
+  margin: 0;
+  padding-block: 1rem;
+}
+.SelectDifficulty .Title::before {
+  content: ' ';
+  vertical-align:middle;
+  image-rendering: pixelated;
+  background-size: 4rem;
+  width: 4rem;
+  height: 4rem;
+  margin: 0.5rem;
+  display: inline-block;
+}
+.SettingsTitle::before {
+  background-image: url('../AssetsImport/icons/star2.png');
+}
+.TweakTitle::before  {
+  background-image: url('../AssetsImport/icons/spanner.png');
+}
+.Difficulties .Frame{
+  border-inline: none;
+  margin-bottom: 1rem;
+}
+
+
+.btnCustom{
+  margin-inline: auto;
+}
+.btnCustom img{ 
+  height: 2rem;
+  transform: translateY(-20%) translateX(33%);
+}
+
+.Difficulties div{
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.Difficulties.custom .btnDifficulty img{
+  display: none;
+}
+
+.btnDifficulty img{
+  height: 2rem;
+  transform: translateX(20%);
+}
+.Difficulties div:nth-of-type(1) .btnDifficulty{
+  color:forestgreen;
+}
+.Difficulties div:nth-of-type(2) .btnDifficulty{
+  color:royalblue;
+}
+.Difficulties div:nth-of-type(3) .btnDifficulty{
+  color:orangered;
+}
+
+
+.CustomOptions{
+  background-color:palegoldenrod;
+  overflow: hidden;
+  /* height: 3rem; */
+}
+.CustomOptions > h1{
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+.CustomOptions > h1::before{
+  content: unset;
+}
+  .CustomOptions .NoteInput{
+    height:10rem;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+  
+  .CustomOptions .RangeNoteButtons{
+    position: relative;
+  }
+  .CustomOptions .RangeNoteButtons .NoteView{
+    height: 9rem;
+    width: 9rem;
+  }
+
+  .CustomOptions .RangeNoteButtonsHelp{
+    position: absolute;
+    top: 95%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  .CustomOptions .btnFineTune{
+    content: url('../AssetsImport/icons/cog.png');
+    padding-top: 0.5rem;
+  }
+
+  .CustomOptions .Exclusions .InputFine {
+    z-index: 8;
+  }
+  .CustomOptions .Exclusions .InputFine .NoteInput{
+    width: calc(85vw - 2rem);
+  }
+  .CustomOptions .Exclusions .ExclusionsFineButtons{
+    gap:0.5rem;
+  }
+  
+
+  .CustomOptions .ClefTitle{
+    width: 100%;
+    position:relative;
+    text-align: center;
+  }
+  .CustomOptions .ClefInfoHelp {
+    position: absolute;
+    top:100%;
+    left:2rem;
+    right:2rem;
+    display:unset;
+    z-index: 13;
+    padding: 0.5rem;
+  }
+  .CustomOptions .ClefInfoHelp .NoteView{
+    display: inline-block;
+    /* width: 80%; */
+    margin: 0;
+  }
+  .CustomOptions .ClefInfoHelp .MiddleC{
+    color: green;
+  }
+  .CustomOptions .ClefInfoHelp.Hide {
+    display:none;
+  }
+
+  .CustomOptions .ClefSummaryContainer{
+    margin-inline: auto;
+  }
+  .CustomOptions .ClefSummary {
+    position: relative;
+  }
+  .CustomOptions .ClefSummary button{
+    height:max-content;
+    width:8rem;
+  } 
+  .CustomOptions .AdjustClefHelp{
+    position: absolute;
+    bottom: 60%;
+    left: -2rem;
+    right: -2rem;
+    z-index: 10;
+  }
+  .CustomOptions .AdjustClefHelp button {
+    padding-inline : 0.5rem;
+    width: min-content;
+  }
+
+  .ClefButton {
+    position: relative;
+  }
+  .ClefButton.inactive {
+    filter: sepia(1) grayscale(1) brightness(0.3);
+  }
+  .ClefButton span,
+  .ClefButton p {
+    text-transform:capitalize;
+  }
+  .ClefButton.btnSelected {
+    filter: none;
+  }
+  .ClefButton.locked::after{
+    content: '';
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index: 2;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('../AssetsImport/icons/lock0.png');
+  }
+
+
+  .btnNoteView .NoteView {
+    width: 5rem;
+    height: 5rem;
+    background-color: transparent;
+  }
+
+  .SelectBPM {
+    color: black;
+    font-size: 1.5rem;
+    background-color: ivory;
+    padding-inline: 1rem;
+  }
+
+  .btnHealth{
+    width: calc(2rem * 8);
+    text-align: center;
+  }
+  .Hearts img{
+    margin-inline:0.25rem;
+    height: 2rem;
+  }
+
+
+  .btnLength .SnakeLoadbar {
+    width: 16rem;
+    height: 3rem;
+  }
+
+  .btnLength .SnakeLoadbar canvas {
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .btnSpeed img {
+    content: url('../AssetsImport/icons/clock1.png');
+    height: 3rem;
+  }
+
+  .btnRandom{
+    margin-block: 2rem;
+    filter: hue-rotate(90deg);
+  }
+  .btnRandom .scene {
+    --face-size: 2.5rem;
+    --face-trz:calc(var(--face-size)*0.50);
+    margin-left: 1em;
+    width:2em;
+    height:2em;
+  }
+
+.btnGo  {
+  margin-left: auto;
+}
+
+
+
+
+.SelectDifficultySummary {
+  position: relative;
+  width: 90vw;
+  left:calc(50%);
+  transform: translateX(-50%);
+  margin-block: 32px;
+  z-index: 10;
+  /* height: max(90vw,75vh); */
+  /* overflow-y: scroll; */
+  background-color:skyblue;
+  border-image-outset: 16px;
+}
+.SelectDifficultySummary  p {
+  padding-block: 0;
+  margin-block: 0.1rem;
+  z-index: 11;
+}
+.SelectDifficultySummary .Navigation {
+  width: 100%;
+}
+.SelectDifficultySummary .NoteView{
+  background-color: ivory;
+  margin-bottom: 1rem;
+  border: solid black 3px;
+}
+.SelectDifficultySummary .RangeHintDiv {
+  position: relative;
+}
+.SelectDifficultySummary .RangeHintDiv .Bubble {
+  position: absolute;
+  bottom:90%;
+}
+.SelectDifficultySummary.Floating{
+  background-color: darksalmon;
+  position: fixed;
+  top:  calc(50%);
+  left: calc(50%);
+  transform: translate(-50%,-50%);
+}
+.SelectDifficultySummary.Floating.Hide {
+  display:none;
+}
+
+.SelectDifficulty.Fade::before{
+  content: '';
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  background-color: black;
+  opacity: 0.7;
+  z-index: 5;
+  touch-action: none;
+  pointer-events: none;
+}
