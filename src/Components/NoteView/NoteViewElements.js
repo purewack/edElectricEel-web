@@ -124,7 +124,7 @@ export function Note({ pos, bar, n, noteString, clef, noteNames = undefined, deb
       });
     }
     setName(nm);
-  });
+  },[]);
 
   return (
     <>
@@ -198,7 +198,7 @@ export function Note({ pos, bar, n, noteString, clef, noteNames = undefined, deb
       </g>
       {debug || noteNames ? 
           <text x={xx} y={isFilp ? u*2 : -u*3} fill={"gray"} fontSize={u*1.5}>
-            {note}
+            {noteNames === 'no-octave' ? note.slice(0,-1) : note}
           </text> : null}
       {debug && (
         <>

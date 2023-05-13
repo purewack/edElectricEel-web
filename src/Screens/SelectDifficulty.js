@@ -33,10 +33,12 @@ import {
 import { useLocation } from 'react-router-dom'
 
 const humanBoolean = bool=>bool ? 'Yes' : 'No'
- const exampleRangeTreble = makeSelectionFromRangeNotes('C4','C6').map(n => n === 'C4' ? 'C4-8n-ok' : n)
-const exampleRangeAlto = makeSelectionFromRangeNotes('C3','C5').map(n => n === 'C4' ? 'C4-8n-ok' : n)
-const exampleRangeBass = makeSelectionFromRangeNotes('C2','C4').map(n => n === 'C4' ? 'C4-8n-ok' : n)
-
+export const exampleRangeTreble = makeSelectionFromRangeNotes('C4','C6').map(n => n === 'C4' ? 'C4-8n-ok' : n)
+export const exampleRangeAlto = makeSelectionFromRangeNotes('C3','C5').map(n => n === 'C4' ? 'C4-8n-ok' : n)
+export const exampleRangeBass = makeSelectionFromRangeNotes('C2','C4').map(n => n === 'C4' ? 'C4-8n-ok' : n)
+export const exampleRangeEasy = makeSelectionFromRangeNotes('C4','E4')
+export const exampleRangeMedium = makeSelectionFromRangeNotes('C4','B4')
+export const exampleRangeHard = makeSelectionFromRangeNotes('C4','B4',true)
 
 export function SelectDifficulty({onPresent, theme}){
     const midiPlayer = useContext(MidiContext)
@@ -57,7 +59,7 @@ export function SelectDifficulty({onPresent, theme}){
     const movePreviewRange = useCallback((ev)=>{
         if(previewNotesSlide.adjusting){
             setPreviewNotesSlide(s => {
-                return {...s, value: limit(s.value - ev.movementX/10, 0, rangeState.range.length * 2 + 6)
+                return {...s, value: limit(s.value - ev.movementX/16, 0, rangeState.range.length * 2 + 6)
             }})
         }
     },[rangeState,previewNotesSlide.adjusting])
@@ -105,6 +107,21 @@ export function SelectDifficulty({onPresent, theme}){
         })
     },[hearts,length,bpm,rangeState,showName,ticksPerMove,difficulty])
     
+    // const loc = useLocation()
+    // useState(()=>{
+    //     const options = loc.state
+    //     console.log('Game options data: ', JSON.stringify(options))
+    //     if(options?.level) {
+    //         setDifficulty(d => {return {...d, custom:true}})
+    //         setHearts(options.level.startHealth)
+    //         setLength(options.level.startLength)
+    //         setBPM(options.level.tempo,true)
+    //         setTicksPerMove(options.level.ticksPerMove)
+    //         setShowName(options.level.showInputNoteNames)
+    //         rangeDispatch({type:'preset',data: options.level.guessData})
+    //     }
+    // },[loc])
+
     const preset = (p)=>{
         rangeDispatch({type:'preset',difficulty:p})
         setDifficulty(d => {return {...d,level:p}})
@@ -148,21 +165,6 @@ export function SelectDifficulty({onPresent, theme}){
         else
             midiPlayer.unmute(null,1)
     },[difficulty.custom])
-
-    // const loc = useLocation()
-    // useState(()=>{
-    //     const options = loc.state
-    //     console.log('Game options data: ', options)
-    //     if(options?.level) {
-    //         setDifficulty(d => {return {...d, custom:true}})
-    //         setHearts(options.level.startHealth)
-    //         setLength(options.level.startLength)
-    //         setBPM(options.level.tempo,true)
-    //         setTicksPerMove(options.level.ticksPerMove)
-    //         setShowName(options.level.showInputNoteNames)
-    //         rangeDispatch({type:'set',data: options.level.guessData})
-    //     }
-    // },[loc])
 
 
     const chromaticString = `Using ${
@@ -368,6 +370,10 @@ export function SelectDifficulty({onPresent, theme}){
                     <button onClick={()=>{setClefInfo(false)}}>Ok</button>
                 </Bubble>
             </h1>
+
+            {/* <p>{rangeState.bal}</p>
+            <p>{rangeState.bal2}</p>
+            <p>{rangeState.bal3}</p> */}
             
             <div className='ClefSummaryContainer Leftright'>
             <HintedDiv className='ClefSummary'
@@ -384,7 +390,10 @@ export function SelectDifficulty({onPresent, theme}){
                 <ClefButton className={
                     (!rangeState.clefs.treble ? 'inactive ' : '') 
                     + (rangeState.clefLock.treble ? 'locked ' : '') 
-                } type='treble' chance={Math.trunc(rangeState.clefs.treble*100)}
+                } 
+                type='treble' 
+                chance={Math.trunc(rangeState.clefs.treble*100)}
+                notes={rangeState.rangeClefs.treble}
                     onPointerDown={(ev)=>{
                         ev.preventDefault()
                         rangeDispatch({type:'startClefChance', clef:'treble'})
@@ -420,7 +429,9 @@ export function SelectDifficulty({onPresent, theme}){
                     (!rangeState.clefs.alto ? 'inactive ' : '') 
                     + (rangeState.clefLock.alto ? 'locked ' : '')  
                 }
-                type='alto' chance={Math.trunc(rangeState.clefs.alto*100)}
+                type='alto' 
+                chance={Math.trunc(rangeState.clefs.alto*100)}
+                notes={rangeState.rangeClefs.alto}
                     onPointerDown={(ev)=>{
                         ev.preventDefault()
                         rangeDispatch({type:'startClefChance', clef:'alto'})
@@ -456,7 +467,9 @@ export function SelectDifficulty({onPresent, theme}){
                 <ClefButton className={
                     (!rangeState.clefs.bass ? 'inactive ' : '') 
                     + (rangeState.clefLock.bass ? 'locked ' : '') 
-                } type='bass' chance={Math.trunc(rangeState.clefs.bass*100)}
+                } type='bass' 
+                chance={Math.trunc(rangeState.clefs.bass*100)}
+                notes={rangeState.rangeClefs.bass}
                     onPointerDown={(ev)=>{
                         ev.preventDefault()
                         rangeDispatch({type:'startClefChance', clef:'bass'})
@@ -479,6 +492,9 @@ export function SelectDifficulty({onPresent, theme}){
                     />
             </HintedDiv>
             </div>
+            <button onClick={()=>{
+                rangeDispatch({type:'balanceClefChance'})
+            }}>Rebalance all</button>
            
             <h1>Game:</h1>
             <button className='btnHealth Topdown'
@@ -528,16 +544,6 @@ export function SelectDifficulty({onPresent, theme}){
                 Show Input Note names: {humanBoolean(showName)}
             </button>
             
-            <button className='btnRandom Leftright' onClick={()=>{  
-                setHearts(rand(1,5))
-                setLength(rand(3,6))
-                setTicksPerMove(rand(1,2)*2)
-                setBPM(Math.trunc(rand(100,150)/2) * 2,true)
-                rangeDispatch({type:'random'})
-            }}>
-                <span>Pick for Me!</span>
-                <Dice3D />
-            </button>
         </section>
         </div>
         </>
@@ -576,7 +582,7 @@ export function SelectDifficulty({onPresent, theme}){
                 ) : ''}</li>
                 <li>Game will pick from {rangeState.range.length} notes:</li>
             </ul>
-            <HintedDiv className={'RangeHintDiv'} hide={previewNotesSlide.adjusting} hintComponent={<Bubble stemDirection={'down'}>Drag left and right to see all notes</Bubble>}>
+            <HintedDiv className={'RangeHintDiv'} hide={previewNotesSlide.adjusting} hintComponent={<Bubble stemDirection={'down'}>Drag left or right to see all notes</Bubble>}>
                 <NoteView slide={previewNotesSlide.value} stavesExtra={rangeState.end > getMidi('B5') ? 4 : 2} noBarStart data={rangeState.previewNoteViewData}
                     onPointerDown={(ev)=>{
                         if(ev.buttons === 1)
@@ -594,35 +600,46 @@ export function SelectDifficulty({onPresent, theme}){
                     onPointerMove={movePreviewRange}
                 />
             </HintedDiv> 
+
+            <button className='btnRandom Leftright' onClick={()=>{  
+                setHearts(rand(2,5))
+                setLength(rand(3,6))
+                setTicksPerMove(4)
+                setBPM(Math.trunc(rand(90,120)/2) * 2,true)
+                rangeDispatch({type:'none'})
+                setTimeout(()=>{rangeDispatch({type:'random'})},50)
+            }}>
+                <span>Randomize!</span>
+                <Dice3D />
+            </button>
+
             {difficulty.custom && <section className='Navigation Leftright'>
 
-                <button className='btnBack Leftright'
+                <button className='btn Back Orange Leftright'
                     onClick={()=>{
                         setGameStatsSummary(false)
                     }}>
-                    <img alt="arrow" src={arrowSVG} />
                     <span>Edit</span> 
                 </button>
+                
 
-                <button className='alt btnGo Leftright'
+                <button className='alt btnGo btn Go Leftright'
                     onClick={playGame}
                 >
                     <span>Lets Go!</span> 
-                    <img alt="arrow" src={arrowSVG} />
                 </button>
             </section>}
         </div>
 
         <section className='Navigation Leftright'>
-            <button className='btnBack Leftright'
+            <button className='Leftright btn Back Orange'
             disabled={!ready}
             onClick={()=>{
                 onPresent('/')
             }}>
-                <img alt="arrow" src={arrowSVG} />
                 <span>Back</span> 
             </button>
-            <button className='alt btnGo Leftright'
+            <button className='alt btnGo btn Go Leftright'
             disabled={!ready}
             onClick={()=>{
                 if(!difficulty.custom)
@@ -631,24 +648,22 @@ export function SelectDifficulty({onPresent, theme}){
                 setGameStatsSummary(true)
             }}>
                 <span>{difficulty.custom ? 'Confirm' : 'Lets Go!'}</span> 
-                <img alt="arrow" src={arrowSVG} />
             </button>
         </section>
     </div>
     </>)
 }
 
-function ClefButton(props){
-    const {type,chance,className, ...restProps} = props
-
+function ClefButton({type,chance,className,notes, ...restProps}){
     return <button className={'ClefButton ' + className} {...restProps}>
-        <span>{type}</span>
+        <p>{type}</p>
         <NoteView 
         noBarStart 
         slide={-0.5}
         stavesExtra={0}
         data={[{clef:type}]}/>
-        <span>{chance !== undefined ? '%'+chance : ''}</span>
+        <p>{chance !== undefined ? '%'+chance : ''}</p>
+        <p>Notes:{notes}</p>
     </button>
 }
 

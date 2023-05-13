@@ -207,7 +207,8 @@ body {
   .ClefButton.inactive {
     filter: sepia(1) grayscale(1) brightness(0.3);
   }
-  .ClefButton span {
+  .ClefButton span,
+  .ClefButton p {
     text-transform:capitalize;
   }
   .ClefButton.btnSelected {
@@ -278,24 +279,8 @@ body {
     height:2em;
   }
 
-
-.btnBack{
-  margin-right: auto;
-}
-.btnBack img {
-  height:4rem;
-  padding: 0.5rem;
-  transform: rotate(-90deg);
-  filter: hue-rotate(-90deg);
-}
-
 .btnGo  {
   margin-left: auto;
-}
-.btnGo img {
-  height:4rem;
-  padding: 0.5rem;
-  transform: rotate(90deg);
 }
 
 

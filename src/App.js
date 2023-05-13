@@ -1,6 +1,13 @@
 import './Styles/BasePitch.css'
 
 import * as Tone from 'tone'
+import * as PIXI from "pixi.js";
+import snake_atlas from "./Components/SnakeView/assets/snake.json";
+import scene_atlas from "./Components/SnakeView/assets/scene.json";
+import items_atlas from "./Components/SnakeView/assets/items.json";
+import entity_atlas from "./Components/SnakeView/assets/entity.json";
+import tiles_img from "./Components/SnakeView/assets/tiles64.png";
+
 import { createContext, useEffect, useState } from 'react'
 import { Routes, Route, useNavigate, useSearchParams, createSearchParams} from 'react-router-dom';
 import BGMPlayer from './Helpers/BGMPlayer'
@@ -13,18 +20,30 @@ import { TestZone } from './Screens/TestZone'
 import arrow from './AssetsImport/icons/arrow.png'
 import midiList from './midiList.json'
 import { Disclaimer } from './Screens/Disclaimer';
+import Learn from './Screens/Learn';
 
 export const DebugContext = createContext(false);
-export const MidiContext = createContext(false);
+export const MidiContext = createContext();
+export const TextureContext = createContext();
+export const SettingsContext = createContext();
 
 const themes = {
     title: 'trio.mid',
-    selectDifficulty: 'classy.mid'
+    selectDifficulty: 'classy.mid',
+    learn: 'jazzy.mid',
 }
 
 export default function App(){
     const [showDebug, setShowDebug] = useState(false)
     const [midiPlayer, setMidiPlayer] = useState()
+    const [textures, setTextures] = useState({})
+    const [settings, setSettings] = useState({
+        volume:{
+            music: 100,
+            effects: 100,
+            input: 100
+        }
+    })
     const [loading, setLoading] = useState({
         audioContextState: false,
         assetLoadingState: false,
@@ -58,6 +77,29 @@ export default function App(){
         }
         loadSound()
     },[])
+
+    useEffect(() => {
+        let _sprites
+        const tex = PIXI.BaseTexture.from(tiles_img);
+        const snake_SS = new PIXI.Spritesheet(tex, snake_atlas);
+        const scene_SS = new PIXI.Spritesheet(tex, scene_atlas);
+        const items_SS = new PIXI.Spritesheet(tex, items_atlas);
+        const entity_SS = new PIXI.Spritesheet(tex, entity_atlas);
+
+        Promise.all([snake_SS.parse(), scene_SS.parse(), items_SS.parse(), entity_SS.parse()]).then(
+        (s) => {
+            _sprites = { snake: s[0], scene: s[1], items: s[2], entity: s[3]}
+            setTextures(_sprites);
+            console.log("textures loaded",_sprites);
+            setLoading(s => {return {...s, texturesLoadingState: true}})
+        }
+        );
+
+        // return ()=>{
+        //     if(_sprites)
+        //     _sprites.destroy(true)
+        // }
+      }, []);
 
     useEffect(()=>{
         if(midiPlayer) {
@@ -101,12 +143,17 @@ export default function App(){
         
         <DebugContext.Provider value={showDebug}>
         <MidiContext.Provider value={midiPlayer}>
+        <TextureContext.Provider value={textures}>
+        <SettingsContext.Provider value={[settings,setSettings]}>
             <Routes>
                 <Route path="/"             element={<Title theme={themes.title} onPresent={handlePresentScreen}/>} />
                 <Route path="/pitch"        element={<SelectDifficulty theme={themes.selectDifficulty} onPresent={handlePresentScreen}/>}/>
                 <Route path="/pitch/single" element={<LevelBasePitch onPresent={handlePresentScreen}/>}/>
+                <Route path="/learn"        element={<Learn theme={themes.learn} onPresent={handlePresentScreen}/>}/>
                 <Route path="/testzone"     element={<TestZone onPresent={handlePresentScreen}/>}/>
             </Routes>
+        </SettingsContext.Provider>
+        </TextureContext.Provider>
         </MidiContext.Provider>
         </DebugContext.Provider>
         }

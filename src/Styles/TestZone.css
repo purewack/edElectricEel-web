@@ -1,11 +1,4 @@
-.TestZone nav {
-    background-color:rgb(12, 1, 58);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-right: 1rem;
-}
+
 .TestZone h1 {
     padding: 0;
 }

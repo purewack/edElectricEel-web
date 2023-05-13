@@ -55,6 +55,8 @@ export default class MidiFilePlayer {
         this.players.piano.set(midiPresets.piano)
         this.nodes.input.set(midiPresets.input)
 
+        this.musicMaxVol = -3
+
         if(autoload){
             this.loadSampler()
             this.loadEffects()
@@ -202,19 +204,19 @@ export default class MidiFilePlayer {
             if(handlers.onBeat) this.#onbeat = Tone.Transport.scheduleRepeat((t)=>{Tone.Draw.schedule(handlers.onBeat,t)},'4n')
         }
         this.transpose(0);
-        this.nodes.output.volume.value = -3;
+        this.nodes.output.volume.value = this.musicMaxVol;
         Tone.Transport.start("+1","0:0:0");
         this.state = 'playing'
     }
 
     pause(){
-        this.nodes.output.volume.value = -180;
+        this.nodes.output.volume.value = -300;
         this.#silenceAll()
         Tone.Transport.pause();
         this.state = 'paused';
     }
     resume(){
-        this.nodes.output.volume.value = -3;
+        this.nodes.output.volume.value = this.musicMaxVol;
         Tone.Transport.toggle()
         this.state = 'playing';
     }

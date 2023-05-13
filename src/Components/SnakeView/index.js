@@ -1,8 +1,4 @@
-import snake_atlas from "./assets/snake.json";
-import scene_atlas from "./assets/scene.json";
-import items_atlas from "./assets/items.json";
-import entity_atlas from "./assets/entity.json";
-import tiles_img from "./assets/tiles64.png";
+
 import "./style.css";
 
 import * as PIXI from "pixi.js";
@@ -24,9 +20,9 @@ import {
   Graphics,
   Container,
 } from "@pixi/react";
-import useOnResizeComponent from "../../Helpers/Hooks";
+import useOnResizeComponent, { getRandomFrom, getRandomFromWithAvoid, limit } from "../../Helpers/Hooks";
 
-import { DebugContext } from "../../App.js";
+import { DebugContext, TextureContext } from "../../App.js";
 
 PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
 const isSafari = window.safari !== undefined;
@@ -50,9 +46,9 @@ export const dirToIdx = {
 
 export function SnakeView({ style, options, gameTick, children}) {
   const showDebug = useContext(DebugContext)
+
   const [parentDiv, parentSize] = useOnResizeComponent();
-  const textureLoaded = useRef(false);
-  const [sprites, setSprites] = useState(null);
+  const sprites = useContext(TextureContext)
   const [scenery, setScenery] = useState([]);
   const [visuals, setVisuals] = useState({ u: 1, uu: 1});
   
@@ -90,6 +86,7 @@ export function SnakeView({ style, options, gameTick, children}) {
       uArea:[lwwU,lhhU], 
     }
     setVisuals(vis)
+    advanceScenery(true)
     // console.log('Stage visuals',vis)
   }, [parentSize, options.levelSize]);
 
@@ -115,6 +112,7 @@ export function SnakeView({ style, options, gameTick, children}) {
       }
       // console.log("new scenery",arr);
       setScenery(arr);
+      console.log(arr)
     } else if(options?.scrolling) {
       setScenery((ss) =>
         ss.map((e, i, a) => {
@@ -128,33 +126,10 @@ export function SnakeView({ style, options, gameTick, children}) {
       );
     }
   };
-  useEffect(() => {
-
-    if (!textureLoaded.current) {
-      textureLoaded.current = true;
-      const tex = PIXI.BaseTexture.from(tiles_img);
-      const snake_SS = new PIXI.Spritesheet(tex, snake_atlas);
-      const scene_SS = new PIXI.Spritesheet(tex, scene_atlas);
-      const items_SS = new PIXI.Spritesheet(tex, items_atlas);
-      const entity_SS = new PIXI.Spritesheet(tex, entity_atlas);
-
-      Promise.all([snake_SS.parse(), scene_SS.parse(), items_SS.parse(), entity_SS.parse()]).then(
-        (s) => {
-          const _sprites = { snake: s[0], scene: s[1], items: s[2], entity: s[3]}
-          setSprites(_sprites);
-          advanceScenery(true);
-          // console.log("sprites loaded",_sprites);
-        }
-      );
-
-
-    }
-  }, []);
 
   useEffect(()=>{
     advanceScenery(false);
   },[gameTick])
-
 
 
   return (
@@ -178,7 +153,7 @@ export function SnakeView({ style, options, gameTick, children}) {
             height={8}
             width={parentSize.width + uu}
             y={top - uu}
-            x={gameTick % 2 ? -uu : 0}
+            x={gameTick % 2 ? -uu : 0.01}
           />
           <TilingSprite
             texture={sprites.scene.sand}
@@ -186,14 +161,14 @@ export function SnakeView({ style, options, gameTick, children}) {
             height={parentSize.height}
             width={parentSize.width + uu}
             y={bot}
-            x={options?.scrolling && gameTick % 2 ? -uu/2 : 0}
+            x={options?.scrolling && gameTick % 2 ? -uu/2 : 0.01}
           />
           <TilingSprite
             texture={sprites.scene.gravel}
             scale={{ x: -u*2, y: u*2 }}
             width={left/u}
             height={parentSize.height}
-            y={0}
+            // y={0}
             x={left}
           />
           <TilingSprite
@@ -201,7 +176,7 @@ export function SnakeView({ style, options, gameTick, children}) {
             scale={{ x: u*2, y: u*2 }}
             width={left/u}
             height={parentSize.height}
-            y={0}
+            // y={0}
             x={right}
           />
           
@@ -287,7 +262,7 @@ export function SnakeView({ style, options, gameTick, children}) {
   );
 }
 
-export function Snake({ where, length, direction, onAdvance, tick, options, visuals, selfSprite = false}) {
+export function Snake({ where, length, direction, onAdvance, tick, options, visuals}) {
   const [path, setPath] = useState(null);
 
   //spawn
@@ -360,26 +335,6 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
   }, [tick.value]);
 
   const uu = visuals.u;
-  const [sprites,setSprites] = useState(null)
-  const textureLoaded = useRef(false)
-
-  useEffect(()=>{
-    if (selfSprite) {
-      if(!textureLoaded.current){
-        console.log("load sprites snake")
-        textureLoaded.current = true;
-        const tex = PIXI.BaseTexture.from(tiles_img);
-        const snake_SS = new PIXI.Spritesheet(tex, snake_atlas);
-        snake_SS.parse().then((r)=>{
-          setSprites(r)
-        })
-      } 
-    }
-    else {
-      setSprites(visuals.sprites.snake)
-    }
-  },[selfSprite])
-
  
   const idxToSprite = (i, l) => {
     if (i === 0) return sprites.sHead;
@@ -399,6 +354,8 @@ export function Snake({ where, length, direction, onAdvance, tick, options, visu
     else if (prev === dirToIdx["down"] && now === dirToIdx["left"]) return 0;
     else return null;
   };
+
+  const sprites = visuals?.sprites?.snake
 
   return (
     <>
@@ -486,6 +443,8 @@ function DebugGrid({ u, ux = 0, uy = 0, uw = 32, uh = 32 }) {
 export function SnakeLoadbar ({type='circle', tick = null, autoTickSpeed = 200, length = 8, area=5}){
   const showDebug = useContext(DebugContext)
   
+  const sprites = useContext(TextureContext)
+
   const [ref, cvSize] = useOnResizeComponent()
   const u = Math.floor(cvSize.width / area);
 
@@ -547,7 +506,7 @@ export function SnakeLoadbar ({type='circle', tick = null, autoTickSpeed = 200, 
                 where={spawn} 
                 length={length} 
                 direction={dir}
-                visuals={{u}}
+                visuals={{u, sprites}}
                 tick={{value:tick !== null ? tick : _tick, speed: type ==='circle' ? 1 : 0}}
                 onAdvance={onAdvance}
                 selfSprite={true}

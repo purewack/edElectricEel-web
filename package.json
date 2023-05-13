@@ -12,6 +12,7 @@
     "@pixi/mesh-extras": "7.1.4",
     "@pixi/particle-container": "7.1.4",
     "@pixi/react": "7.0.3",
+    "@pixi/react-animated": "^7.1.0",
     "@pixi/sprite": "7.1.4",
     "@pixi/sprite-animated": "7.1.4",
     "@pixi/sprite-tiling": "7.1.4",
@@ -31,6 +32,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.10.0",
     "react-scripts": "5.0.1",
+    "react-spring": "^9.7.1",
     "tone": "^14.7.77",
     "usehooks-ts": "^2.9.1",
     "web-vitals": "^2.1.4"

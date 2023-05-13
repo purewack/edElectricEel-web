@@ -9,8 +9,8 @@ import {
 
 import {
     makeSelectionFromRangeMidi,
+    makeSelectionFromRangeNotes,
     enumerateRangePerClef,
-    enumerateRangePerClefOverlap
 } from '../Helpers/Generators'
 
 const rangeEasy = ['C4','D4','E4']
@@ -18,42 +18,47 @@ const rangeMed = ['C4','D4','E4','F4','G4','A4','B4']
 const rangeHard = ['C4','D4','E4','F4','G4','A4','B4','C#4','D#4','F#4','G#4','A#4']
 
 export const rangeInit = {
-    range:rangeEasy,
-    rangeChromatic: false,
-    rangeHint:false,
+    range:rangeEasy, //pool of notes
+    rangeChromatic: false, //flag if range has accidentals
+    rangeHint:false, 
 
-    adjustingRange: false, 
+    adjustingRange: false, //touch event flags 
     adjustingClef: false, 
     hoverClef: false,
     hoverRange: false,
     fine:false, 
 
-    start: getMidi('C4'), 
+    start: getMidi('C4'), //internal range limits calc 
     end: getMidi('E4'), 
     _low: getMidi('C4'),
     _high: getMidi('E4'),
     noteLow: 'C4',
     noteHigh: 'E4',
 
-    accidentals: {
+    accidentals: { //accidentail use hints
         use: false,
         prefer: 'sharp'
     },
 
-    clefs:{
+    clefs:{ //clef probabilities
         treble:1,
         alto:0,
         bass:0
     },
-    rangeClefs: {
+    rangeClefs: { //number of notes per clef in pool
         treble: 3,
         alto: 0,
         bass: 0
     },
-    clefLock: {
+    clefLock: { //if range is chance adjust locked or not
         treble: false,
         alto: true,
         bass: true
+    },
+    clefLimit :{
+        treble: [0,1],
+        alto:   [0,1],
+        bass:   [0,1],
     }
 }
 export const rangeReducer = (state, action)=>{
@@ -70,13 +75,15 @@ export const rangeReducer = (state, action)=>{
         const chancesTreble = {treble: 1, bass:0, alto: 0}
         const chancesEqual = {treble: 0.5, bass:0.5, alto:0}
       
-        r.rangeClefs = enumerateRangePerClef(range)
-        const rc = r.rangeClefs
-        const rl = r.clefLock
-        rl.alto = (rc.alto < 1)
-        rl.treble = (rc.treble < 1 || rl.alto)
-        rl.bass = (rc.bass < 1 || rl.alto)
-        r.clefLock = rl
+        const en = enumerateRangePerClef(range)
+        let rl = {treble:false, alto:false, bass:false}
+        rl.alto = (en.alto === 0)
+        rl.treble = (en.treble === 0)
+        rl.bass = (en.bass === 0)
+        rl.treble |= (!en.bass && !en.alto)
+        rl.bass |= (!en.bass && !en.alto)
+        r.clefLock = {...rl}
+        r.rangeClefs = {...en}
 
         // if(ml < bassTresh && mh < bassTresh) r.clefs = {...r.clefs, ...chancesBass}
         // else if(ml >= bassTresh && mh >= bassTresh) r.clefs = {...r.clefs, ...chancesTreble}
@@ -122,8 +129,11 @@ export const rangeReducer = (state, action)=>{
         case 'changeRangeMax':
         case 'changeRangeMin':{
             const dy = limit(action.movement,-1,1)
-            if(r.range.length === 3 && dy < 0 && action.type === 'changeRangeMax') return r
-            if(r.range.length === 3 && dy > 0 && action.type === 'changeRangeMin') return r
+            if(r.range.length === 3) {
+                if((dy > 0 && action.type === 'changeRangeMin') 
+                || (dy < 0 && action.type === 'changeRangeMax'))
+                    return r
+            }
 
             if(action.type === 'changeRangeMin')
                 r._low =  limit(r._low+dy,  getMidi('C2'), r._high-3)
@@ -139,7 +149,7 @@ export const rangeReducer = (state, action)=>{
             const n = action.key
             
             if(r.range.includes(n)) {
-                if(r.range.length <= 4) return r
+                if(r.range.length === 3) return r
                 r.range= r.range.filter(e => respellPitch(e,'sharp') !== n)
                 r.rangeChromatic = undefined
                 recalcRange(r.range)
@@ -188,9 +198,7 @@ export const rangeReducer = (state, action)=>{
 
         
         case 'startClefChance':
-            if(r.rangeClefs[action.clef] < 3) return r
-            if(action.clef === 'treble' && !r.rangeClefs.alto && !r.rangeClefs.bass) return r
-            if(action.clef === 'bass' && !r.rangeClefs.alto && !r.rangeClefs.treble) return r
+            if(r.rangeClefs[action.clef] === 0) return r
             r.adjustingClef = true
             return r
     
@@ -202,13 +210,16 @@ export const rangeReducer = (state, action)=>{
             if(!r.adjustingClef) return r
             const c = action.clef
             const m = (action.movement/200)
+            const rl = r.clefLock
+            const cc = r.clefs
+            const en = r.rangeClefs
          
             const balanceTrebleAlto = (pure) => {
-                if(c === 'bass' && !pure && m > 0) {
-                    r.clefs.bass = 0.01
-                    return
-                } 
-                else if(c === 'bass' && m < 0 && !r.clefs.bass)
+                // if(c === 'bass' && !pure && m > 0) {
+                //     r.clefs.bass = 0.01
+                //     return
+                // } 
+                if(c === 'bass' && m < 0 && !r.clefs.bass)
                     return
                 else
                     r.clefs.bass = 0
@@ -221,15 +232,14 @@ export const rangeReducer = (state, action)=>{
                     r.clefs.alto += m
                     r.clefs.treble = 1-r.clefs.alto
                 }
-                r.clefs.treble = limit(r.clefs.treble,0,1)
-                r.clefs.alto = limit(r.clefs.alto,0,1)
+
             }
             const balanceBassAlto = (pure) => {
-                if(c === 'treble' && !pure && m > 0) {
-                    r.clefs.treble = 0.01
-                    return
-                } 
-                else if(c === 'treble' && m < 0 && !r.clefs.treble)
+                // if(c === 'treble' && !pure && m > 0) {
+                //     r.clefs.treble = 0.01
+                //     return
+                // } 
+                if(c === 'treble' && m < 0 && !r.clefs.treble)
                     return
                 else
                     r.clefs.treble = 0
@@ -242,15 +252,14 @@ export const rangeReducer = (state, action)=>{
                     r.clefs.alto += m
                     r.clefs.bass = 1-r.clefs.alto
                 }
-                r.clefs.bass = limit(r.clefs.bass,0,1)
-                r.clefs.alto = limit(r.clefs.alto,0,1)
+
             }
             const balanceTrebleBass = () => {
-                if(c === 'alto' && m > 0) {
-                    r.clefs.alto = 0.01
-                    return
-                } 
-                else if(c === 'alto' && m < 0 && !r.clefs.alto)
+                // if(c === 'alto' && m > 0) {
+                //     r.clefs.alto = 0.01
+                //     return
+                // } 
+                if(c === 'alto' && m < 0 && !r.clefs.alto)
                     return
                 else
                     r.clefs.alto = 0
@@ -263,16 +272,21 @@ export const rangeReducer = (state, action)=>{
                     r.clefs.bass += m
                     r.clefs.treble = 1-r.clefs.bass
                 }
-                r.clefs.treble = limit(r.clefs.treble,0,1)
-                r.clefs.bass = limit(r.clefs.bass,0,1)
+                
             }
             const balanceAll = () => {
+                if(m < 0){
+                    if((isAtLimit(c)))
+                        return
+                }
+
                 if(c === 'treble'){
                     r.clefs.treble += m
                     r.clefs.bass -= m/2
                     r.clefs.alto -= m/2
                 }
-                else if(c === 'bass'){
+                else if(c === 'bass')
+                {
                     r.clefs.treble -= m/2
                     r.clefs.bass += m
                     r.clefs.alto -= m/2
@@ -281,38 +295,216 @@ export const rangeReducer = (state, action)=>{
                     r.clefs.treble -= m/2
                     r.clefs.bass -= m/2
                     r.clefs.alto += m
-                    if(r.clefs.alto >= 0.99){
-                        r.clefs = {
-                            bass:0,
-                            treble:0,
-                            alto:1
-                        }
-                    }
-                }
-                r.clefs.treble = limit(r.clefs.treble,0,1)
-                r.clefs.alto = limit(r.clefs.alto,0,1)
-                r.clefs.bass = limit(r.clefs.bass,0,1)
+                }                
+
             }
 
-            const cr = enumerateRangePerClefOverlap(r.range)
+            if(rl[c]) return r
+
+            const lim = r.clefLimit
+            const isAtLimit = (name) => (cc[name] === lim[name][0] || cc[name] === lim[name][1]) 
+
+            r.bal = null
+            r.bal2 = null
+
+            if(!rl.treble && !rl.bass && !rl.alto){
+                if(en.treble < 3 && en.alto < 3 && en.bass < 3){
+                    r.bal2 = 'lim all under'
+                    r.clefLimit = {
+                        treble: [0.01, 0.99],
+                        alto:   [0.00, 0.98],
+                        bass:   [0.01, 0.99]
+                    }
+                }
+                else if(en.treble >= 3 && en.alto >= 3 && en.bass >= 3){
+                    r.bal2 = 'lim all over'
+                    r.clefLimit = {
+                        treble: [0.00, 1.0],
+                        alto:   [0.00, 1.0],
+                        bass:   [0.00, 1.0]
+                    }
+                }
+                else if(en.treble >= 3 && en.alto < 3 && en.bass >= 3){
+                    r.bal2 = 'lim under alto'
+                    r.clefLimit = {
+                        treble: [0.00, 1.0],
+                        alto:   [0.00, 0.99],
+                        bass:   [0.00, 1.0]
+                    }
+                }
+                else if(en.treble < 3 && en.alto >= 3 && en.bass >= 3){
+                    r.bal2 = 'lim under treb'
+                    r.clefLimit = {
+                        treble: [0.00, 0.99],
+                        alto:   [0.00, 1.0],
+                        bass:   [0.00, 1.0]
+                    }
+                }
+                else if(en.treble >= 3 && en.alto >= 3 && en.bass < 3){
+                    r.bal2 = 'lim under bass'
+                    r.clefLimit = {
+                        treble: [0.00, 1.0],
+                        alto:   [0.00, 1.0],
+                        bass:   [0.00, 0.99]
+                    }
+                }
+                else { 
+                    r.clefLimit = {
+                    //     treble: en.treble < 3 ? [0.00, 0.99] : (en.bass  +en.alto >=3 ? [0.00, 1.00] : [0.01, 1.00]),
+                    //     alto:   en.alto   < 3 ? [0.00, 0.99] : (en.treble+en.bass >=3 ? [0.00, 1.00] : [0.01, 1.00]),
+                    //     bass:   en.bass   < 3 ? [0.00, 0.99] : (en.treble+en.alto >=3 ? [0.00, 1.00] : [0.01, 1.00])
+                    // }
+                        treble: en.treble < 3 ? [0.00, 0.99] : [0.01, 1.00],
+                        alto:   en.alto   < 3 ? [0.00, 0.99] : [0.01, 1.00],
+                        bass:   en.bass   < 3 ? [0.00, 0.99] : [0.01, 1.00]
+                    }
+                    r.bal2 = 'lim else: '
+                }
+
+                if(c !== 'treble' && isAtLimit('treble')){
+                    balanceBassAlto()
+                    r.bal = 'all - bass alto'
+                }
+                else if(c !== 'bass' && isAtLimit('bass')){
+                    balanceTrebleAlto()
+                    r.bal = 'all - treb alto'
+                }
+                else if(c !== 'alto' && isAtLimit('alto')){
+                    r.bal = 'all - treb bass'
+                    balanceTrebleBass()
+                }
+                else{
+                    balanceAll()
+                    r.bal = 'all - all'
+                }
+
+                
+            }
+            else if(rl.bass){
+                balanceTrebleAlto()
+                r.bal = 'treb alto'
+                if(en.treble < 3 && en.alto < 3) {
+                    r.clefLimit = {
+                        treble: [0.01, 0.99],
+                        alto:   [0.01, 0.99],
+                        bass:   [0.00, 1.00]
+                    }
+                }
+                else if(en.treble < 3 && en.alto >= 3) {
+                    r.clefLimit = {
+                        treble: [0.00, 0.99],
+                        alto:   [0.01, 1.00],
+                        bass:   [0.00, 1.00]
+                    }
+                }
+                else if(en.treble >= 3 && en.alto < 3) {
+                    r.clefLimit = {
+                        treble: [0.01, 1.00],
+                        alto:   [0.00, 0.99],
+                        bass:   [0.00, 1.00]
+                    }
+                } 
+                else{
+                    r.clefLimit = {
+                        treble: [0.00, 1.00],
+                        alto:   [0.00, 1.00],
+                        bass:   [0.00, 1.00]
+                    }
+                }
+            }
+            else if(rl.treble){
+                balanceBassAlto()
+                r.bal = 'bass alto'
+                if(en.bass < 3 && en.alto < 3) {
+                    r.clefLimit = {
+                        treble: [0.00, 1.00],
+                        alto:   [0.01, 0.99],
+                        bass:   [0.01, 0.99]
+                    }
+                }
+                else if(en.bass < 3 && en.alto >= 3) {
+                    r.clefLimit = {
+                        treble: [0.00, 1.00],
+                        alto:   [0.01, 1.00],
+                        bass:   [0.00, 0.99]
+                    }
+                }
+                else if(en.bass >= 3 && en.alto < 3) {
+                    r.clefLimit = {
+                        treble: [0.00, 1.00],
+                        alto:   [0.00, 0.99],
+                        bass:   [0.01, 1.00]
+                    }
+                }
+                else{
+                    r.clefLimit = {
+                        treble: [0.00, 1.00],
+                        alto:   [0.00, 1.00],
+                        bass:   [0.00, 1.00]
+                    }
+                }
+            }
+            else if(rl.alto){
+                balanceTrebleBass()
+                if(en.bass < 3 && en.treble < 3) {
+                    r.clefLimit = {
+                        treble: [0.01, 0.99],
+                        alto:   [0.00, 1.00],
+                        bass:   [0.01, 0.99]
+                    }
+                }
+                else if(en.bass < 3 && en.treble >= 3) {
+                    r.clefLimit = {
+                        treble: [0.01, 1.00],
+                        alto:   [0.00, 1.00],
+                        bass:   [0.00, 0.99]
+                    }
+                }
+                else if(en.bass >= 3 && en.treble < 3) {
+                    r.clefLimit = {
+                        treble: [0.00, 0.99],
+                        alto:   [0.00, 1.00],
+                        bass:   [0.01, 1.00]
+                    }
+                }
+                else{
+                    r.clefLimit = {
+                        treble: [0.00, 1.00],
+                        alto:   [0.00, 1.00],
+                        bass:   [0.00, 1.00]
+                    }
+                }
+            }
+
+            r.clefs.bass   = limit(r.clefs.bass,  r.clefLimit.bass[0],  r.clefLimit.bass[1])
+            r.clefs.alto   = limit(r.clefs.alto,  r.clefLimit.alto[0],  r.clefLimit.alto[1])
+            r.clefs.treble = limit(r.clefs.treble,r.clefLimit.treble[0],r.clefLimit.treble[1])
+
+            r.bal3 = JSON.stringify(r.clefLimit)
+            return r
+        }
+
+        case 'balanceClefChance':{
+            const c = action.clef
             const cc = r.clefs
             const rl = r.clefLock
-            if(cr.treble >= 1 && cr.bass >= 1 && cr.alto >= 1){
-                if(!cc.alto)
-                    balanceTrebleBass()
-                else if(!cc.treble)
-                    balanceBassAlto()
-                else if(!cc.bass)
-                    balanceTrebleAlto()
-                else
-                    balanceAll()
+            const en = r.rangeClefs
+
+            if(rl.bass && rl.treble && rl.alto){
+                if(en.treble) r.clefs = {treble:1, alto:0,bass:0}
+                else if(en.bass) r.clefs = {bass:1, alto:0,treble:0}
+                return r
             }
-            else if(rl.bass)
-                balanceTrebleAlto()
-            else if(rl.treble)
-                balanceBassAlto()
-            else 
-                balanceTrebleBass()
+        
+            if(!rl.bass && rl.alto && !rl.treble)
+                r.clefs = {treble: 0.5, alto:0, bass:0.5}
+            else if(!rl.bass && !rl.alto && rl.treble)
+                r.clefs = {treble: 0, alto:0.5, bass:0.5}
+            else if(rl.bass && !rl.alto && !rl.treble)
+                r.clefs = {treble: 0.5, alto:0.5, bass:0}
+
+            else if(!rl.bass && !rl.alto && !rl.treble)
+                r.clefs = {treble: 0.33, alto:0.33, bass:0.33}
 
             return r
         }
@@ -326,15 +518,21 @@ export const rangeReducer = (state, action)=>{
             
             r.accidentals = {use: true, prefer: 'both'}
 
-            r.range = makeSelectionFromRangeMidi(getMidi('C4'),getMidi('B4'))
+            r.range = makeSelectionFromRangeNotes('C4','B4',true)
             r.rangeChromatic = undefined
             r.range = r.range.map(n => {
                 if(Math.random() > 0.5) return n
                 return null
             })
             r.range = r.range.filter(e => e!==null)
-            if(r.length < 3 ) r.range = [...rangeEasy]
+            if(r.range.length < 3 ) r.range = [...rangeEasy]
             recalcRange(r.range)
+            return r
+        }
+
+        case 'none': {
+            r.previewNoteViewData = []
+            r.range = []
             return r
         }
 

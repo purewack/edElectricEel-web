@@ -22,15 +22,13 @@
     position: absolute;
     top:0;
     left:0;
-    border: solid 1rem;
+    /* border: solid 1rem; */
     border-image: url('../AssetsImport/borders/bolt.png');
     border-image-repeat: round;
     border-image-slice: 8;
     border-radius: 2rem;
 }
 .SnakeLoadbar {
-    width: inherit;
-    height: inherit;
     border: none;
 }
 .MainTitle h1::first-letter {
@@ -48,6 +46,7 @@
     font-size: min(5rem, 15vw);
     color:forestgreen;
     transform: translate(-50%,-50%);
+    z-index: 20;
 }
 
 
@@ -107,6 +106,15 @@
   text-align: center;
 }
 
+.Selections .submenu .Volumes {
+  display: flex;
+  flex-direction: column;
+}
+.Selections .submenu .Frame {
+  display: flex;
+  margin-bottom: 1rem;
+  align-items: center;
+}
 
 
 .WhatsNew{

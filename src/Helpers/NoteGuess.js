@@ -94,7 +94,7 @@ export const generateNewGuessPitch2 = (guessData = {
 
   const ret = {
     notes:[noteA,noteB],
-    clef:[clefA,clefB],
+    clefs:[clefA,clefB],
     avoidNote: avoidNote,
   }
 

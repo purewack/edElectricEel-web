@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Sprite } from "@pixi/react";
+import { Sprite } from "@pixi/react-animated";
+import { Spring } from 'react-spring';
 
 export default function Item({ where, type='noteblock', visuals }) {
   useEffect(() => {

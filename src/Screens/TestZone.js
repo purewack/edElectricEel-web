@@ -35,7 +35,7 @@ export function TestZone({onPresent}){
     const [results, setResults] = useState({})
 
     return <div className='TestZone'>
-        <nav>
+        <nav className='NavScreen'>
             <button className='btn Back'
                 onClick={()=>{
                         onPresent('/')
@@ -187,8 +187,8 @@ export function TestZone({onPresent}){
                 noteNames noBarStart stavesExtra={1} 
                 data={results.generateNewGuessPitch2 
                     ? [
-                        {clef: results.generateNewGuessPitch2.clef[0], notes: [results.generateNewGuessPitch2.notes[0]]},
-                        {clef: results.generateNewGuessPitch2.clef[1], notes: [results.generateNewGuessPitch2.notes[1]]}
+                        {clef: results.generateNewGuessPitch2.clefs[0], notes: [results.generateNewGuessPitch2.notes[0]]},
+                        {clef: results.generateNewGuessPitch2.clefs[1], notes: [results.generateNewGuessPitch2.notes[1]]}
                     ] 
                     : [{clef:'treble'}]}
                 />

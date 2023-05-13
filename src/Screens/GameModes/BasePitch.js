@@ -12,6 +12,7 @@ import { getMidi, getRandomFrom, leadingZeros, respellPitch } from "../../Helper
 import { generateNewGuessPitch2 } from "../../Helpers/NoteGuess";
 import HintedDiv from '../../Components/Hint';
 import Bubble from '../../Components/Bubble';
+import { HelpGamePitchRange } from '../Learn';
 
 
 export const defaultData = {
@@ -49,6 +50,8 @@ export default function LevelBasePitch ({onPresent}) {
   const [paused, setPaused] = useState(false)
   const [debugFreeze, setDebugFreeze] = useState(false)
 
+  const [countDown, setCountDown] = useState()
+
   const [guessData, setGuessData] = useState()
   const [currentKey, setCurrentKey] = useState('C4')
   const [score, setScore] = useState({value: null, multiplier: 1, streak: 0})
@@ -77,10 +80,14 @@ export default function LevelBasePitch ({onPresent}) {
 
   
   const newGuess = (n)=>{
-    const data = generateNewGuessPitch2(n, levelData.guessData)
+    const data = generateNewGuessPitch2({...levelData.guessData, avoidNote: n})
     setGuessData(data)
     setGameSongPitch(midiPlayer,data.avoidNote,false);
     setCurrentKey(data.avoidNote);
+  }
+
+  const backGame = ()=>{
+    onPresent('/pitch',undefined,undefined,{level: {...levelData}})
   }
 
   const newGame = ()=>{
@@ -96,8 +103,12 @@ export default function LevelBasePitch ({onPresent}) {
     setGameSongParts(midiPlayer,['drums','bass'])
     startPitchGameSong(midiPlayer, levelData, ()=>{ 
       setGameTick(t => t+1) 
+    },undefined,(n)=>{
+      const text = n === 4 ? 'Go' : `${4-n}`
+      setCountDown(text)
     }).then(()=>{
       setGameActive(true)
+      setCountDown(null)
       console.log("new pitch game begin");
     })
     setIsStarted(true)
@@ -251,25 +262,38 @@ export default function LevelBasePitch ({onPresent}) {
     return ()=>{window.removeEventListener("keydown", keyHandle)}
   }, [showDebug]);
 
+  const btnHelpClass = !levelData.guessData.difficulty.custom && levelData.guessData.difficulty.level === 'easy' ? 'btnHelpHowTo Attention' : 'btnHelpHowTo'
+  // const btnHelpClass = 'btnHelpHowTo Attention'
+
   return (<>
   
     {!isStarted && !info && <div className="GameOverlayMenu Ready">
       <div className='Topdown'>
-        <button onClick={newGame}>Ready</button>
-        <button onClick={()=>{setInfo('info_game')}}>How to play?</button>
+        <button className={'btn Go'} onClick={newGame}>Ready</button>
+        <button className={'btn Back Orange'} onClick={backGame}>Back</button>
+        <button className={btnHelpClass} onClick={()=>{setInfo('info_game')}}>How to play?</button>
       </div>
     </div>}
 
-    {info === 'info_game' && <div className={'HowToPlayInfo'}><Bubble className={'Topdown'}>
-      <h1>How to play</h1>
-      <br/>
-      <ul>
-        <li>You will be shown 2 notes, the notes point in which way Sneel can turn.</li>
-        <li>Press the correct piano note to guide the snake to food.</li>
-        <li>You will loose a life when you press a wrong note.</li>
-      </ul>
-      <i>Hint: dont worry about octaves, i.e. you can press any C key for any C note you see </i>
-      <br/>
+    {info && <div className={'HowToPlayInfo'}><Bubble className={'Topdown'}>
+      { info === 'info_game' ? <>
+        <h1>How to play</h1>
+        <br/>
+        <ul>
+          <li>You will be shown 2 notes, the notes point in which way <b>Sneel</b> can turn.</li>
+          <li>Press the correct <b>piano note</b> to guide the <b>Sneel</b> to food.</li>
+          <li>You will loose a life when you press a wrong note.</li>
+        </ul>
+        <br/>
+        <i>Hint: dont worry about octaves, i.e. you can press any C key for any C note you see </i>
+        <br/>
+        <button  onClick={()=>{setInfo('info_range')}}>Show me note names!</button>
+      
+      </> : <>
+      
+        <h1>Preset note ranges:</h1>
+        <HelpGamePitchRange />
+      </>} 
       <button  onClick={()=>{setInfo(null)}}>OK</button>
     </Bubble></div>}
 
@@ -287,22 +311,28 @@ export default function LevelBasePitch ({onPresent}) {
     </Bubble></div>} */}
 
 
-    {paused && <div className="GameOverlayMenu Pause Topdown Frame">
+    {paused && !info && <div className="GameOverlayMenu Pause Topdown Frame">
       <h1>Paused</h1>
-      <button onClick={()=>{setInfo('info_game')}}>How to play?</button>
-      <button className='btn Config' disabled={true} onClick={()=>{setPaused(true)}}>Input Config</button>
-      <button onClick={()=>{setPaused(false)}}>Resume</button>
-      <button onClick={()=>{onPresent('/pitch',undefined,undefined,{level: {...levelData}})}}>Edit Game Settings</button>    
+      <button className='btn Go' onClick={()=>{setPaused(false)}}>Resume</button>
+      <button className='btn Back Orange' onClick={backGame}>Pick New Settings</button>  
+      <button className='btn Config' disabled={true} onClick={()=>{setPaused(true)}}>Input Config</button>       
+      <button className={btnHelpClass} onClick={()=>{setInfo('info_game')}}>How to play?</button>
       <button onClick={()=>{onPresent('/')}}>Quit</button>    
     </div>}
 
     <div className={'GameBasePitch ' + (paused || !isStarted ? 'Fade' : '')}>
       
+
       <section>
         <StatusBar ready={gameActive} onPause={()=>{setPaused(true)}} score={score.value} currentKey={currentKey?.slice(0,-1)} streak={score.streak} health={health} direction={direction}/>
       </section>
       
-      <section className="Frame Snake" style={{ marginBottom:0, position: "relative" }}>
+      <section className="Frame Snake">
+        
+        {countDown && <section className='Countdown'>
+          <h1>{countDown}</h1>
+        </section>}
+        
         <SnakeView
           direction={direction}
           length={length}
@@ -327,13 +357,13 @@ export default function LevelBasePitch ({onPresent}) {
         {guessData && !paused && <>
           <NoteView 
             className={'GuessA ' + (isHorizontal ? 'GuessHorizontal' : '')}
-            data={[{clef:guessData.clef, notes:[guessData.notes[0]+'-4n']}]}
+            data={[{clef:guessData.clefs[0], notes:[guessData.notes[0]+'-4n']}]}
             stavesExtra={1}
             slide={-0.5}
           />
           <NoteView  
             className={'GuessB ' + (isHorizontal ? 'GuessHorizontal' : '')}
-            data={[{clef:guessData.clef, notes:[guessData.notes[1]+'-4n']}]}
+            data={[{clef:guessData.clefs[0], notes:[guessData.notes[1]+'-4n']}]}
             stavesExtra={1}
             slide={-0.5}
           />

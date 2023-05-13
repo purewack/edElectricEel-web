@@ -14,11 +14,13 @@ export async function startPitchGameSong (midiPlayer,levelData,onGametick,onGame
         await midiPlayer.prepare(levelData.song,null,'1:0:0',true)
         Tone.Transport.bpm.value = levelData.tempo
         
+        let c = 0
         const countdown = new Tone.Pattern((t,n)=>{
             midiPlayer.players.drums.triggerAttackRelease(n,'8n',t)
-            if(onCountDown) Tone.Draw.schedule(onCountDown,t)
+            if(onCountDown) Tone.Draw.schedule(()=>{onCountDown(c)},t)
+            c++
         },['F#2','F#2','F#2','D#3']).start('0:0:0').stop('1:0:0')
-        
+
         if(onGametick){
             gameTickId = Tone.Transport.scheduleRepeat((t)=>{
                 Tone.Draw.schedule(onGametick,t)
